@@ -45,6 +45,17 @@ NodebookMD opens a readable page 19 times faster than Houdini's own help server.
 > [!NOTE]
 > The installer is not signed yet, so Windows shows "Windows protected your PC". Select **More info**, then **Run anyway**.
 
+### macOS
+
+[**Download for macOS**](https://nodebook.md/download/macos), for Apple Silicon. Open the disk image and drag NodebookMD to Applications. The app updates itself.
+
+> [!NOTE]
+> The app is not notarized yet, so macOS stops it the first time. Open System Settings, then Privacy & Security, and select **Open Anyway**. To skip that step, install it from Terminal instead:
+>
+> ```sh
+> curl -fsSL https://nodebook.md/install.sh | sh
+> ```
+
 ### Linux
 
 [**Download the AppImage**](https://nodebook.md/download/linux), then:
@@ -58,10 +69,6 @@ It carries its own WebKitGTK, so it needs no packages. It runs on glibc 2.34 and
 
 > [!WARNING]
 > On Ubuntu 26.04 the app closes at start, from a WebKit fault with the newest Mesa. This is a known issue.
-
-### macOS
-
-Not yet. A macOS build is planned.
 
 ### Build Instructions
 
