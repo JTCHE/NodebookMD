@@ -91,7 +91,8 @@ export function Showcase() {
               style={{ borderRadius: RADIUS, boxShadow: shadow(base.w * scale) }}
               onPointerDown={() => !tab.scene && tour.take()}
               // A touch leaves at its lift, so only a pointer that hovers counts.
-              onPointerLeave={(event) => event.pointerType !== "touch" && tour.leave()}
+              onPointerLeave={(event) => event.pointerType !== "touch" && tour.leave(true)}
+              onPointerEnter={(event) => event.pointerType !== "touch" && tour.leave(false)}
             >
               <div
                 className="absolute top-0 left-0"

@@ -12,6 +12,9 @@ export interface OpenedPage {
   at: number;
 }
 
+/** How long the reader's pointer is out of the frame before the tour plays on. */
+const RESUME_MS = 1500;
+
 const quiet = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
@@ -129,14 +132,23 @@ export function useTour({
 
   /** The reader's own input in the app, or on a demo. */
   const take = useCallback(() => {
+    clearTimeout(away.current);
     const path = frame.current?.contentWindow?.location.pathname ?? "";
     reader.current ??= { path, leave: !pausedRef.current };
     setPaused(true);
   }, [frame]);
 
-  const leave = useCallback(() => {
-    if (reader.current?.leave) resume();
-  }, [resume]);
+  /** The reader's pointer left the frame, or came back to it. The tour waits
+      a moment before it plays on: a pointer that only passed out, or comes
+      straight back, keeps the app. */
+  const away = useRef(0);
+  const leave = useCallback(
+    (gone: boolean) => {
+      clearTimeout(away.current);
+      if (gone) away.current = window.setTimeout(() => reader.current?.leave && resume(), RESUME_MS);
+    },
+    [resume],
+  );
 
   useEffect(() => hand.hold(paused), [paused, hand]);
 
