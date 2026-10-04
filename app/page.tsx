@@ -94,6 +94,12 @@ export default function Home() {
         <p className="max-sm:hidden">
           {`${SITE_NAME}, formerly HoudiniMD, is an unofficial, independent project, and isn't affiliated with or endorsed by SideFX.`}
         </p>
+        <p className="max-sm:hidden">
+          For AI agents:{" "}
+          <a href="/llms.txt" className="underline decoration-hairline underline-offset-4 transition-colors hover:text-foreground">
+            llms.txt
+          </a>
+        </p>
         {/* A phone has room for the gist only. */}
         <p className="sm:hidden">Formerly HoudiniMD. A mockup with sample pages. Not affiliated with SideFX.</p>
       </footer>

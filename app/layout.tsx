@@ -37,6 +37,8 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.webmanifest",
+  // The page for an agent: public/llms.txt.
+  alternates: { types: { "text/markdown": "/llms.txt" } },
   openGraph: {
     title: websiteInfo.title,
     description: websiteInfo.description,

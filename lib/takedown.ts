@@ -3,8 +3,8 @@
  * served it now answers 410, and none of them carries a SideFX sentence.
  *
  * A doc page keeps its prerendered title and breadcrumbs (app/docs), and the
- * Worker gives that answer its 410 here. Every raw shape — `.md`, the API,
- * `llms.txt`, the icons — is answered here in plain text, before Next starts.
+ * Worker gives that answer its 410 here. Every raw shape — `.md`, the API, the
+ * icons — is answered here in plain text, before Next starts.
  */
 import { wantsMarkdown } from "./wants-markdown";
 
@@ -42,7 +42,7 @@ function plain(source: string): Response {
 /** The plain 410 for a raw shape, or null for a page Next renders. */
 export function takedownAnswer(request: Request, url: URL): Response | null {
   const path = url.pathname;
-  if (path.startsWith("/icons/") || path.startsWith("/api/") || path === "/llms.txt" || path === "/docs.md") {
+  if (path.startsWith("/icons/") || path.startsWith("/api/") || path === "/docs.md") {
     return plain(`${SIDEFX_DOCS_ROOT}/`);
   }
   if (!isDoc(path)) return null;
