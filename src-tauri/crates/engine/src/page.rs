@@ -94,6 +94,30 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
     })
 }
 
+impl PageView {
+    /// The page as one Markdown file, for a reader outside the app: YAML
+    /// frontmatter with what the app header shows, the title as an H1, then
+    /// the body. A JSON string is a valid YAML scalar, so no value can break
+    /// the block.
+    pub fn document(&self) -> String {
+        let mut out = String::from("---\n");
+        let fields = [
+            ("title", Some(&self.name)),
+            ("type", self.node_type.as_ref()),
+            ("summary", self.summary.as_ref()),
+            ("since", self.since.as_ref()),
+            ("houdini", Some(&self.version)),
+            ("path", Some(&self.path)),
+        ];
+        for (key, value) in fields {
+            if let Some(value) = value {
+                out += &format!("{key}: {}\n", serde_json::Value::from(value.as_str()));
+            }
+        }
+        out + &format!("---\n\n# {}\n\n{}", self.name, self.markdown)
+    }
+}
+
 /// The kind of page, for the header. Only a node page has one.
 pub fn node_type(props: &wiki::Props) -> Option<String> {
     let kind = wiki::model::prop(props, "type")?;

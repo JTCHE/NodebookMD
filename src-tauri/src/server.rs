@@ -167,7 +167,7 @@ fn answer(
         return match current(db, chosen, cache)
             .and_then(|i| crate::read_page(&i, page.trim_start_matches('/')).map_err(|e| e.message))
         {
-            Ok(view) => (200, view.markdown.into_bytes(), "text/markdown; charset=utf-8"),
+            Ok(view) => (200, view.document().into_bytes(), "text/markdown; charset=utf-8"),
             Err(reason) => not_found(reason),
         };
     }
