@@ -21,6 +21,21 @@ const DEPTH: usize = 4;
 /// few pages thirteen thousand times.
 pub type Load<'a> = dyn Fn(&str) -> Option<Arc<Vec<Block>>> + 'a;
 
+/// The path an `:includeprop name:` stands for. It is no page: the property
+/// lives on one of `PROP_PAGES`, as a definition whose `#hprop:` is `name`.
+pub const PROPS: &str = "/props";
+// ponytail: the two pages that hold every property an install includes;
+// read props/index for the list if a build adds a third.
+const PROP_PAGES: [&str; 2] = ["props/mantra", "props/viewport"];
+
+fn prop_page(name: Option<&str>, load: &Load) -> Option<String> {
+    let name = name?;
+    PROP_PAGES
+        .iter()
+        .find(|page| load(page).is_some_and(|blocks| find(&mut Vec::clone(&blocks), name).is_some()))
+        .map(|page| page.to_string())
+}
+
 /// Replaces every include in `blocks` with the content it points at. `page` is
 /// the path the blocks were read from, which relative include paths stand on.
 ///
@@ -40,7 +55,10 @@ fn expand(blocks: &mut Vec<Block>, from: &str, load: &Load, open: &mut Vec<Strin
             contents_only,
         } = &block
         {
-            let target = absolute(from, path);
+            let target = match path.as_str() {
+                PROPS => prop_page(block_id.as_deref(), load).unwrap_or_default(),
+                _ => absolute(from, path),
+            };
             // A page includes one of its own blocks by ID alone. That is a
             // reference, not a loop, so the open list does not bar it.
             let same_page = target == *from && block_id.is_some();
@@ -154,7 +172,11 @@ fn pull(target: &str, id: Option<&str>, contents_only: bool, load: &Load) -> Opt
 /// the one a writer means.
 fn find(blocks: &mut Vec<Block>, id: &str) -> Option<Block> {
     for at in 0..blocks.len() {
-        if identifier(&blocks[at]).is_some_and(|found| found == id) {
+        let hprop = match &blocks[at] {
+            Block::Definition { props, .. } => prop(props, "hprop"),
+            _ => None,
+        };
+        if identifier(&blocks[at]) == Some(id) || hprop == Some(id) {
             return Some(blocks.remove(at));
         }
     }

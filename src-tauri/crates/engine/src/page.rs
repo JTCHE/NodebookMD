@@ -57,8 +57,16 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
         help::PageError::Unreadable(message) => PageError { missing: false, message },
     })?;
     let mut parsed = wiki::parse(&source);
+    // Parsed once per read: the Mantra ROP pulls a hundred properties out of
+    // the same props page.
+    let parsed_pages = std::cell::RefCell::new(std::collections::HashMap::new());
     wiki::include::resolve(&mut parsed.blocks, &path, &|target| {
-        help::page_layered(&roots, target).ok().map(|source| std::sync::Arc::new(wiki::parse(&source).blocks))
+        if let Some(blocks) = parsed_pages.borrow().get(target) {
+            return Some(std::sync::Arc::clone(blocks));
+        }
+        let blocks = std::sync::Arc::new(wiki::parse(&help::page_layered(&roots, target).ok()?).blocks);
+        parsed_pages.borrow_mut().insert(target.to_string(), std::sync::Arc::clone(&blocks));
+        Some(blocks)
     });
     listing::resolve(&roots, &path, &mut parsed.blocks);
     family::append(&install.help, &parsed.props, &mut parsed.blocks);

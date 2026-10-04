@@ -662,6 +662,15 @@ fn single_line_block(text: &str, children: &[Line], has_children: bool) -> Optio
             if name == "include" {
                 return Some(include_block(&label));
             }
+            // `:includeprop vm_phantom:` names a render property by its
+            // `#hprop:`, not by a page. `include::resolve` finds the page.
+            if name == "includeprop" {
+                return Some(Block::Include {
+                    path: crate::include::PROPS.to_string(),
+                    block_id: Some(label.trim().to_string()),
+                    contents_only: false,
+                });
+            }
             let (props, children) = child(children);
             if name == "usage" {
                 let text = label.trim();
@@ -847,6 +856,13 @@ fn item_parts(text: &str) -> Option<(String, String)> {
         && body.starts_with(char::is_whitespace)
     {
         return Some(("include".to_string(), body.trim().to_string()));
+    }
+    if let Some(body) = text
+        .strip_prefix(":includeprop")
+        .and_then(|rest| rest.strip_suffix(':'))
+        && body.starts_with(char::is_whitespace)
+    {
+        return Some(("includeprop".to_string(), body.trim().to_string()));
     }
     let rest = text.strip_prefix(':')?;
     let end = rest.find(':')?;
