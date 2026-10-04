@@ -328,7 +328,7 @@ fn open_page(
             .map_err(|_| format!("No help text for {path}"))?;
         (text, "txt")
     } else {
-        (read_page(&install, &path).map_err(|e| e.message)?.markdown, "md")
+        (read_page(&install, &path).map_err(|e| e.message)?.portable, "md")
     };
     // The page's own path under the temp folder, so two pages with the same
     // last name do not write over each other.
@@ -457,82 +457,8 @@ async fn send_to_obsidian(app: tauri::AppHandle, vault: String, title: String, m
     let safe: String = title.chars().map(|c| if "\\/:*?\"<>|".contains(c) { ' ' } else { c }).collect();
     let safe = safe.trim();
     let path = folder.join(format!("{}.md", if safe.is_empty() { "page" } else { safe }));
-    std::fs::write(&path, obsidian_markdown(&note)).map_err(|e| e.to_string())?;
+    std::fs::write(&path, note).map_err(|e| e.to_string())?;
     Ok(path.to_string_lossy().into_owned())
-}
-
-/// Obsidian reads no Markdown inside an HTML block, and does not find a vault
-/// file from an HTML `src`. So the HTML that carries a page's pictures becomes
-/// plain Markdown: the column wrappers go (their pictures then stack), and
-/// each `<img>`, `<video>` and Vimeo box becomes an embed or a link.
-fn obsidian_markdown(text: &str) -> String {
-    let mut out = String::new();
-    for line in text.lines() {
-        let body = line.trim();
-        let indent = &line[..line.len() - line.trim_start().len()];
-        if matches!(body, "<div class=\"columns\">" | "<div class=\"column\">" | "</div>") {
-            continue;
-        }
-        if body.starts_with("<div class=\"not-prose vimeo\"") {
-            if let Some(id) = attribute_value(body, "data-id") {
-                let title = attribute_value(body, "title").filter(|t| !t.is_empty()).unwrap_or_else(|| "Video".into());
-                out.push_str(&format!("{indent}[{title}](https://vimeo.com/{id})\n"));
-            }
-            continue;
-        }
-        if body.starts_with("<div class=\"not-prose image-group\">") {
-            let embeds: Vec<String> = sources(body).iter().map(|src| format!("{indent}![]({src})")).collect();
-            out.push_str(&embeds.join("\n\n"));
-            out.push('\n');
-            continue;
-        }
-        out.push_str(&inline_media(line));
-        out.push('\n');
-    }
-    out
-}
-
-/// Every `<img src="…">` and `<video src="…"></video>` in a line, a table
-/// cell's among them, as `![](…)`.
-fn inline_media(line: &str) -> String {
-    let mut out = String::new();
-    let mut rest = line;
-    loop {
-        let found = [("<img src=\"", ">"), ("<video src=\"", "</video>")]
-            .into_iter()
-            .filter_map(|(open, close)| Some((rest.find(open)?, close)))
-            .min_by_key(|(at, _)| *at);
-        let Some((start, close)) = found else { break };
-        let Some(len) = rest[start..].find(close).map(|at| at + close.len()) else { break };
-        let tag = &rest[start..start + len];
-        out.push_str(&rest[..start]);
-        match sources(tag).first() {
-            Some(src) => out.push_str(&format!("![]({src})")),
-            None => out.push_str(tag),
-        }
-        rest = &rest[start + len..];
-    }
-    out.push_str(rest);
-    out
-}
-
-/// Every `src="…"` value in `html`, in order.
-fn sources(html: &str) -> Vec<String> {
-    html.match_indices("src=\"")
-        .filter_map(|(at, _)| html[at + 5..].split('"').next().map(unescape))
-        .collect()
-}
-
-/// The value of `name="…"` in one tag, unescaped.
-fn attribute_value(tag: &str, name: &str) -> Option<String> {
-    let key = format!(" {name}=\"");
-    let start = tag.find(&key)? + key.len();
-    tag[start..].split('"').next().map(unescape)
-}
-
-/// Undoes the wiki crate's `attribute` escape.
-fn unescape(text: &str) -> String {
-    text.replace("&quot;", "\"").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
 }
 
 /// Every `<kind>path/to/file.ext` substring `text` carries, ending at the
@@ -1265,23 +1191,7 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
-    use super::{obsidian_markdown, range};
-
-    #[test]
-    fn a_note_for_obsidian_carries_its_pictures_as_embeds() {
-        let page = "- Shattering:\n\n  <div class=\"columns\">\n\n  <div class=\"column\">\n\n  ![](attachments/a.jpg)\n\n  </div>\n\n  </div>\n\n\
-            <div class=\"not-prose image-group\"><figure><img src=\"attachments/b.jpg\" alt=\"\" /></figure><figure><img src=\"attachments/c.jpg\" alt=\"\" /></figure></div>\n\n\
-            <video src=\"attachments/d.mp4\" controls loop></video>\n\n\
-            | y | a<br><video src=\"attachments/f.webm\" controls></video> |\n\n\
-            | x | <img src=\"attachments/e.jpg\" alt=\"\"> |\n\n\
-            <div class=\"not-prose vimeo\" data-id=\"204607962\" title=\"Boolean &amp; shatter\"></div>\n";
-        let note = obsidian_markdown(page);
-        assert!(!note.contains("<div") && !note.contains("</div>") && !note.contains("<img") && !note.contains("<video"));
-        for embed in ["  ![](attachments/a.jpg)", "![](attachments/b.jpg)\n\n![](attachments/c.jpg)", "![](attachments/d.mp4)", "| x | ![](attachments/e.jpg) |", "| y | a<br>![](attachments/f.webm) |"] {
-            assert!(note.contains(embed), "{embed} in {note}");
-        }
-        assert!(note.contains("[Boolean & shatter](https://vimeo.com/204607962)"));
-    }
+    use super::range;
 
     #[test]
     fn a_range_names_the_bytes_it_wants() {

@@ -23,6 +23,9 @@ pub struct PageView {
     pub since: Option<String>,
     pub summary: Option<String>,
     pub markdown: String,
+    /// The same body as plain Markdown, for every reader outside the app:
+    /// copy, save, Obsidian, the `.md` address. See `wiki::markdown::portable`.
+    pub portable: String,
     /// The build the page was read from.
     pub version: String,
     /// Every version of this node, newest first, for the selector in the
@@ -79,6 +82,8 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
     };
     assets::rewrite(&path, &mut parsed.blocks, &links);
     let prop = |name: &str| wiki::model::prop(&parsed.props, name).map(str::to_string);
+    let markdown = wiki::markdown::blocks(&parsed.blocks, 1);
+    let portable = wiki::markdown::portable(&markdown);
     Ok(PageView {
         name: name(&path, &parsed),
         path,
@@ -88,7 +93,8 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
         // The declared summary only: the fallback repeats the body's first
         // paragraph right above it. Search and listings use `summary()`.
         summary: parsed.summary.as_ref().map(|text| wiki::inline::plain(text)),
-        markdown: wiki::markdown::blocks(&parsed.blocks, 1),
+        markdown,
+        portable,
         version: install.version.clone(),
         node_versions: Vec::new(),
     })
@@ -114,7 +120,7 @@ impl PageView {
                 out += &format!("{key}: {}\n", serde_json::Value::from(value.as_str()));
             }
         }
-        out + &format!("---\n\n# {}\n\n{}", self.name, self.markdown)
+        out + &format!("---\n\n# {}\n\n{}", self.name, self.portable)
     }
 }
 

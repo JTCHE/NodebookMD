@@ -299,9 +299,18 @@ fn item(name: &str, label: &str, props: &Props, children: &[Block], depth: u8) -
     match name {
         // Markdown has no video, and the app renders the raw tag with the same
         // component that draws a picture. `loop` and `autoplay` are the page's
-        // own, so a demonstration that repeats keeps repeating here.
+        // own, so a demonstration that repeats keeps repeating here. The
+        // `"""caption"""` under it goes in `title`, which `portable` keeps.
         "video" => {
             let src = attribute(prop(props, "src").unwrap_or_default());
+            let caption = children.iter().find_map(|block| match block {
+                Block::Summary { text } | Block::Paragraph { text } => Some(crate::inline::plain(text)),
+                _ => None,
+            });
+            let title = match caption.as_deref().map(str::trim) {
+                Some(caption) if !caption.is_empty() => format!(" title=\"{}\"", attribute(caption)),
+                _ => String::new(),
+            };
             let flag = |name: &str| match prop(props, name) == Some("true") {
                 true => format!(" {name}"),
                 false => String::new(),
@@ -312,7 +321,7 @@ fn item(name: &str, label: &str, props: &Props, children: &[Block], depth: u8) -
                 ""
             };
             format!(
-                "<video src=\"{src}\" controls{}{}{muted}></video>
+                "<video src=\"{src}\"{title} controls{}{}{muted}></video>
 
 ",
                 flag("loop"),
@@ -374,7 +383,13 @@ fn item(name: &str, label: &str, props: &Props, children: &[Block], depth: u8) -
         "arg" => format!("`{}`\n\n{body}", label.trim_end_matches(':').trim()),
         // `:null:` only carries an `#id:` for an include to point at.
         "null" => body,
-        "col" | "box" | "tab" | "task" | "disclosure" | "bubble" | "fig" | "caption" => {
+        // The label of `:fig:` is the picture itself. In bold it would be
+        // `**![](…)**`, which no reader needs.
+        "fig" => match label.is_empty() {
+            true => body,
+            false => format!("{label}\n\n{body}"),
+        },
+        "col" | "box" | "tab" | "task" | "disclosure" | "bubble" | "caption" => {
             if label.is_empty() {
                 body
             } else {
@@ -536,10 +551,10 @@ fn cell_html(blocks: &[Block], raw: bool) -> String {
                 children,
             } => out.push_str(&html(tag, attributes, children)),
             // A clip under a parameter: `Flow:` on the Mountain SOP shows the
-            // noise moving. It carries no children, only its source.
-            Block::Item { name, props, .. } if name == "video" || name == "vimeo" => {
+            // noise moving. It carries its source and its caption.
+            Block::Item { name, props, children, .. } if name == "video" || name == "vimeo" => {
                 gap(&mut out);
-                out.push_str(item(name, "", props, &[], 1).trim());
+                out.push_str(item(name, "", props, children, 1).trim());
             }
             Block::Item { children, .. } => {
                 gap(&mut out);
@@ -835,9 +850,115 @@ pub fn url(target: &LinkTarget) -> String {
     }
 }
 
+/// The page for a reader outside the app: the copy button, a saved file, an
+/// Obsidian note, the `.md` address. The HTML this writer leaves for the app's
+/// layout becomes plain Markdown. The column wrappers go and their content
+/// stacks. Each `<img>` and `<video>` becomes an embed, a clip with its
+/// caption as the alt text: Obsidian plays `![](….webm)` in place, and any
+/// other reader sees the file. A Vimeo box becomes a link.
+pub fn portable(markdown: &str) -> String {
+    let mut out = String::new();
+    let mut dropped = false;
+    for line in markdown.lines() {
+        let body = line.trim();
+        let indent = &line[..line.len() - line.trim_start().len()];
+        // A wrapper takes the blank line after it along, so no gap doubles.
+        if std::mem::take(&mut dropped) && body.is_empty() {
+            continue;
+        }
+        // The Launch box is a control of the app, with nothing to read.
+        if matches!(body, "<div class=\"columns\">" | "<div class=\"column\">" | "</div>")
+            || body.starts_with("<div class=\"not-prose load-example\"")
+        {
+            dropped = true;
+            continue;
+        }
+        if body.starts_with("<div class=\"not-prose vimeo\"") {
+            if let Some(id) = attribute_value(body, "data-id") {
+                let title = attribute_value(body, "title").filter(|t| !t.is_empty()).unwrap_or_else(|| "Video".into());
+                out.push_str(&format!("{indent}[{title}](https://vimeo.com/{id})\n"));
+            }
+            continue;
+        }
+        if body.starts_with("<div class=\"not-prose image-group\">") {
+            let embeds: Vec<String> = sources(body).iter().map(|src| format!("{indent}![]({src})")).collect();
+            out.push_str(&embeds.join("\n\n"));
+            out.push('\n');
+            continue;
+        }
+        out.push_str(&inline_media(line));
+        out.push('\n');
+    }
+    out
+}
+
+/// Every `<img src="…">`, `<video src="…"></video>` and picture row in a
+/// line, a table cell's among them, as `![](…)`.
+fn inline_media(line: &str) -> String {
+    let mut out = String::new();
+    let mut rest = line;
+    loop {
+        let found = [("<img src=\"", ">"), ("<video src=\"", "</video>"), ("<div class=\"not-prose image-group\">", "</div>")]
+            .into_iter()
+            .filter_map(|(open, close)| Some((rest.find(open)?, close)))
+            .min_by_key(|(at, _)| *at);
+        let Some((start, close)) = found else { break };
+        let Some(len) = rest[start..].find(close).map(|at| at + close.len()) else { break };
+        let tag = &rest[start..start + len];
+        out.push_str(&rest[..start]);
+        let alt = attribute_value(tag, "title").unwrap_or_default().replace(']', r"\]");
+        let embeds: Vec<String> = sources(tag).iter().map(|src| format!("![{alt}]({src})")).collect();
+        match embeds.is_empty() {
+            true => out.push_str(tag),
+            false => out.push_str(&embeds.join(" ")),
+        }
+        rest = &rest[start + len..];
+    }
+    out.push_str(rest);
+    out
+}
+
+/// Every `src="…"` value in `html`, in order.
+fn sources(html: &str) -> Vec<String> {
+    html.match_indices("src=\"")
+        .filter_map(|(at, _)| html[at + 5..].split('"').next().map(unescape))
+        .collect()
+}
+
+/// The value of `name="…"` in one tag, unescaped.
+fn attribute_value(tag: &str, name: &str) -> Option<String> {
+    let key = format!(" {name}=\"");
+    let start = tag.find(&key)? + key.len();
+    tag[start..].split('"').next().map(unescape)
+}
+
+/// Undoes `attribute`.
+fn unescape(text: &str) -> String {
+    text.replace("&quot;", "\"").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_portable_page_carries_its_media_as_embeds() {
+        let page = "- Shattering:\n\n  <div class=\"columns\">\n\n  <div class=\"column\">\n\n  ![](attachments/a.jpg)\n\n  </div>\n\n  </div>\n\n\
+            <div class=\"not-prose image-group\"><figure><img src=\"attachments/b.jpg\" alt=\"\" /></figure><figure><img src=\"attachments/c.jpg\" alt=\"\" /></figure></div>\n\n\
+            <video src=\"attachments/d.mp4\" title=\"Ragdoll &amp; forces\" controls loop></video>\n\n\
+            | y | a<br><video src=\"attachments/f.webm\" controls></video> |\n\n\
+            | x | <img src=\"attachments/e.jpg\" alt=\"\"> |\n\n\
+            | z | <div class=\"not-prose image-group\"><figure><img src=\"attachments/g.jpg\" alt=\"\" /></figure><figure><img src=\"attachments/h.jpg\" alt=\"\" /></figure></div> |\n\n\
+            <div class=\"not-prose load-example\" data-path=\"examples/a\"></div>\n\n\
+            <div class=\"not-prose vimeo\" data-id=\"204607962\" title=\"Boolean &amp; shatter\"></div>\n";
+        let note = portable(page);
+        assert!(!note.contains("<div") && !note.contains("<figure") &&!note.contains("</div>") && !note.contains("<img") && !note.contains("<video"));
+        assert!(!note.contains("\n\n\n"), "{note}");
+        for embed in ["  ![](attachments/a.jpg)", "![](attachments/b.jpg)\n\n![](attachments/c.jpg)", "![Ragdoll & forces](attachments/d.mp4)", "| x | ![](attachments/e.jpg) |", "| y | a<br>![](attachments/f.webm) |", "| z | ![](attachments/g.jpg) ![](attachments/h.jpg) |"] {
+            assert!(note.contains(embed), "{embed} in {note}");
+        }
+        assert!(note.contains("[Boolean & shatter](https://vimeo.com/204607962)"));
+    }
 
     #[test]
     fn a_link_to_the_old_pop_context_goes_to_its_dop() {

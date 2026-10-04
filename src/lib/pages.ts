@@ -29,6 +29,9 @@ export interface PageView {
   since?: string;
   summary?: string;
   markdown: string;
+  /** The body as plain Markdown, for copy, save and Obsidian. See
+      `portable` in the wiki crate's markdown.rs. */
+  portable: string;
   version: string;
   /** Every version of this node, newest first. Empty for a page with no
       other version. See `versions.rs`. */

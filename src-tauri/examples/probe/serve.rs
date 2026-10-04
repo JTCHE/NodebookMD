@@ -220,7 +220,7 @@ fn route(state: &Serve, path: &str, query: &str) -> (u16, &'static str, Vec<u8>)
     // The page as Markdown, the same as the app's own server answers it.
     if let Some(page) = path.strip_suffix(".md") {
         return match read_page(&install, page.trim_start_matches('/')) {
-            Ok(view) => (200, "text/markdown; charset=utf-8", view.markdown.into_bytes()),
+            Ok(view) => (200, "text/markdown; charset=utf-8", view.document().into_bytes()),
             Err(reason) => (404, "text/plain", reason.message.into_bytes()),
         };
     }

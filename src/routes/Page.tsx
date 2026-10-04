@@ -390,7 +390,7 @@ export default function Page() {
                     icon={page.icon}
                     since={page.since}
                     summary={page.summary}
-                    markdown={page.markdown}
+                    markdown={page.portable}
                     versions={page.nodeVersions}
                     tree={page.tree}
                   />
