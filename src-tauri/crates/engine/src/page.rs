@@ -83,7 +83,7 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
     assets::rewrite(&path, &mut parsed.blocks, &links);
     let prop = |name: &str| wiki::model::prop(&parsed.props, name).map(str::to_string);
     let markdown = wiki::markdown::blocks(&parsed.blocks, 1);
-    let portable = wiki::markdown::portable(&markdown);
+    let portable = wiki::markdown::portable(&parsed.blocks);
     Ok(PageView {
         name: name(&path, &parsed),
         path,

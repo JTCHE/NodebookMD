@@ -58,10 +58,13 @@ pub fn blocks(blocks: &[Block], depth: u8) -> String {
 /// A run of `:col:` blocks sits side by side: two pictures to compare, or two
 /// lists of links. Each column stays Markdown — the blank line after an HTML
 /// tag hands the text back to the Markdown parser — so a heading or a list in
-/// a column still reads as one. See `.columns` in `globals.css`.
+/// a column still reads as one. See `.columns` in `globals.css`. Outside the
+/// app the columns stack.
 fn flush_columns(run: &mut Vec<&Block>, out: &mut String, depth: u8) {
-    if run.len() == 1 {
-        out.push_str(&one(run[0], depth));
+    if run.len() == 1 || is_portable() {
+        for block in run.iter() {
+            out.push_str(&one(block, depth));
+        }
     } else if !run.is_empty() {
         out.push_str("<div class=\"columns\">\n\n");
         for block in run.iter() {
@@ -243,6 +246,10 @@ fn image_group(text: &[Inline]) -> Option<String> {
     if sources.len() < 2 {
         return None;
     }
+    if is_portable() {
+        let embeds: Vec<String> = sources.iter().map(|src| format!("![]({src})")).collect();
+        return Some(format!("{}\n\n", embeds.join("\n\n")));
+    }
     let figures: String = sources
         .iter()
         .map(|src| format!("<figure><img src=\"{}\" alt=\"\" /></figure>", attribute(src)))
@@ -252,8 +259,13 @@ fn image_group(text: &[Inline]) -> Option<String> {
     ))
 }
 
-/// One pseudo-HTML element, on one line, with its content inside it.
+/// One pseudo-HTML element, on one line, with its content inside it. Outside
+/// the app a `<div>` is only its content: SideFX wraps notes in one, such as
+/// `<div id="parmoverride">` on the hair nodes.
 fn html(tag: &str, attributes: &str, children: &[Block]) -> String {
+    if is_portable() && tag == "div" {
+        return cell_html(children, true);
+    }
     let head = match attributes.is_empty() {
         true => tag.to_string(),
         false => format!("{tag} {attributes}"),
@@ -269,12 +281,29 @@ fn html(tag: &str, attributes: &str, children: &[Block]) -> String {
 /// One row can document two parameters (`#id: goal_x, goal_y`), and F1 on
 /// either lands on it. Only the first line: a body indented with tabs under
 /// `#id:` runs on into the value (`sop/volumewrangle`).
+///
+/// Outside the app no reader lands on an anchor, so there is none. A
+/// parameter keeps its name another way; see `parameters()`.
 fn anchor(id: &Option<String>) -> String {
+    if is_portable() {
+        return String::new();
+    }
+    ids(id).map(|id| format!("<span id=\"{}\"></span>", attribute(id))).collect()
+}
+
+/// A parameter's internal name after its label, outside the app, where no
+/// anchor carries it: ` (`npts`)`. A script sets the parameter by this name.
+fn internal_names(id: &Option<String>) -> String {
+    let names: Vec<String> = ids(id).map(|id| format!("`{id}`")).collect();
+    match is_portable() && !names.is_empty() {
+        true => format!(" ({})", names.join(", ")),
+        false => String::new(),
+    }
+}
+
+fn ids(id: &Option<String>) -> impl Iterator<Item = &str> {
     let line = id.as_deref().and_then(|id| id.lines().next()).unwrap_or_default();
-    line.split([',', ' ', '\t'])
-        .filter(|id| !id.is_empty())
-        .map(|id| format!("<span id=\"{}\"></span>", attribute(id)))
-        .collect()
+    line.split([',', ' ', '\t']).filter(|id| !id.is_empty())
 }
 
 /// A value going into a double-quoted HTML attribute.
@@ -294,22 +323,47 @@ fn icon(name: &str, size: IconSize) -> String {
     format!("<img data-icon=\"{}\" data-size=\"{size}\" alt=\"\">", attribute(name))
 }
 
+/// An icon in running text. Outside the app it has no form, and the space
+/// before it goes too: "click [Icon] Handles" reads "click Handles".
+fn push_icon(out: &mut String, name: &str, size: IconSize) {
+    if !is_portable() {
+        out.push_str(&icon(name, size));
+    } else if out.ends_with(' ') {
+        out.pop();
+    }
+}
+
 fn item(name: &str, label: &str, props: &Props, children: &[Block], depth: u8) -> String {
     let body = blocks(children, depth + 1);
     match name {
         // Markdown has no video, and the app renders the raw tag with the same
         // component that draws a picture. `loop` and `autoplay` are the page's
         // own, so a demonstration that repeats keeps repeating here. The
-        // `"""caption"""` under it goes in `title`, which `portable` keeps.
+        // `"""caption"""` under it is the player's label.
+        //
+        // Outside the app a clip is an embed with the caption as its alt
+        // text: Obsidian plays `![](….webm)` in place, and any other reader
+        // sees the file.
         "video" => {
-            let src = attribute(prop(props, "src").unwrap_or_default());
-            let caption = children.iter().find_map(|block| match block {
-                Block::Summary { text } | Block::Paragraph { text } => Some(crate::inline::plain(text)),
-                _ => None,
-            });
-            let title = match caption.as_deref().map(str::trim) {
-                Some(caption) if !caption.is_empty() => format!(" title=\"{}\"", attribute(caption)),
-                _ => String::new(),
+            let src = prop(props, "src").unwrap_or_default();
+            let caption = children
+                .iter()
+                .find_map(|block| match block {
+                    Block::Summary { text } | Block::Paragraph { text } => Some(crate::inline::plain(text)),
+                    _ => None,
+                })
+                .unwrap_or_default();
+            let caption = caption.trim();
+            if is_portable() {
+                return match src.is_empty() {
+                    true => String::new(),
+                    false => format!("![{}]({src})\n\n", caption.replace(['[', ']'], "")),
+                };
+            }
+            let src = attribute(src);
+            let title = match caption.is_empty() {
+                true => String::new(),
+                false => format!(" title=\"{}\"", attribute(caption)),
             };
             let flag = |name: &str| match prop(props, name) == Some("true") {
                 true => format!(" {name}"),
@@ -329,8 +383,16 @@ fn item(name: &str, label: &str, props: &Props, children: &[Block], depth: u8) -
             )
         }
         // `:vimeo: Set keyframe` with `#id: 116173730`. The front-end draws a
-        // box that loads the player only when the reader asks for it.
+        // box that loads the player only when the reader asks for it. Outside
+        // the app it is a link to the video.
         "vimeo" => match prop(props, "id") {
+            Some(id) if is_portable() => {
+                let title = match label.trim() {
+                    "" => "Video",
+                    label => label,
+                };
+                format!("[{title}](https://vimeo.com/{})\n\n", id.trim())
+            }
             Some(id) => format!(
                 "<div class=\"not-prose vimeo\" data-id=\"{}\" title=\"{}\"></div>\n\n",
                 attribute(id.trim()),
@@ -340,6 +402,7 @@ fn item(name: &str, label: &str, props: &Props, children: &[Block], depth: u8) -
         },
         // `:load_example:` names an example asset, by `#path` or by
         // `#examplefile`. The front-end draws its Launch button in place.
+        // Outside the app the file is named, for a reader who opens it.
         "load_example" => {
             let file = prop(props, "path").or_else(|| prop(props, "examplefile")).unwrap_or_default();
             let file = file.trim().trim_start_matches('/');
@@ -350,6 +413,9 @@ fn item(name: &str, label: &str, props: &Props, children: &[Block], depth: u8) -
 
 "),
             };
+            if is_portable() {
+                return format!("{head}Example file: `{file}`\n\n{body}");
+            }
             format!(
                 "{head}<div class=\"not-prose load-example\" data-path=\"{}\"></div>
 
@@ -432,9 +498,10 @@ fn parameters(children: &[Block], depth: u8) -> String {
                 continue;
             };
             out.push_str(&format!(
-                "| {}{} | {} |\n",
+                "| {}{}{} | {} |\n",
                 anchor(id),
                 cell_text(&inlines(term)),
+                internal_names(id),
                 cell_text(&cell_html(children, false))
             ));
         }
@@ -549,7 +616,12 @@ fn cell_html(blocks: &[Block], raw: bool) -> String {
                 tag,
                 attributes,
                 children,
-            } => out.push_str(&html(tag, attributes, children)),
+            } => {
+                if is_portable() && tag == "div" {
+                    gap(&mut out);
+                }
+                out.push_str(&html(tag, attributes, children))
+            }
             // A clip under a parameter: `Flow:` on the Mountain SOP shows the
             // noise moving. It carries its source and its caption.
             Block::Item { name, props, children, .. } if name == "video" || name == "vimeo" => {
@@ -602,7 +674,7 @@ fn raw_inlines(text: &[Inline]) -> String {
             Inline::Var { name } => out.push_str(&format!("<code>&lt;{}&gt;</code>", escape(name))),
             Inline::Key { key } => out.push_str(&format!("<code>{}</code>", escape(key))),
             Inline::Glyph { .. } | Inline::Fold { .. } => {}
-            Inline::Icon { src, size } => out.push_str(&icon(src, *size)),
+            Inline::Icon { src, size } => push_icon(&mut out, src, *size),
             Inline::Image { src } => {
                 out.push_str(&format!("<img src=\"{}\" alt=\"\">", attribute(src)))
             }
@@ -802,7 +874,7 @@ pub fn inlines(inlines: &[Inline]) -> String {
             Inline::Key { key } => out.push_str(&format!("`{key}`")),
             Inline::Glyph { .. } | Inline::Fold { .. } => {}
             Inline::Image { src } => out.push_str(&format!("![]({src})")),
-            Inline::Icon { src, size } => out.push_str(&icon(src, *size)),
+            Inline::Icon { src, size } => push_icon(&mut out, src, *size),
             Inline::Link { text, target } => {
                 out.push_str(&format!("[{}]({})", self::inlines(text), url(target)))
             }
@@ -850,91 +922,30 @@ pub fn url(target: &LinkTarget) -> String {
     }
 }
 
-/// The page for a reader outside the app: the copy button, a saved file, an
-/// Obsidian note, the `.md` address. The HTML this writer leaves for the app's
-/// layout becomes plain Markdown. The column wrappers go and their content
-/// stacks. Each `<img>` and `<video>` becomes an embed, a clip with its
-/// caption as the alt text: Obsidian plays `![](….webm)` in place, and any
-/// other reader sees the file. A Vimeo box becomes a link.
-pub fn portable(markdown: &str) -> String {
-    let mut out = String::new();
-    let mut dropped = false;
-    for line in markdown.lines() {
-        let body = line.trim();
-        let indent = &line[..line.len() - line.trim_start().len()];
-        // A wrapper takes the blank line after it along, so no gap doubles.
-        if std::mem::take(&mut dropped) && body.is_empty() {
-            continue;
+thread_local! {
+    /// Set while `portable` writes. Each shape the app draws from raw HTML
+    /// checks it and writes its plain Markdown form instead.
+    static PORTABLE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+fn is_portable() -> bool {
+    PORTABLE.get()
+}
+
+/// The body for a reader outside the app: the copy button, a saved file, an
+/// Obsidian note, the `.md` address. Plain Markdown, with HTML only where
+/// Markdown has no form: a `<br>` in a table cell, a table with blocks in its
+/// cells.
+pub fn portable(tree: &[Block]) -> String {
+    struct Reset;
+    impl Drop for Reset {
+        fn drop(&mut self) {
+            PORTABLE.set(false);
         }
-        // The Launch box is a control of the app, with nothing to read.
-        if matches!(body, "<div class=\"columns\">" | "<div class=\"column\">" | "</div>")
-            || body.starts_with("<div class=\"not-prose load-example\"")
-        {
-            dropped = true;
-            continue;
-        }
-        if body.starts_with("<div class=\"not-prose vimeo\"") {
-            if let Some(id) = attribute_value(body, "data-id") {
-                let title = attribute_value(body, "title").filter(|t| !t.is_empty()).unwrap_or_else(|| "Video".into());
-                out.push_str(&format!("{indent}[{title}](https://vimeo.com/{id})\n"));
-            }
-            continue;
-        }
-        if body.starts_with("<div class=\"not-prose image-group\">") {
-            let embeds: Vec<String> = sources(body).iter().map(|src| format!("{indent}![]({src})")).collect();
-            out.push_str(&embeds.join("\n\n"));
-            out.push('\n');
-            continue;
-        }
-        out.push_str(&inline_media(line));
-        out.push('\n');
     }
-    out
-}
-
-/// Every `<img src="…">`, `<video src="…"></video>` and picture row in a
-/// line, a table cell's among them, as `![](…)`.
-fn inline_media(line: &str) -> String {
-    let mut out = String::new();
-    let mut rest = line;
-    loop {
-        let found = [("<img src=\"", ">"), ("<video src=\"", "</video>"), ("<div class=\"not-prose image-group\">", "</div>")]
-            .into_iter()
-            .filter_map(|(open, close)| Some((rest.find(open)?, close)))
-            .min_by_key(|(at, _)| *at);
-        let Some((start, close)) = found else { break };
-        let Some(len) = rest[start..].find(close).map(|at| at + close.len()) else { break };
-        let tag = &rest[start..start + len];
-        out.push_str(&rest[..start]);
-        let alt = attribute_value(tag, "title").unwrap_or_default().replace(']', r"\]");
-        let embeds: Vec<String> = sources(tag).iter().map(|src| format!("![{alt}]({src})")).collect();
-        match embeds.is_empty() {
-            true => out.push_str(tag),
-            false => out.push_str(&embeds.join(" ")),
-        }
-        rest = &rest[start + len..];
-    }
-    out.push_str(rest);
-    out
-}
-
-/// Every `src="…"` value in `html`, in order.
-fn sources(html: &str) -> Vec<String> {
-    html.match_indices("src=\"")
-        .filter_map(|(at, _)| html[at + 5..].split('"').next().map(unescape))
-        .collect()
-}
-
-/// The value of `name="…"` in one tag, unescaped.
-fn attribute_value(tag: &str, name: &str) -> Option<String> {
-    let key = format!(" {name}=\"");
-    let start = tag.find(&key)? + key.len();
-    tag[start..].split('"').next().map(unescape)
-}
-
-/// Undoes `attribute`.
-fn unescape(text: &str) -> String {
-    text.replace("&quot;", "\"").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+    PORTABLE.set(true);
+    let _reset = Reset;
+    blocks(tree, 1)
 }
 
 #[cfg(test)]
@@ -942,22 +953,22 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_portable_page_carries_its_media_as_embeds() {
-        let page = "- Shattering:\n\n  <div class=\"columns\">\n\n  <div class=\"column\">\n\n  ![](attachments/a.jpg)\n\n  </div>\n\n  </div>\n\n\
-            <div class=\"not-prose image-group\"><figure><img src=\"attachments/b.jpg\" alt=\"\" /></figure><figure><img src=\"attachments/c.jpg\" alt=\"\" /></figure></div>\n\n\
-            <video src=\"attachments/d.mp4\" title=\"Ragdoll &amp; forces\" controls loop></video>\n\n\
-            | y | a<br><video src=\"attachments/f.webm\" controls></video> |\n\n\
-            | x | <img src=\"attachments/e.jpg\" alt=\"\"> |\n\n\
-            | z | <div class=\"not-prose image-group\"><figure><img src=\"attachments/g.jpg\" alt=\"\" /></figure><figure><img src=\"attachments/h.jpg\" alt=\"\" /></figure></div> |\n\n\
-            <div class=\"not-prose load-example\" data-path=\"examples/a\"></div>\n\n\
-            <div class=\"not-prose vimeo\" data-id=\"204607962\" title=\"Boolean &amp; shatter\"></div>\n";
-        let note = portable(page);
-        assert!(!note.contains("<div") && !note.contains("<figure") &&!note.contains("</div>") && !note.contains("<img") && !note.contains("<video"));
-        assert!(!note.contains("\n\n\n"), "{note}");
-        for embed in ["  ![](attachments/a.jpg)", "![](attachments/b.jpg)\n\n![](attachments/c.jpg)", "![Ragdoll & forces](attachments/d.mp4)", "| x | ![](attachments/e.jpg) |", "| y | a<br>![](attachments/f.webm) |", "| z | ![](attachments/g.jpg) ![](attachments/h.jpg) |"] {
-            assert!(note.contains(embed), "{embed} in {note}");
+    fn a_portable_page_has_no_html_of_the_app() {
+        let source = "== Look ==\n\n:col:\n    [Image:/a.jpg]\n\n:col:\n    [Image:/b.jpg]\n    [Image:/c.jpg]\n\n\
+            :video:\n    #src: /videos/d.webm\n    \"\"\"Ragdoll forces\"\"\"\n\n\
+            :vimeo: Boolean\n    #id: 204607962\n\n\
+            :load_example: Crowd\n    #path: /examples/nodes/sop/crowd/Crowd.hda\n\n\
+            Click [Icon:TOOLS/handles] Handles.\n\n\
+            @parameters\n\nForce total count:\n    #id: npts\n\n    Exactly this many points.\n";
+        let page = crate::parse(source);
+        let app = blocks(&page.blocks, 1);
+        assert!(app.contains("<div class=\"columns\">") && app.contains("<video"), "{app}");
+        let out = portable(&page.blocks);
+        assert!(!out.contains('<'), "{out}");
+        for shape in ["![](/a.jpg)", "![](/b.jpg)\n\n![](/c.jpg)", "![Ragdoll forces](/videos/d.webm)", "[Boolean](https://vimeo.com/204607962)", "Example file: `examples/nodes/sop/crowd/Crowd.hda`", "Click Handles.", "| Force total count (`npts`) |"] {
+            assert!(out.contains(shape), "{shape} in {out}");
         }
-        assert!(note.contains("[Boolean & shatter](https://vimeo.com/204607962)"));
+        assert_eq!(blocks(&page.blocks, 1), app, "the app's form is back once portable returns");
     }
 
     #[test]
