@@ -101,7 +101,7 @@ export default function Home() {
           </a>
         </p>
         {/* A phone has room for the gist only. */}
-        <p className="sm:hidden">Formerly HoudiniMD. A mockup with sample pages. Not affiliated with SideFX.</p>
+        <p className="sm:hidden">Formerly HoudiniMD. The pages above are samples written for this site. Not affiliated with SideFX.</p>
       </footer>
     </main>
   );
