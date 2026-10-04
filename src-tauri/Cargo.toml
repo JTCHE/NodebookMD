@@ -7,7 +7,7 @@ version = "0.2.2"
 description = "Version-exact Houdini documentation, offline and local."
 authors = ["JTCHE"]
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.90"
 
 [lib]
 # The desktop binary and any future test harness both link this.
@@ -53,6 +53,6 @@ winreg = "0.56.0"
 # The versions Tauri's own webview already links, for the WebView2 calls Tauri
 # does not make: the memory level of a hidden window (`tray.rs`), and the item
 # in the right-click menu (`context_menu.rs`).
-webview2-com = "0.38"
-windows = { version = "0.61", features = ["Win32_System_Com"] }
-windows-core = "0.61"
+webview2-com = "0.39"
+windows = { version = "0.62", features = ["Win32_System_Com"] }
+windows-core = "0.62"

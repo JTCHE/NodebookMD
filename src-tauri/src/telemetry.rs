@@ -62,14 +62,6 @@ pub fn catch_panics(data: PathBuf) {
         let text = format!("{} {info}", env!("CARGO_PKG_VERSION"));
         crate::say!(Error, "crash", "{info}");
         let _ = std::fs::write(data.join(CRASH), &text);
-        // tao 0.35 panics here when Windows takes the event loop down under
-        // it: session end, or the Restart Manager during an update. Fixed in
-        // tao 0.37, which stable Tauri does not use yet. The window is gone
-        // either way, so end the process instead of aborting in front of the
-        // reader. The report above still goes out on the next launch.
-        if text.contains("cannot move state from Destroyed") {
-            std::process::exit(0);
-        }
         default(info);
     }));
 }
