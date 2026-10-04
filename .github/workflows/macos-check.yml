@@ -26,6 +26,9 @@ jobs:
 
       - run: bun install
 
+      # `generate_context!` reads `dist/` at compile time, tests included.
+      - run: bun run build
+
       - name: test
         working-directory: src-tauri
         run: cargo test --workspace
