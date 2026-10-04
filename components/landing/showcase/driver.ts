@@ -6,11 +6,11 @@
  * own document: it finds the real field and the real link, and sends the
  * events a hand would send. Nothing in the app knows it is a demo.
  *
- * Every wait takes the scene's signal, so a reader who takes over stops the
- * scene at once, and the gate, so a pause holds it where it is.
+ * Every wait takes the scene's signal, so a tab change stops the scene at
+ * once, and the gate, so a pause or the reader's own input holds it where it is.
  */
 
-/** A scene stopped because the reader took over or left the tab. */
+/** A scene stopped because its tab changed, or a step found nothing. */
 export class Stopped extends Error {}
 
 export interface Pointer {

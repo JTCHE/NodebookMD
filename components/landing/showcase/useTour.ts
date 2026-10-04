@@ -21,9 +21,11 @@ const quiet = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
  * - A pointer over the frame changes nothing: the tour plays on. The play
  *   button pauses it: that stops the tab's clock, the scene and the cursor,
  *   and hides the cursor.
- * - The reader's own input in the app stops the scene: from then on the app
- *   is theirs until their pointer leaves the frame, or they press play: then
- *   the scene starts again from its start.
+ * - The reader's own input in the app holds the scene where it is, as the
+ *   button does. When their pointer leaves the frame, or they press play, the
+ *   app goes back to the page the scene was on, and the tour plays on.
+ * - Every resume goes back a second: a demo on the clock plays that second
+ *   again, and a scene waits it out while its gauge catches up.
  * - A tab the reader picks plays from its start.
  */
 export function useTour({
@@ -43,10 +45,13 @@ export function useTour({
   pausedRef.current = paused;
   /** Bumped to run the tab's scene again from its start. */
   const [run, setRun] = useState(0);
-  /** The reader took the scene over, not only paused it: play starts it again. */
-  const stopped = useRef(false);
+  /** The reader took the app over: the page to go back to, and whether their
+      pointer leaving resumes the tour. It does not after a pause from the
+      button. */
+  const reader = useRef<{ path: string; leave: boolean } | null>(null);
+  /** Until when a resumed scene waits, while its gauge plays the second again. */
+  const lead = useRef(0);
   const release = useRef<(() => void) | null>(null);
-  const scene = useRef<AbortController | null>(null);
   const [key, setKey] = useState<string | null>(null);
   const [opened, setOpened] = useState<OpenedPage | null>(null);
   /** The active tab's gauge, which the clock draws into. */
@@ -88,41 +93,50 @@ export function useTour({
   const gate = useCallback(async () => {
     // Looks again after every wake: a wake is a hint, not a release. A hidden
     // page has no event to wake it, so the timer wakes it.
-    while (pausedRef.current || document.hidden) {
+    for (let left; (left = lead.current - performance.now()) > 0 || pausedRef.current || document.hidden; ) {
       await new Promise<void>((done) => {
         release.current = done;
-        setTimeout(done, 250);
+        setTimeout(done, Math.min(250, Math.max(left, 16)));
       });
     }
   }, []);
 
   const pick = useCallback((index: number) => {
-    stopped.current = false;
+    reader.current = null;
+    lead.current = 0;
     setPaused(false);
     setActive(index);
     setRun((n) => n + 1);
   }, []);
 
+  const resume = useCallback(() => {
+    const path = reader.current?.path;
+    reader.current = null;
+    // ponytail: only the page comes back, not a search or a picture the reader
+    // opened on it; a scene step that then finds nothing ends the tab.
+    if (path) go(path);
+    played.current.ms = Math.max(0, played.current.ms - 1000);
+    lead.current = performance.now() + 1000;
+    pausedRef.current = false;
+    setPaused(false);
+    free();
+  }, [go, free]);
+
   const toggle = useCallback(() => {
     if (!pausedRef.current) return setPaused(true);
-    setPaused(false);
-    if (stopped.current) {
-      stopped.current = false;
-      setRun((n) => n + 1);
-    } else free();
-  }, [free]);
+    resume();
+  }, [resume]);
 
-  /** The reader's pointer left the frame: a scene they took over plays again.
-      A pause from the button stays. */
-  const leave = useCallback(() => {
-    if (stopped.current) toggle();
-  }, [toggle]);
-
-  /** The reader's hand on a tab with no scene. */
-  const stop = useCallback(() => {
-    stopped.current = true;
+  /** The reader's own input in the app, or on a demo. */
+  const take = useCallback(() => {
+    const path = frame.current?.contentWindow?.location.pathname ?? "";
+    reader.current ??= { path, leave: !pausedRef.current };
     setPaused(true);
-  }, []);
+  }, [frame]);
+
+  const leave = useCallback(() => {
+    if (reader.current?.leave) resume();
+  }, [resume]);
 
   useEffect(() => hand.hold(paused), [paused, hand]);
 
@@ -146,23 +160,17 @@ export function useTour({
     if (!ready) return;
     const doc = frame.current?.contentDocument;
     if (!doc) return;
-    const takeOver = (event: Event) => {
-      if (!event.isTrusted) return;
-      scene.current?.abort();
-      stopped.current = true;
-      setPaused(true);
-    };
+    const takeOver = (event: Event) => event.isTrusted && take();
     const types = ["pointerdown", "keydown", "wheel"];
     for (const type of types) doc.addEventListener(type, takeOver, true);
     return () => {
       for (const type of types) doc.removeEventListener(type, takeOver, true);
     };
-  }, [ready, frame]);
+  }, [ready, frame, take]);
 
   // The tab's scene, its clock, and the move to the next tab.
   useEffect(() => {
     const controller = new AbortController();
-    scene.current = controller;
     setKey(null);
     setOpened(null);
 
@@ -198,7 +206,7 @@ export function useTour({
     // A reader, or a scene cut short, may have left a picture or the search
     // open: every tab closes it first.
     const closed = driver?.key("Escape") ?? Promise.resolve();
-    if (play && driver && !stopped.current && !quiet()) {
+    if (play && driver && !quiet()) {
       closed
         .then(() => play(driver))
         .catch((error) => {
@@ -229,5 +237,5 @@ export function useTour({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, ready, run]);
 
-  return { active, tab, paused, run, key, opened, progress, clock, go, pick, toggle, stop, leave };
+  return { active, tab, paused, run, key, opened, progress, clock, go, pick, toggle, take, leave };
 }
