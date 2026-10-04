@@ -22,7 +22,8 @@ const quiet = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
  *   button pauses it: that stops the tab's clock, the scene and the cursor,
  *   and hides the cursor.
  * - The reader's own input in the app stops the scene: from then on the app
- *   is theirs, and play starts the scene again from its start.
+ *   is theirs until their pointer leaves the frame, or they press play: then
+ *   the scene starts again from its start.
  * - A tab the reader picks plays from its start.
  */
 export function useTour({
@@ -110,6 +111,12 @@ export function useTour({
       setRun((n) => n + 1);
     } else free();
   }, [free]);
+
+  /** The reader's pointer left the frame: a scene they took over plays again.
+      A pause from the button stays. */
+  const leave = useCallback(() => {
+    if (stopped.current) toggle();
+  }, [toggle]);
 
   /** The reader's hand on a tab with no scene. */
   const stop = useCallback(() => {
@@ -222,5 +229,5 @@ export function useTour({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, ready, run]);
 
-  return { active, tab, paused, run, key, opened, progress, clock, go, pick, toggle, stop };
+  return { active, tab, paused, run, key, opened, progress, clock, go, pick, toggle, stop, leave };
 }

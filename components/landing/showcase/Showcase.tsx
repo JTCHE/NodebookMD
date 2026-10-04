@@ -90,6 +90,8 @@ export function Showcase() {
               className="rim absolute inset-0 overflow-hidden bg-background"
               style={{ borderRadius: RADIUS, boxShadow: shadow(base.w * scale) }}
               onPointerDown={() => !tab.scene && tour.stop()}
+              // A touch leaves at its lift, so only a pointer that hovers counts.
+              onPointerLeave={(event) => event.pointerType !== "touch" && tour.leave()}
             >
               <div
                 className="absolute top-0 left-0"
