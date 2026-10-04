@@ -1,0 +1,51 @@
+# A macOS box without the Mac. Runs the Rust tests on Apple Silicon, starts a
+# debug build of the app, and keeps a screenshot and the app's logs as the
+# run's artifact. No Houdini is installed here, so the app shows its no-install
+# state; F1 into a real Houdini still needs a real Mac.
+name: macos-check
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["src-tauri/**", "src/**", ".github/workflows/macos-check.yml"]
+
+jobs:
+  check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: bun install
+
+      - name: test
+        working-directory: src-tauri
+        run: cargo test --workspace
+
+      # `--debug` still bundles the front end into the binary, so it runs
+      # without a dev server.
+      - name: build
+        run: bun run tauri build --debug --no-bundle
+
+      - name: start the app and take a screenshot
+        run: |
+          mkdir out
+          ./src-tauri/target/debug/houdinimd > out/stdout.log 2>&1 &
+          sleep 30
+          screencapture -x out/screen.png
+          kill $! || true
+          cp -R ~/Library/Application\ Support/*/logs out/app-logs 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-check
+          path: out/
