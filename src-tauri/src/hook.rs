@@ -107,7 +107,15 @@ pub fn apply(data: &Path, port: u16, wanted: &[String]) -> Result<Vec<String>, S
     let mut changed = Vec::new();
 
     // `wanted` names release series, and a series is its own series.
-    for release in releases(port, wanted) {
+    let found = releases(port, wanted);
+    // A series with no preferences folder is skipped by `releases`. Without
+    // this, onboarding said nothing and F1 stayed with Houdini.
+    if let Some(missing) = wanted.iter().find(|want| !found.iter().any(|release| &release.release == *want)) {
+        return Err(format!(
+            "Houdini {missing} has no preferences folder yet. Start it once, close it, then turn on F1 in Settings."
+        ));
+    }
+    for release in found {
         if running(&release.release) {
             return Err(format!(
                 "Houdini {} is open. It writes houdini.pref when it exits, which would undo this. Close it first.",
