@@ -2,8 +2,8 @@
  * SideFX asked for its documentation to come off this site. Every address that
  * served it now answers 410, and none of them carries a SideFX sentence.
  *
- * A doc page keeps its prerendered title and breadcrumbs (app/docs), and the
- * Worker gives that answer its 410 here. Every raw shape — `.md`, the API, the
+ * A doc page keeps its title and breadcrumbs (lib/notice.ts), and the Worker
+ * gives that answer its 410 here. Every raw shape — `.md`, the API, the
  * icons — is answered here in plain text, before Next starts.
  */
 import { wantsMarkdown } from "./wants-markdown";

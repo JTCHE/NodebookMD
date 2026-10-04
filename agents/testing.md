@@ -28,11 +28,11 @@ Use this order:
 3. Only push to `web-prod` once both pass. CI deploys on that push — see
    [Deployment](deployment.md).
 
-A build reads `content/index.json` from R2 once, for the doc addresses and
-titles. The local preview starts with an empty cache bucket, so a prerendered
-page it has no entry for falls back to the untitled notice. To test one page
-as production serves it, put its `.open-next/cache` entry into the local bucket
-in the format `scripts/cache-sync.ts` writes.
+Every doc address gets one notice, filled in by the Worker from the title map
+(`lib/notice.ts`). The local preview starts with an empty cache bucket, so it
+has neither the notice nor the map. To test a doc page as production serves
+it, put the `/docs-notice` entry from `.open-next/cache` and the title map into
+the local bucket, in the format `scripts/cache-sync.ts` writes.
 
 Send a real browser user agent, `Accept` and `Accept-Language` headers, or the
 site treats you as an agent and answers in plain text:

@@ -3,6 +3,7 @@ import type { TelemetryEnv } from "./telemetry/types";
 import { cacheKey, fromCache, keep } from "./lib/edge-cache";
 import { storedAnswer, type Bucket } from "./lib/stored-answer";
 import { isProbe } from "./lib/is-probe";
+import { NOTICE_PATH } from "./lib/notice";
 import { goneStatus, takedownAnswer } from "./lib/takedown";
 
 /**
@@ -73,7 +74,8 @@ const worker = {
       }
     }
 
-    if (isProbe(url.pathname)) return new Response("Not found", { status: 404 });
+    // The notice template holds placeholders, not a page. See lib/notice.ts.
+    if (isProbe(url.pathname) || url.pathname === NOTICE_PATH) return new Response("Not found", { status: 404 });
 
     // The edge cache sits here, in front of the Next server, because the cost
     // it saves is Next's own bootstrap. See lib/edge-cache.ts. It holds the

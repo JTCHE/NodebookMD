@@ -12,9 +12,13 @@ Four layers.
    normalizes a doc URL before Next sees it: pasted SideFX links, `.html` and
    trailing slashes, bare Houdini paths.
 2. **Pages** — `app/`. The landing page, the download routes, the privacy
-   page, and the doc notice (`app/docs/`), prerendered once per doc address.
+   page, and the doc notice (`app/docs-notice/`), prerendered once with
+   placeholders. The worker fills in each address's title and breadcrumbs
+   (`lib/notice.ts`).
 3. **Domain** — `lib/`. One file or directory per concern. `doc-pages.ts`
-   reads the doc addresses and titles from the index in R2, at build time only.
+   reads the doc addresses and titles from the index in R2, at deploy time
+   only; `scripts/cache-sync.ts` writes them to the cache bucket as the title
+   map.
 4. **Offline** — `scripts/`. No request, no worker. Cache sync, screenshots,
    and the environment guard.
 

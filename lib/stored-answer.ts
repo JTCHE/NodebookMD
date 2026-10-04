@@ -8,8 +8,8 @@
  * cost 326 CPU-ms on average, against 1-3 for an answer written in `worker.ts`.
  *
  * Answered here: a page, its RSC payload and its segment prefetches, from the
- * ISR entry; `/robots.txt` and `/sitemap.xml`; `/download`; and a doc address
- * the build did not prerender, which gets the `/docs` notice.
+ * ISR entry; `/robots.txt` and `/sitemap.xml`; `/download`; and every doc
+ * address, which gets the one notice with its title filled in (lib/notice.ts).
  *
  * WHY THE EDGE CACHE DOES NOT ALREADY COVER THIS.
  *
@@ -25,6 +25,7 @@
 import buildId from "./build-id.json";
 import { assetUrl, MANIFEST, platformForPath, type Platform } from "./download";
 import { REPO_URL } from "./brand";
+import { fillHtml, fillPayload, NOTICE_PATH, noticeValues } from "./notice";
 
 /** `segmentData` stores this one as null when it equals `rsc`. See lib/cache/compressed-r2-cache.ts. */
 const FULL_SEGMENT_KEY = "/_full";
@@ -74,7 +75,6 @@ async function sha256Hex(text: string): Promise<string> {
  */
 const FIXED_PAGES: ReadonlyMap<string, string> = new Map([
   ["/", "/index"],
-  ["/docs", "/docs"],
   ["/privacy", "/privacy"],
 ]);
 
@@ -134,11 +134,10 @@ function read(request: Request, url: URL): Ask | null {
     return { kind: "page", path: fixed };
   }
 
-  if (!url.pathname.startsWith("/docs/")) return null;
-  const slug = url.pathname.slice("/docs/".length);
+  if (url.pathname !== "/docs" && !url.pathname.startsWith("/docs/")) return null;
   // A trailing slash or a `.html` is a redirect, and middleware writes it.
-  if (slug.endsWith("/")) return { kind: "moved", to: url.pathname.replace(/\/+$/, "") + url.search };
-  if (slug === "" || slug.endsWith(".html")) return null;
+  if (url.pathname.endsWith("/")) return { kind: "moved", to: url.pathname.replace(/\/+$/, "") + url.search };
+  if (url.pathname.endsWith(".html")) return null;
   if (segment) return { kind: "prefetch", path: url.pathname, segment };
   if (rsc) return { kind: "rsc", path: url.pathname };
   return { kind: "page", path: url.pathname };
@@ -251,12 +250,13 @@ export async function storedAnswer(
   if (ask.kind === "notallowed") {
     return new Response(null, { status: 405, headers: { allow: "GET,HEAD", vary: VARY } });
   }
-  // A doc address the build did not prerender is a page the mirror never
-  // held, or a spelling of one. It gets the notice without a title, and never
-  // starts Next to say so.
-  const doc = ask.path.startsWith("/docs/");
-  const entry = (await entryFor(ask.path, cache)) ?? (doc ? await entryFor("/docs", cache) : null);
+  const doc = ask.path === "/docs" || ask.path.startsWith("/docs/");
+  const [entry, notice] = await Promise.all([
+    entryFor(doc ? NOTICE_PATH : ask.path, cache),
+    doc ? noticeValues(ask.path, cache) : null,
+  ]);
   if (!entry) return null;
+  const payload = (text: string) => (notice ? fillPayload(text, notice) : text);
 
   if (ask.kind === "route") {
     if (typeof entry.body !== "string") return null;
@@ -269,17 +269,18 @@ export async function storedAnswer(
     const stored = entry.segmentData?.[ask.segment];
     if (stored === undefined) return null;
     // Null means the de-duplication dropped it because it equalled `rsc`.
-    const payload = stored === null && ask.segment === FULL_SEGMENT_KEY ? entry.rsc : stored;
-    if (typeof payload !== "string") return null;
-    return new Response(payload, { headers: { ...storedMeta(entry), ...PREFETCH_HEADERS } });
+    const segment = stored === null && ask.segment === FULL_SEGMENT_KEY ? entry.rsc : stored;
+    if (typeof segment !== "string") return null;
+    return new Response(payload(segment), { headers: { ...storedMeta(entry), ...PREFETCH_HEADERS } });
   }
 
   if (ask.kind === "rsc") {
     return typeof entry.rsc === "string"
-      ? new Response(entry.rsc, { headers: { ...storedMeta(entry), ...PREFETCH_HEADERS } })
+      ? new Response(payload(entry.rsc), { headers: { ...storedMeta(entry), ...PREFETCH_HEADERS } })
       : null;
   }
 
   if (typeof entry.html !== "string") return null;
-  return new Response(entry.html, { headers: { ...storedMeta(entry), ...PAGE_HEADERS } });
+  const page = notice ? fillHtml(entry.html, notice) : entry.html;
+  return new Response(page, { headers: { ...storedMeta(entry), ...PAGE_HEADERS } });
 }

@@ -52,6 +52,8 @@ import {
   DeleteObjectsCommand,
 } from "@aws-sdk/client-s3";
 import { parseArgs, c, fmtPct } from "./lib/cli";
+import { docPages } from "../lib/doc-pages";
+import { TITLES_KEY } from "../lib/notice";
 
 const BUCKET = "houdinimd-cache";
 const CACHE_DIR = path.join(process.cwd(), ".open-next", "cache");
@@ -234,6 +236,24 @@ async function syncStaticArchive(client: S3Client) {
   console.log(`  archived ${uploaded}/${toUpload.length}`);
 }
 
+/**
+ * The title map the Worker fills each doc notice from (lib/notice.ts). Outside
+ * the cache prefix, so the prune leaves it alone. One HEAD, and a PUT only
+ * when a title changed.
+ */
+async function syncTitles(client: S3Client) {
+  const body = gzipSync(JSON.stringify(Object.fromEntries(await docPages())), { level: 9 });
+  const etag = await client
+    .send(new HeadObjectCommand({ Bucket: BUCKET, Key: TITLES_KEY }))
+    .then((head) => (head.ETag ?? "").replace(/"/g, ""))
+    .catch(() => "");
+  if (etag === md5(body)) return console.log(c.dim(`  titles      unchanged`));
+  await client.send(
+    new PutObjectCommand({ Bucket: BUCKET, Key: TITLES_KEY, Body: body, ContentEncoding: "gzip", ContentType: "application/json" }),
+  );
+  console.log(`  titles      uploaded ${body.length}B`);
+}
+
 /** Run async tasks with bounded concurrency. */
 async function pool<T>(items: T[], limit: number, fn: (item: T) => Promise<void>) {
   let i = 0;
@@ -322,6 +342,8 @@ async function main() {
   // starts serving the new pages ~10 minutes before `wrangler deploy` publishes
   // the chunks they reference. Until then only this archive can serve them.
   if (upload) await syncStaticArchive(client);
+  // Before the pages that read it, for the same reason.
+  if (upload) await syncTitles(client);
 
   // Uploads
   const UPLOAD_RETRIES = 3;
