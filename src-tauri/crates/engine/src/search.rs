@@ -84,18 +84,34 @@ pub fn find(
     let Some(match_query) = db::match_query(query) else {
         return Ok(Vec::new());
     };
+    // A quoted phrase must be in the section as typed, symbols and all.
+    let phrases = db::quoted(query);
+    let exact: String = (0..phrases.len())
+        .map(|i| {
+            format!(
+                " AND instr(lower(pages_fts.heading || ' ' || pages_fts.title || ' ' || pages_fts.body), ?{})",
+                i + 4
+            )
+        })
+        .collect();
     let mut statement = db
         .prepare(
-            &format!("{SECTION_ROWS} ORDER BY rank LIMIT ?3"),
+            &format!("{SECTION_ROWS}{exact} ORDER BY rank LIMIT ?3"),
         )
         .map_err(|e| e.to_string())?;
 
     let wanted = limit as usize;
+    let mut values: Vec<rusqlite::types::Value> =
+        vec![match_query.into(), build.to_string().into(), ((wanted * SECTIONS_PER_PAGE * 4) as i64).into()];
+    values.extend(phrases.iter().cloned().map(Into::into));
     let rows = statement
-        .query_map(rusqlite::params![match_query, build, (wanted * SECTIONS_PER_PAGE * 4) as u32], row_hit)
+        .query_map(rusqlite::params_from_iter(values), row_hit)
         .map_err(|e| e.to_string())?;
     let mut hits = group(rows, wanted)?;
     drop(statement);
+    if !phrases.is_empty() {
+        return Ok(hits);
+    }
 
     // A page the reader named, then a thing on it: "dop network time scale".
     // Its title rides the first section only, so no single row holds all the
@@ -338,6 +354,24 @@ mod tests {
         let hits = find(&index(), "b", "sim net scale time", 6).unwrap();
         assert_eq!(hits[0].path, "net");
         assert_eq!(hits[0].headings[0].heading, "Timing");
+    }
+
+    #[test]
+    fn a_quoted_phrase_keeps_only_sections_that_hold_it() {
+        let db = index();
+        db.execute("INSERT INTO pages (build, path, title) VALUES ('b', 'sym', 'Sym')", []).unwrap();
+        db.execute(
+            "INSERT INTO pages_fts (build, path, slug, heading, title, body) VALUES ('b', 'sym', '', '', 'Sym', 'Use `$FF` here.')",
+            [],
+        )
+        .unwrap();
+        db.execute(
+            "INSERT INTO pages_fts (build, path, slug, heading, title, body) VALUES ('b', 'net', 'x', 'X', '', 'An ff only.')",
+            [],
+        )
+        .unwrap();
+        let hits = find(&db, "b", "\"$FF\"", 6).unwrap();
+        assert_eq!(hits.iter().map(|h| h.path.as_str()).collect::<Vec<_>>(), ["sym"]);
     }
 
     #[test]

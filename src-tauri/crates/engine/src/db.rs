@@ -134,25 +134,47 @@ CREATE VIRTUAL TABLE IF NOT EXISTS pages_fts USING fts5(
 ///
 /// Every token is quoted, so a bare `*`, `-` or `NEAR` is text and not syntax.
 /// The last token takes a prefix star, because the reader is still typing it.
+/// Words in double quotes are one phrase with no star: see `quoted`.
 pub fn match_query(text: &str) -> Option<String> {
-    let tokens: Vec<String> = text
-        .split(|c: char| !c.is_alphanumeric() && c != '_')
-        .filter(|t| !t.is_empty())
-        .map(|t| format!("\"{t}\""))
-        .collect();
-    let (last, rest) = tokens.split_last()?;
-    let mut query = rest.join(" ");
-    if !query.is_empty() {
-        query.push(' ');
+    let words = |part: &str| -> Vec<String> {
+        part.split(|c: char| !c.is_alphanumeric() && c != '_').filter(|t| !t.is_empty()).map(str::to_string).collect()
+    };
+    let parts: Vec<&str> = text.split('"').collect();
+    let mut terms = Vec::new();
+    let mut star = false;
+    for (i, part) in parts.iter().enumerate() {
+        let tokens = words(part);
+        if tokens.is_empty() {
+            continue;
+        }
+        if i % 2 == 1 {
+            terms.push(format!("\"{}\"", tokens.join(" ")));
+            star = false;
+        } else {
+            terms.extend(tokens.iter().map(|t| format!("\"{t}\"")));
+            star = i == parts.len() - 1;
+        }
     }
-    query.push_str(last);
-    query.push('*');
+    if terms.is_empty() {
+        return None;
+    }
+    let mut query = terms.join(" ");
+    if star {
+        query.push('*');
+    }
     Some(query)
+}
+
+/// The phrases the reader put in double quotes, lower-cased: `"$FF" fetch`
+/// gives `$ff`. The index drops symbols, so a hit must also hold each phrase as
+/// it was typed. An unclosed quote counts: the reader is typing the phrase.
+pub fn quoted(text: &str) -> Vec<String> {
+    text.split('"').skip(1).step_by(2).map(|p| p.trim().to_lowercase()).filter(|p| !p.is_empty()).collect()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::match_query;
+    use super::{match_query, quoted};
 
     #[test]
     fn a_query_quotes_every_token_and_extends_the_last() {
@@ -162,6 +184,13 @@ mod tests {
     #[test]
     fn syntax_the_reader_types_stays_text() {
         assert_eq!(match_query("a OR b*").unwrap(), "\"a\" \"OR\" \"b\"*");
+    }
+
+    #[test]
+    fn a_quoted_phrase_is_exact_and_takes_no_star() {
+        assert_eq!(match_query("\"$FF\"").unwrap(), "\"FF\"");
+        assert_eq!(match_query("\"point cloud\" iso").unwrap(), "\"point cloud\" \"iso\"*");
+        assert_eq!(quoted("\"$FF\" fetch \"Ab C"), ["$ff", "ab c"]);
     }
 
     #[test]

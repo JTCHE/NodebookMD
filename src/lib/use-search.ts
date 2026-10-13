@@ -85,11 +85,15 @@ export function useSearch(query: string): Found {
         live = false;
       };
     }
-    const pick = (all: Hit[]) => match(scope ? scoped(all, scope) : all, wanted);
+    // Words in double quotes must be on the page as typed (`"$FF"`). Only the
+    // body search can say that, so the title pick sits out.
+    const exact = wanted.includes('"');
+    const pick = (all: Hit[]) => (exact ? [] : match(scope ? scoped(all, scope) : all, wanted));
 
-    titles().then((all) => {
-      if (live) setFound({ query: answer, hits: pick(all) });
-    });
+    if (!exact)
+      titles().then((all) => {
+        if (live) setFound({ query: answer, hits: pick(all) });
+      });
 
     if (wanted.length < MIN_BODY_QUERY) return () => { live = false; };
 
@@ -104,7 +108,7 @@ export function useSearch(query: string): Found {
       // which reads "box size" as one name, must not bury it under getbbox_size.
       // Not while the words are the start of a title: "copy to points".
       const typing = wanted.toLowerCase();
-      const lead = all.some((hit) => hit.title.toLowerCase().startsWith(typing))
+      const lead = exact || all.some((hit) => hit.title.toLowerCase().startsWith(typing))
         ? undefined
         : found.find((hit) => names(wanted, hit.title));
       const picked = pick(all).filter((hit) => hit.path !== lead?.path);
