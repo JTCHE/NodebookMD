@@ -13,6 +13,7 @@
  */
 import {
   AppWindow,
+  Plus,
   House,
   ArrowLeft,
   ArrowRight,
@@ -100,6 +101,7 @@ export const Icons = {
   search: Search,
   home: House,
   newWindow: AppWindow,
+  newTab: Plus,
 
   /* Window caption */
   captionMinimize: CaptionMinimize,

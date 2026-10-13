@@ -146,14 +146,16 @@ export default function Page() {
   // names no section has to be put back at the top by hand. The window itself
   // never scrolls under the shell — this column does.
   //
-  // Back and forward are the exception: the reader is returning to a page they
-  // already read, and the top of it is not where they left. The body draws a
+  // Back, forward and a switch of tab are the exception: the reader is
+  // returning to a page they already read, and the top of it is not where
+  // they left — nor the section the address names. The body draws a
   // slice at a time, so the length that offset needs is not there on the first
   // frame — the aim is held while the page grows, and the reader ends it.
   useEffect(() => {
     const box = scroller.current;
-    if (!box || page?.path !== path || location.hash) return;
+    if (!box || page?.path !== path) return;
     const want = navigationType === "POP" ? offsets.get(location.key) : undefined;
+    if (want === undefined && location.hash) return;
     if (!want) {
       box.scrollTo(0, 0);
       return;
@@ -197,6 +199,8 @@ export default function Page() {
     // Only on the page the address names: the old page stays on screen while
     // the next one is read, and it does not have the next page's sections.
     if (!id || page?.path !== path) return;
+    // A return to the entry puts the reader where they left it, above.
+    if (navigationType === "POP" && offsets.has(location.key)) return;
     const box = scroller.current;
     if (!box) return;
     const aimAtIt = () => {
@@ -235,7 +239,7 @@ export default function Page() {
       cancelAnimationFrame(frame);
       stop();
     };
-  }, [location.hash, page, path]);
+  }, [location.hash, location.key, navigationType, page, path]);
 
   // A search excerpt the reader picked: the page opens at those words and
   // marks them. Once per navigation, so the same excerpt picked twice marks

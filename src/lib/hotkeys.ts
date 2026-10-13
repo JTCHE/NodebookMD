@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { inTauri } from "@/lib/backend";
 
 /** True where a key belongs to the field the reader is typing in. */
 export function isTyping(target: EventTarget | null): boolean {
@@ -15,17 +16,25 @@ export const COMMAND_KEY = IS_MAC ? "⌘" : "Ctrl";
 /** How to write Alt: `⌥` on macOS. */
 export const ALT_KEY = IS_MAC ? "⌥" : "Alt";
 
-/** Back and forward. Windows' webview goes back on Alt+← by itself; macOS's
-    has no key for it, so the app takes Safari's. */
+/** Back and forward. macOS's webview has no key for them, so the app takes
+    Safari's. */
 export const BACK_KEYS = IS_MAC ? "⌘+[" : "Alt+←";
 export const FORWARD_KEYS = IS_MAC ? "⌘+]" : "Alt+→";
 
-/** -1 for back, 1 for forward, 0 for any other key. macOS only: elsewhere the
-    webview does it. `code`, so a keyboard that types `[` with Alt still works. */
+/** -1 for back, 1 for forward, 0 for any other key. `code`, so a keyboard
+    that types `[` with Alt still works. Alt+← in the help pane is Qt's: its
+    history is the browser's own, which goes back by itself. The desktop window
+    keeps its trails in the tabs, out of the webview's reach. */
 export function historyStep(event: KeyboardEvent): number {
-  if (!IS_MAC || !event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return 0;
-  if (event.code === "BracketLeft") return -1;
-  if (event.code === "BracketRight") return 1;
+  if (IS_MAC) {
+    if (!event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return 0;
+    if (event.code === "BracketLeft") return -1;
+    if (event.code === "BracketRight") return 1;
+    return 0;
+  }
+  if (!inTauri || !event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return 0;
+  if (event.key === "ArrowLeft") return -1;
+  if (event.key === "ArrowRight") return 1;
   return 0;
 }
 

@@ -149,7 +149,7 @@ export function SearchResultRow({
    * background at each corner instead of a clean full-bleed bar.
    */
   rounded?: boolean;
-  onClick: () => void;
+  onClick: (event: React.MouseEvent) => void;
   onMouseMove: () => void;
 }) {
   const [loaded, setLoaded] = useState(false);

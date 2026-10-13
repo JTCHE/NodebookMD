@@ -24,6 +24,7 @@ import { useSearch } from "@/lib/use-search";
 import { scopedInput } from "@/lib/scope";
 import { ScopeChip } from "@/components/search/ScopeChip";
 import { useSearchReport, used } from "@/lib/telemetry";
+import { openTab, tabFor } from "@/lib/tabs";
 import {
   SEARCH_LIST_CLASS,
   SearchResultList,
@@ -222,7 +223,14 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
   }, []);
 
   const go = useCallback(
-    (target: string, find?: string) => {
+    (target: string, find?: string, tab: { background: boolean } | null = null) => {
+      const entryState = find ? { find } : undefined;
+      // A tab behind leaves the overlay open, for the next pick.
+      if (tab) {
+        if (!tab.background) flushSync(() => setOpen(false));
+        openTab(`/${target}`, { ...tab, entryState });
+        return;
+      }
       const [base, anchor] = target.split("#");
       // An excerpt goes through the router even to the open page: the page
       // finds the words and marks them. See `flashText`.
@@ -234,7 +242,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
         return;
       }
       flushSync(() => setOpen(false));
-      navigate(`/${target}`, { state: find ? { find } : undefined });
+      navigate(`/${target}`, { state: entryState });
     },
     [location.pathname, navigate],
   );
@@ -248,12 +256,12 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
   }, [open, tell]);
 
   const openRow = useCallback(
-    (row: Row, rank: number) => {
+    (row: Row, rank: number, tab: { background: boolean } | null = null) => {
       tell(rank);
       if (location.pathname !== `/${row.hit.path}`) rememberSearch(row.hit);
       // A pasted link keeps the section it names: `…/cacheif#how-to` opens
       // the page at How to.
-      go(paste && !row.section ? `${row.hit.path}${pastedAnchor(trimmed)}` : rowPath(row), row.section?.excerpt);
+      go(paste && !row.section ? `${row.hit.path}${pastedAnchor(trimmed)}` : rowPath(row), row.section?.excerpt, tab);
     },
     [go, location.pathname, paste, trimmed, tell, rows],
   );
@@ -264,7 +272,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
    * put — opening `/cptp` and letting the page report itself missing tells the
    * reader their query is wrong when the search is what fell short.
    */
-  const submit = useCallback(async () => {
+  const submit = useCallback(async (tab: { background: boolean } | null = null) => {
     if (!words) return;
     const hit = await resolve(trimmed, hits[0]);
     if (!hit) {
@@ -274,7 +282,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
     }
     tell(rows.findIndex((row) => row.hit.path === hit.path));
     if (location.pathname !== `/${hit.path}`) rememberSearch(hit);
-    go(`${hit.path}${pastedAnchor(trimmed)}`);
+    go(`${hit.path}${pastedAnchor(trimmed)}`, undefined, tab);
   }, [trimmed, words, hits, go, location.pathname, tell, rows]);
 
   function onKeyDown(event: React.KeyboardEvent) {
@@ -291,9 +299,10 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
     }
     if (event.key === "Enter") {
       const row = rows[selected - skip];
+      const tab = tabFor(event, true);
       if (selected < skip) runCommand(commands[selected]);
-      else if (row) openRow(row, selected - skip);
-      else void submit();
+      else if (row) openRow(row, selected - skip, tab);
+      else void submit(tab);
     }
   }
 
@@ -364,7 +373,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
             withSubHits={!empty}
             selected={selected - skip}
             onSelect={(index) => setPicked(index + skip)}
-            onActivate={openRow}
+            onActivate={(row, rank, event) => openRow(row, rank, event ? tabFor(event) : null)}
             className={SEARCH_LIST_CLASS}
             rowRounded={false}
             header={

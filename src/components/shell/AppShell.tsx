@@ -159,14 +159,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     void invoke("new_window").catch(() => {});
   });
 
-  // ⌘W closes this window, as in a browser. The first window hides to the
-  // tray, the same as its close button.
-  useHotkey((event) => {
-    if (!inTauri || event.key.toLowerCase() !== "w" || !isCommand(event) || event.shiftKey) return;
-    event.preventDefault();
-    void invoke("close_window").catch(() => {});
-  });
-
   const onLanding = path === "";
 
   return (

@@ -7,7 +7,7 @@
  * Every control inside it stops that: a button that also dragged the window
  * would swallow the click.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
@@ -15,7 +15,9 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useTrail } from "@/lib/nav";
 import { WindowControls, useWindowFlag } from "./WindowControls";
 import { TitleBarMenu } from "./TitleBarMenu";
-import { appWindow } from "@/lib/backend";
+import { TabStrip, useTabKeys } from "./TabStrip";
+import { useTabs } from "@/lib/tabs";
+import { appWindow, inTauri } from "@/lib/backend";
 import { ALT_KEY, BACK_KEYS, COMMAND_KEY, FORWARD_KEYS, IS_MAC, historyStep, useHotkey } from "@/lib/hotkeys";
 import { Hint } from "@/components/ui/Hint";
 import { APP_NAME } from "@/lib/brand";
@@ -47,7 +49,10 @@ interface TitleBarProps {
 export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false }: TitleBarProps) {
   const navigate = useNavigate();
   const { canGoBack, canGoForward } = useTrail();
-  const showArrows = !bare && (showTrail || canGoBack || canGoForward);
+  const { tabs } = useTabs();
+  // With tabs the arrows stay put, or the strip after them would jump
+  // sideways on every switch to or from a home tab.
+  const showArrows = !bare && (showTrail || canGoBack || canGoForward || tabs.length > 1);
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   // macOS hides the traffic lights in full screen, and the room kept for
   // them goes with them.
@@ -59,6 +64,19 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
     event.preventDefault();
     if (step < 0 ? canGoBack : canGoForward) void navigate(step);
   });
+  // The mouse's own back and forward buttons. The webview has no history of
+  // its own to walk: the trails live in the tabs.
+  useEffect(() => {
+    if (!inTauri) return;
+    const onButton = (event: MouseEvent) => {
+      if (event.button !== 3 && event.button !== 4) return;
+      event.preventDefault();
+      void navigate(event.button === 3 ? -1 : 1);
+    };
+    window.addEventListener("mouseup", onButton);
+    return () => window.removeEventListener("mouseup", onButton);
+  }, [navigate]);
+  useTabKeys();
 
   return (
     <header
@@ -162,11 +180,14 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
         </span>
       )}
 
+      {inTauri && !bare && tabs.length > 1 && <TabStrip />}
+
       {/* The stretch between the app's controls and the window's is the part of
           the bar a reader grabs to move the window. */}
+      {/* Never all taken by tabs: a bar with no gap cannot be dragged. */}
       <span
         data-tauri-drag-region
-        className="h-full flex-1"
+        className="h-full min-w-[48px] flex-1"
       />
 
       {/* Which build of the app this is, beside the window's own buttons:

@@ -22,6 +22,7 @@ import { VaultPicker } from "@/components/obsidian/ObsidianDialog";
 import { APP_NAME } from "@/lib/brand";
 import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
 import { LINK_FORMATS, linkFormat, setLinkFormat, type LinkFormat } from "@/lib/link";
+import { restoresTabs, setRestoresTabs } from "@/lib/tabs";
 import { OBSIDIAN_PICTURES, OBSIDIAN_VAULT, picturesChoice, rememberedVault, type PicturesChoice } from "@/lib/obsidian";
 
 const OPEN = "houdinimd:settings";
@@ -313,6 +314,7 @@ const CLOSE_TO_TRAY = "close_to_tray";
 function GeneralSection() {
   const [format, setFormat] = useState<LinkFormat | null>(null);
   const [tray, setTray] = useState<boolean | null>(null);
+  const [restore, setRestore] = useState(restoresTabs);
   useEffect(() => {
     void linkFormat().then(setFormat);
     if (inTauri)
@@ -331,7 +333,7 @@ function GeneralSection() {
   }
 
   return (
-    <Section title="General" detail={`How ${APP_NAME} copies links, and what its window does when you close it.`}>
+    <Section title="General" detail={`How ${APP_NAME} copies links, opens its tabs, and what its window does when you close it.`}>
       <Row
         label="Copied links"
         detail={
@@ -348,6 +350,21 @@ function GeneralSection() {
           onChange={(next) => void pickFormat(next)}
         />
       </Row>
+      {inTauri && (
+        <Row
+          label="Open tabs again at start"
+          detail={restore ? "The tabs you left open come back when the app starts." : "The app starts on one tab, at the home page."}
+        >
+          <Toggle
+            checked={restore}
+            onChange={(next) => {
+              setRestoresTabs(next);
+              setRestore(next);
+            }}
+            label="Open tabs again at start"
+          />
+        </Row>
+      )}
       {inTauri && (
         <Row
           label="Keep running in the tray"

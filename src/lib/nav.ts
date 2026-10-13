@@ -13,9 +13,14 @@
  *     last one is only known because a PUSH truncates whatever was ahead of it.
  *
  * So the trail's length is tracked here, reset by every push.
+ *
+ * That is the help pane. The desktop window keeps a trail per tab and knows
+ * both answers outright (see lib/tabs).
  */
 import { useEffect, useState } from "react";
 import { useLocation, useNavigationType } from "react-router";
+import { inTauri } from "@/lib/backend";
+import { trailOf, useTabs } from "@/lib/tabs";
 
 function currentIndex(): number {
   const state: unknown = window.history.state;
@@ -28,7 +33,14 @@ export interface TrailPosition {
   canGoForward: boolean;
 }
 
-export function useTrail(): TrailPosition {
+export const useTrail: () => TrailPosition = inTauri ? useTabTrail : useHistoryTrail;
+
+function useTabTrail(): TrailPosition {
+  const { tabs, active } = useTabs();
+  return trailOf(tabs[active]);
+}
+
+function useHistoryTrail(): TrailPosition {
   const location = useLocation();
   const navigationType = useNavigationType();
   const [trail, setTrail] = useState<TrailPosition>({ canGoBack: false, canGoForward: false });

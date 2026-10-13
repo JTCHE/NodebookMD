@@ -1,7 +1,7 @@
-import { StrictMode } from "react";
+import { StrictMode, type ReactNode } from "react";
 import { invoke, inTauri } from "./lib/backend";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Route, Router, Routes } from "react-router";
 import Home from "./routes/Home";
 import Page from "./routes/Page";
 import { AppShell } from "./components/shell/AppShell";
@@ -11,6 +11,7 @@ import { startTheme } from "./lib/ui/theme";
 import { startPress } from "./lib/ui/press";
 import { startBlurCheck } from "./lib/ui/blur";
 import { startIconStroke } from "./lib/ui/icon-stroke";
+import { current, navigator as tabNavigator, openTab, useTabs } from "./lib/tabs";
 import "./styles/globals.css";
 
 // `bun run app --clean` starts the app as a machine that has never run it.
@@ -84,23 +85,41 @@ if (!inTauri && /QtWebEngine/.test(navigator.userAgent)) {
   );
 }
 
-// Ctrl, ⌘ or Shift on a link to a page, or the middle button, opens that page
-// in a new window of the app. Left to itself the webview hands the link to
-// the reader's browser, which has no backend to read the page from.
+// A link to a page with a key held, as in a browser: Ctrl or ⌘, or the middle
+// button, opens it in a tab behind this one; add Shift and the tab comes to
+// the front; Shift alone opens a new window. Left to itself the webview hands
+// the link to the reader's browser, which has no backend to read the page from.
 if (inTauri) {
-  const openInWindow = (event: MouseEvent) => {
-    const modified = event.button === 0 && (event.ctrlKey || event.metaKey || event.shiftKey);
+  const openElsewhere = (event: MouseEvent) => {
+    const command = event.ctrlKey || event.metaKey;
+    const modified = event.button === 0 && (command || event.shiftKey);
     if (!(modified || event.button === 1) || event.defaultPrevented) return;
     const link = (event.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
     if (!link) return;
     const url = new URL(link.href, window.location.href);
     if (url.origin !== window.location.origin) return;
     event.preventDefault();
-    void invoke("new_window", { path: `${url.pathname}${url.hash}` }).catch(() => {});
+    const path = `${url.pathname}${url.hash}`;
+    if (event.button === 0 && event.shiftKey && !command) void invoke("new_window", { path }).catch(() => {});
+    else openTab(path, { background: !event.shiftKey });
   };
-  document.addEventListener("click", openInWindow, true);
-  document.addEventListener("auxclick", openInWindow, true);
+  document.addEventListener("click", openElsewhere, true);
+  document.addEventListener("auxclick", openElsewhere, true);
 }
+
+/** The desktop window's router: the location is the active tab's, and every
+    move goes into that tab's trail. See lib/tabs. */
+function TabRouter({ children }: { children: ReactNode }) {
+  const { tabs, active } = useTabs();
+  const tab = tabs[active];
+  return (
+    <Router location={current(tab)} navigationType={tab.action} navigator={tabNavigator}>
+      {children}
+    </Router>
+  );
+}
+
+const AppRouter = inTauri ? TabRouter : BrowserRouter;
 
 // Real paths, because Houdini asks for `/nodes/sop/box` flat and the reader
 // should see that in the address bar of the help window. The localhost server
@@ -111,7 +130,7 @@ if (inTauri) {
 // once for the life of the window and only the content column changes.
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
+    <AppRouter>
       <AppShell>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -120,6 +139,6 @@ createRoot(document.getElementById("root")!).render(
       </AppShell>
       <ToastListener />
       <DeepLinks />
-    </BrowserRouter>
+    </AppRouter>
   </StrictMode>,
 );

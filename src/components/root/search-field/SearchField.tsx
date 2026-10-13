@@ -15,6 +15,7 @@ import {
 import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { PasteSearchButton } from "./PasteSearchButton";
 import { useSearchReport } from "@/lib/telemetry";
+import { openTab, tabFor } from "@/lib/tabs";
 
 /**
  * The search field: one input, one key, and the list it opens.
@@ -81,9 +82,16 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
   }, [closed, tell]);
 
   /** `find` is the excerpt of a row, which the page opens at and marks. */
-  function go(path: string, find?: string) {
+  function go(path: string, find?: string, tab: { background: boolean } | null = null) {
+    const entryState = find ? { find } : undefined;
+    // A tab behind leaves the list open, for the next pick.
+    if (tab) {
+      if (!tab.background) setClosed(true);
+      openTab(`/${path}`, { ...tab, entryState });
+      return;
+    }
     setClosed(true);
-    navigate(`/${path}`, { state: find ? { find } : undefined });
+    navigate(`/${path}`, { state: entryState });
   }
 
   /**
@@ -93,7 +101,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
    * letting the page report itself missing tells the reader their query is
    * wrong when the search is what fell short.
    */
-  async function submit(text: string) {
+  async function submit(text: string, tab: { background: boolean } | null = null) {
     const wanted = text.trim();
     if (!wanted) return;
     const hit = await resolve(wanted, rows[selected]?.hit);
@@ -107,7 +115,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
     const row = open && rows[selected]?.hit === hit ? rows[selected] : null;
     rememberSearch(hit);
     // A pasted link keeps the section it names.
-    go(row ? rowPath(row) : `${hit.path}${pastedAnchor(wanted)}`, row?.section?.excerpt);
+    go(row ? rowPath(row) : `${hit.path}${pastedAnchor(wanted)}`, row?.section?.excerpt, tab);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -118,6 +126,14 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Escape") {
       setClosed(true);
+      return;
+    }
+    // Ctrl+Enter: the same pick, in a new tab. The form's own submit does
+    // not say which keys were held.
+    const tab = event.key === "Enter" ? tabFor(event, true) : null;
+    if (tab) {
+      event.preventDefault();
+      void submit(query, tab);
       return;
     }
     if (!open || rows.length === 0) return;
@@ -248,10 +264,10 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
           query={field.text}
           selected={selected}
           onSelect={setSelected}
-          onActivate={(row, rank) => {
+          onActivate={(row, rank, event) => {
             tell(rank);
             rememberSearch(row.hit);
-            go(rowPath(row), row.section?.excerpt);
+            go(rowPath(row), row.section?.excerpt, event ? tabFor(event) : null);
           }}
           className={cn("absolute top-full right-0 left-0 z-10", SEARCH_DROPDOWN_CLASS)}
         />

@@ -80,7 +80,8 @@ export function SearchResultList({
   query: string;
   selected: number;
   onSelect: (index: number) => void;
-  onActivate: (row: Row, index: number) => void;
+  /** The click comes along for the keys held with it. */
+  onActivate: (row: Row, index: number, event?: React.MouseEvent) => void;
   /** Off for lists of pages the reader already chose, where sub-hits are noise. */
   withSubHits?: boolean;
   header?: React.ReactNode;
@@ -131,7 +132,7 @@ export function SearchResultList({
             query={query}
             active={i === selected}
             rounded={rowRounded}
-            onClick={() => onActivate(row, i)}
+            onClick={(event) => onActivate(row, i, event)}
             onMouseMove={() => onSelect(i)}
           />
         </li>

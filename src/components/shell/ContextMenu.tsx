@@ -10,12 +10,13 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { AppWindow, ArrowLeft, ArrowRight, Copy, ExternalLink, Image, Link2, ListTree } from "lucide-react";
+import { AppWindow, ArrowLeft, ArrowRight, Copy, ExternalLink, Image, Link2, ListTree, Plus } from "lucide-react";
 import { revealInSidebar } from "@/components/shell/sidebar/PageTree";
 import { MenuList, type MenuEntry, type MenuGroups } from "@/components/ui/MenuList";
 import { useTrail } from "@/lib/nav";
 import { pageActions } from "@/lib/page-actions";
 import { pageLink } from "@/lib/link";
+import { openTab } from "@/lib/tabs";
 import { BACK_KEYS, COMMAND_KEY, FORWARD_KEYS } from "@/lib/hotkeys";
 import { invoke, inTauri } from "@/lib/backend";
 import { openLightbox, PAGE_PICTURES } from "@/lib/lightbox";
@@ -60,15 +61,15 @@ export function ContextMenu() {
       if (link) {
         const url = new URL(link.href, location.href);
         const group: MenuEntry[] = [{ label: "Open link", icon: ExternalLink, run: () => link.click() }];
-        // A page of the app opens in a window of its own, as Ctrl-click does
-        // (main.tsx). An outside address has only the browser.
+        // A page of the app opens in a tab or a window of its own, as the
+        // modified clicks do (main.tsx). An outside address has only the
+        // browser.
         if (inTauri && url.origin === location.origin) {
-          group.push({
-            label: "Open in new window",
-            icon: AppWindow,
-            keys: `${COMMAND_KEY}+Click`,
-            run: () => invoke("new_window", { path: `${url.pathname}${url.hash}` }),
-          });
+          const path = `${url.pathname}${url.hash}`;
+          group.push(
+            { label: "Open in new tab", icon: Plus, keys: `${COMMAND_KEY}+Click`, run: () => openTab(path, { background: true }) },
+            { label: "Open in new window", icon: AppWindow, keys: "Shift+Click", run: () => invoke("new_window", { path }) },
+          );
         }
         group.push({ label: "Copy link address", icon: Link2, run: () => shareable(link.href).then((text) => copyText(text, "Link copied")) });
         menu.push(group);
