@@ -886,9 +886,30 @@ img.markdown-media {
    window. */
 .columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+  /* Narrow enough that SideFX's rows of three pictures stay one row. */
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
   gap: 1.5rem;
   margin-block: 1.5rem;
+}
+/* `:box: 50%`: the caption over a picture, as SideFX draws it. */
+.box-title {
+  margin-bottom: 0.5rem;
+  font-size: var(--text-meta);
+  line-height: 1.4;
+  color: var(--muted-foreground);
+}
+.box-title > p {
+  margin: 0;
+}
+/* The text under a picture in a column is its caption, close under it. */
+.column p:has(> img) {
+  margin-block: 0;
+}
+.column p:has(img) + p {
+  margin-top: 0.5rem;
+  font-size: var(--text-meta);
+  line-height: 1.45;
+  color: var(--muted-foreground);
 }
 .column > :first-child {
   margin-top: 0;
@@ -900,7 +921,7 @@ img.markdown-media {
    draws the pyro divergence diagrams as two columns of three, not a row of
    three in each column. */
 .column .markdown-media {
-  margin-inline: 0;
+  margin: 0;
 }
 .column .image-group {
   flex-direction: column;

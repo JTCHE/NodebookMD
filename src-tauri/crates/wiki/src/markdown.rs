@@ -455,6 +455,17 @@ fn item(name: &str, label: &str, props: &Props, children: &[Block], depth: u8) -
             true => body,
             false => format!("{label}\n\n{body}"),
         },
+        // `:box: 50%` over a picture is its caption, small and above it, as
+        // SideFX draws it. In bold it read as a heading over every picture.
+        "box" if !label.is_empty() && !is_portable() => {
+            format!("<div class=\"box-title\">
+
+{label}
+
+</div>
+
+{body}")
+        }
         "col" | "box" | "tab" | "task" | "disclosure" | "bubble" | "caption" => {
             if label.is_empty() {
                 body
@@ -567,7 +578,27 @@ fn cell_html(blocks: &[Block], raw: bool) -> String {
             out.push_str("<br><br>");
         }
     };
-    for block in blocks {
+    let is_column = |block: &Block| matches!(block, Block::Item { name, .. } if name == "col");
+    let mut at = 0;
+    while at < blocks.len() {
+        let block = &blocks[at];
+        at += 1;
+        // Columns under a parameter stay side by side, as at the top of a
+        // page: two snapshots to compare, each with its caption.
+        if is_column(block) && !is_portable() && blocks.get(at).is_some_and(is_column) {
+            let start = at - 1;
+            while blocks.get(at).is_some_and(is_column) {
+                at += 1;
+            }
+            gap(&mut out);
+            out.push_str("<div class=\"columns\">");
+            for column in &blocks[start..at] {
+                let Block::Item { children, .. } = column else { continue };
+                out.push_str(&format!("<div class=\"column\">{}</div>", column_html(children, raw)));
+            }
+            out.push_str("</div>");
+            continue;
+        }
         match block {
             Block::Paragraph { text } | Block::Summary { text } => {
                 gap(&mut out);
@@ -628,8 +659,15 @@ fn cell_html(blocks: &[Block], raw: bool) -> String {
                 gap(&mut out);
                 out.push_str(item(name, "", props, children, 1).trim());
             }
-            Block::Item { children, .. } => {
+            Block::Item { name, label, children, .. } => {
                 gap(&mut out);
+                if name == "box" && !label.is_empty() {
+                    out.push_str(&match is_portable() {
+                        true if raw => format!("<strong>{}</strong><br>", text_in(label, raw)),
+                        true => format!("**{}**<br>", text_in(label, raw)),
+                        false => format!("<div class=\"box-title\">{}</div>", text_in(label, raw)),
+                    });
+                }
                 out.push_str(&cell_html(children, raw));
             }
             other => {
@@ -639,6 +677,25 @@ fn cell_html(blocks: &[Block], raw: bool) -> String {
         }
     }
     out
+}
+
+/// One column in a table cell. Its paragraphs are `<p>`, not lines apart, so
+/// a caption sits close under its picture and the CSS can tell it apart.
+fn column_html(blocks: &[Block], raw: bool) -> String {
+    blocks
+        .iter()
+        .map(|block| match block {
+            Block::Paragraph { text } => format!("<p>{}</p>", text_in(text, raw)),
+            Block::Item { name, label, children, .. } if name == "box" => {
+                let title = match label.is_empty() {
+                    true => String::new(),
+                    false => format!("<div class=\"box-title\">{}</div>", text_in(label, raw)),
+                };
+                title + &column_html(children, raw)
+            }
+            other => cell_html(std::slice::from_ref(other), raw),
+        })
+        .collect()
 }
 
 /// Text inside a table cell, in the notation that cell's reader understands.
