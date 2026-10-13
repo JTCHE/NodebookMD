@@ -418,7 +418,8 @@ export default function Page() {
           ) : (
             // A narrow page's breadcrumbs wrap, and fill the bar down to its
             // foot: the title then comes close under them.
-            <main className="w-full min-w-0 px-page-x pt-7 pb-[calc(2.5rem+var(--spacing-statusbar))] @max-xl:pt-2 print:p-0">
+            // tabIndex: the skip link puts the focus here.
+            <main tabIndex={-1} className="w-full min-w-0 outline-none px-page-x pt-7 pb-[calc(2.5rem+var(--spacing-statusbar))] @max-xl:pt-2 print:p-0">
               {error && <p className="text-sm text-muted-foreground">{error.message}</p>}
               {page && (
                 <article className="prose prose-neutral dark:prose-invert max-w-none">

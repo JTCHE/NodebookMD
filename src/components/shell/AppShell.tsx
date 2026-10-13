@@ -29,6 +29,31 @@ import { REVEAL } from "./sidebar/PageTree";
 import { SettingsDialog } from "@/components/settings/SettingsDialog";
 import { StatusBar } from "./StatusBar";
 
+/**
+ * The first stop of the Tab key: past the title bar and the panel, straight
+ * to what is being read. On the home page that is the search field; on a page
+ * it is the page, so the next Tab reaches its first link and the arrows scroll.
+ */
+function SkipToContent() {
+  return (
+    <a
+      href="#content"
+      onClick={(event) => {
+        event.preventDefault();
+        const main = document.querySelector<HTMLElement>("main");
+        (main?.querySelector<HTMLElement>("input") ?? main)?.focus({ preventScroll: true });
+      }}
+      className={cn(
+        "sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-[4px] focus-visible:left-sm focus-visible:z-50",
+        "rounded-md bg-raised text-meta font-medium text-neutral-950 shadow-chip focus-visible:px-ms focus-visible:py-xs",
+        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+      )}
+    >
+      Skip to content
+    </a>
+  );
+}
+
 /** The page needs this much width beside the panel, or its lines wrap every
     few words. Below it the panel leaves the row and floats over the page. */
 const PAGE_MIN = 600;
@@ -148,6 +173,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // A print is the page alone, at its full length: the window's own height,
     // its bars and its panel stay on the screen.
     <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground print:block print:h-auto print:overflow-visible">
+      <SkipToContent />
       <TitleBar
         sidebarOpen={tight ? floating : sidebarOpen}
         onToggleSidebar={toggleSidebar}
