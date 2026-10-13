@@ -58,6 +58,9 @@ export interface SidebarRowProps {
   className?: string;
   /** For the one thing a class cannot state: an indent worked out from depth. */
   style?: React.CSSProperties;
+  /** A row outside the tree, as in Settings: no arrow or flag slot, so its
+      mark stands on the axis of the title above the list. */
+  bare?: boolean;
 }
 
 export function SidebarRow({
@@ -75,6 +78,7 @@ export function SidebarRow({
   to,
   className,
   style,
+  bare = false,
 }: SidebarRowProps) {
   const Disclosure =
     disclosure === "expanded" ? Icons.expanded : disclosure === "back" ? Icons.back : Icons.collapsed;
@@ -114,7 +118,7 @@ export function SidebarRow({
 
   const content = (
     <>
-      {disclosure === "none" ? (
+      {bare ? null : disclosure === "none" ? (
         // A page row has no arrow, so the arrow's place is where its flag
         // goes. Outside the row the flag hung into the panel's own margin and
         // read as a stray mark; here it reads as the row's own state, and an

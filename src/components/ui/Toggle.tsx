@@ -30,7 +30,7 @@ export function Toggle({
       // key that ends the screen keeps answering Enter.
       onMouseDown={(event) => event.preventDefault()}
       className={cn(
-        "relative h-[26px] w-[46px] shrink-0 cursor-interactive rounded-full",
+        "relative h-[24px] w-[48px] shrink-0 cursor-interactive rounded-full",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         checked ? "bg-brand" : "bg-neutral-300",
@@ -42,9 +42,9 @@ export function Toggle({
         className={cn(
           // The knob is near-white in both themes, the way the ink on a brand
           // plate is, so it never sinks into a dark track.
-          "absolute top-[3px] left-[3px] size-[20px] rounded-full bg-brand-foreground shadow-chip",
+          "absolute top-[3px] left-[3px] size-[18px] rounded-full bg-brand-foreground shadow-chip",
           "transition-transform duration-(--duration-fast) motion-reduce:transition-none",
-          checked && "translate-x-[20px]",
+          checked && "translate-x-[24px]",
         )}
       />
     </button>

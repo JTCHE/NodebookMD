@@ -9,18 +9,19 @@
  */
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { invoke, inTauri } from "@/lib/backend";
-import { COMMAND_KEY, isCommand, useHotkey } from "@/lib/hotkeys";
+import { COMMAND_KEY, IS_MAC, isCommand, useHotkey } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
 import { Modal, MODAL_LINE, MODAL_TOP } from "@/components/ui/Modal";
 import { SidebarRow } from "@/components/shell/sidebar/SidebarRow";
 import { Toggle } from "@/components/ui/Toggle";
-import { CHOICE_HANG, ChoiceRow } from "@/components/onboarding/ChoiceRow";
+import { Segmented } from "@/components/ui/Segmented";
 import { showToast } from "@/components/ui/toast-notification";
 import { TELEMETRY } from "@/components/onboarding/Onboarding";
 import { VaultPicker } from "@/components/obsidian/ObsidianDialog";
 import { APP_NAME } from "@/lib/brand";
 import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
+import { LINK_FORMATS, linkFormat, setLinkFormat, type LinkFormat } from "@/lib/link";
 import { OBSIDIAN_PICTURES, OBSIDIAN_VAULT, picturesChoice, rememberedVault, type PicturesChoice } from "@/lib/obsidian";
 
 const OPEN = "houdinimd:settings";
@@ -33,6 +34,7 @@ export function openSettings() {
 }
 
 const SECTIONS = [
+  { key: "general", label: "General", icon: Icons.settings },
   { key: "houdini", label: "Houdini Integration", icon: Icons.groupNodes },
   { key: "mcp", label: "Houdini MCP", icon: Icons.newWindow },
   { key: "obsidian", label: "Obsidian", icon: Icons.bookmark },
@@ -44,7 +46,7 @@ type SectionKey = (typeof SECTIONS)[number]["key"];
 /** Mounted once, in the shell. */
 export function SettingsDialog() {
   const [open, setOpen] = useState(false);
-  const [shown, setShown] = useState<SectionKey>("houdini");
+  const [shown, setShown] = useState<SectionKey>("general");
   useEffect(() => {
     const show = () => setOpen(true);
     window.addEventListener(OPEN, show);
@@ -68,6 +70,7 @@ export function SettingsDialog() {
           <SidebarRow
             key={section.key}
             label={section.label}
+            bare
             selected={shown === section.key}
             mark={<section.icon className={cn("size-[15px]", shown === section.key ? "text-brand" : "text-neutral-500")} />}
             onClick={() => setShown(section.key)}
@@ -79,6 +82,8 @@ export function SettingsDialog() {
           // The one setting kept in the browser, so it works in Houdini's
           // help pane too.
           <AppearanceSection />
+        ) : shown === "general" ? (
+          <GeneralSection />
         ) : !inTauri ? (
           <p className="text-meta text-neutral-500">Settings live in the {APP_NAME} app, not in Houdini's help pane.</p>
         ) : shown === "houdini" ? (
@@ -287,15 +292,9 @@ function ObsidianSection() {
   ];
   return (
     <Section title="Obsidian" detail="Send to Obsidian sends a page with no pictures as text. For a page with pictures, it can write the pictures into your vault too.">
-      <div className={cn(ROW, "flex flex-col gap-sm")}>
-        <span className="text-[14px] font-medium text-neutral-950">Pictures</span>
-        <div role="radiogroup" aria-label="Pictures" className={cn(CHOICE_HANG, "flex flex-wrap gap-sm")}>
-          {choice &&
-            choices.map((one) => (
-              <ChoiceRow key={one.value} compact label={one.label} chosen={choice === one.value} onClick={() => void pick(one.value)} />
-            ))}
-        </div>
-      </div>
+      <Row label="Pictures">
+        <Segmented label="Pictures" value={choice} options={choices} onChange={(next) => void pick(next)} />
+      </Row>
       <div className={cn(ROW, "flex flex-col gap-sm")}>
         <span className="flex flex-col">
           <span className="text-[14px] font-medium text-neutral-950">Vault</span>
@@ -307,19 +306,77 @@ function ObsidianSection() {
   );
 }
 
+/** What the close button does. The Rust side reads the same key (`tray.rs`). */
+const CLOSE_TO_TRAY = "close_to_tray";
+
+/** How the app behaves as a whole: the links it copies, and its window. */
+function GeneralSection() {
+  const [format, setFormat] = useState<LinkFormat | null>(null);
+  const [tray, setTray] = useState<boolean | null>(null);
+  useEffect(() => {
+    void linkFormat().then(setFormat);
+    if (inTauri)
+      void invoke<string | null>("get_setting", { key: CLOSE_TO_TRAY })
+        .then((value) => setTray(value !== "false"))
+        .catch(() => setTray(true));
+  }, []);
+
+  async function pickFormat(next: LinkFormat) {
+    await setLinkFormat(next);
+    setFormat(next);
+  }
+  async function flipTray(next: boolean) {
+    await invoke("set_setting", { key: CLOSE_TO_TRAY, value: String(next) });
+    setTray(next);
+  }
+
+  return (
+    <Section title="General" detail={`How ${APP_NAME} copies links, and what its window does when you close it.`}>
+      <Row
+        label="Copied links"
+        detail={
+          <>
+            {`${COMMAND_KEY}+L and the link buttons copy `}
+            <span className="font-mono text-[11.5px] text-neutral-700">{LINK_FORMATS[format ?? "path"].example}</span>
+          </>
+        }
+      >
+        <Segmented
+          label="Copied links"
+          value={format}
+          options={(Object.keys(LINK_FORMATS) as LinkFormat[]).map((key) => ({ value: key, label: LINK_FORMATS[key].label }))}
+          onChange={(next) => void pickFormat(next)}
+        />
+      </Row>
+      {inTauri && (
+        <Row
+          label="Keep running in the tray"
+          detail={
+            tray === false
+              ? `Closing the window quits ${APP_NAME}. F1 in Houdini starts it again.`
+              : `Closing the window keeps the app in the ${IS_MAC ? "menu bar" : "notification area"}, so F1 in Houdini opens at once.`
+          }
+        >
+          {tray !== null && <Toggle checked={tray} onChange={(next) => void flipTray(next)} label="Keep running in the tray" />}
+        </Row>
+      )}
+    </Section>
+  );
+}
+
 /** Light, dark, or whatever the system is set to. */
 function AppearanceSection() {
   const theme = useThemeChoice();
   return (
     <Section title="Appearance" detail="System follows the light or dark setting of your computer, and changes when it changes.">
-      <div className={cn(ROW, "flex flex-col gap-sm")}>
-        <span className="text-[14px] font-medium text-neutral-950">Theme</span>
-        <div role="radiogroup" aria-label="Theme" className={cn(CHOICE_HANG, "flex flex-wrap gap-sm")}>
-          {THEME_CHOICES.map((choice) => (
-            <ChoiceRow key={choice} compact label={THEME_LABEL[choice]} chosen={theme === choice} onClick={() => setTheme(choice)} />
-          ))}
-        </div>
-      </div>
+      <Row label="Theme">
+        <Segmented
+          label="Theme"
+          value={theme}
+          options={THEME_CHOICES.map((choice) => ({ value: choice, label: THEME_LABEL[choice] }))}
+          onChange={setTheme}
+        />
+      </Row>
     </Section>
   );
 }

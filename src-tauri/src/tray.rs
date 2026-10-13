@@ -86,14 +86,32 @@ pub fn build(app: &tauri::App) -> tauri::Result<()> {
     Ok(())
 }
 
+/// The setting that makes the close button quit. Anything but "false" keeps
+/// the app in the tray. Settings, General, writes it.
+const CLOSE_TO_TRAY: &str = "close_to_tray";
+
+fn closes_to_tray(app: &AppHandle) -> bool {
+    app.try_state::<crate::Db>()
+        .and_then(|db| db.0.lock().ok().map(|db| crate::db::get_setting(&db, CLOSE_TO_TRAY)))
+        .flatten()
+        .as_deref()
+        != Some("false")
+}
+
 /// The close button hides the first window. The process, and F1 with it,
-/// stays. A window opened after it (Ctrl N) closes for good.
+/// stays. A window opened after it (Ctrl N) closes for good. With the setting
+/// off, the close button quits, as the tray menu's Quit does; a launch from
+/// Houdini starts the app again.
 pub fn on_window_event(window: &Window, event: &WindowEvent) {
     if window.label() != "main" {
         return;
     }
     if let WindowEvent::CloseRequested { api, .. } = event {
         api.prevent_close();
+        if !closes_to_tray(window.app_handle()) {
+            window.app_handle().exit(0);
+            return;
+        }
         let _ = window.hide();
         rest(window.app_handle());
     }
