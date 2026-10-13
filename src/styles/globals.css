@@ -774,12 +774,16 @@ img.markdown-media {
   display: flex;
   align-items: center;
 }
+/* Folded to no width, and clipped there: WebKit draws the thumb of a range
+   with no width over the clock beside it. */
 .video-volume input {
   width: 0;
+  clip-path: inset(0);
 }
 .video-volume:is(:hover, :focus-within) input {
   width: 4.5rem;
   margin-inline: 0.25rem 0.5rem;
+  clip-path: none;
 }
 
 .video-time {
@@ -793,8 +797,8 @@ img.markdown-media {
   opacity: 0.6;
 }
 
-/* The app runs on Chromium only — WebView2 and Houdini's QtWebEngine — so
-   the WebKit range parts are the only ones to style. */
+/* Chromium (WebView2, Houdini's QtWebEngine) and WebKit (macOS, Linux)
+   both read the WebKit range parts, so those are the only ones to style. */
 .markdown-video input[type="range"] {
   appearance: none;
   height: 100%;

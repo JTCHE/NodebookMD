@@ -195,7 +195,9 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
     >
       <video
         ref={videoRef}
-        src={src}
+        // A start time of a frame, so WebKit draws the first frame as the
+        // still. With only the metadata loaded it leaves the box empty.
+        src={`${src}#t=0.001`}
         preload="metadata"
         playsInline
         className="absolute inset-0 size-full cursor-interactive"
