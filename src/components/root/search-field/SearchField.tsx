@@ -5,7 +5,7 @@ import { pastedAnchor, pastedPath, rememberSearch, resolve } from "@/lib/search"
 import { useSearch } from "@/lib/use-search";
 import { scopedInput } from "@/lib/scope";
 import { ScopeChip } from "@/components/search/ScopeChip";
-import { isCommand, useHotkey } from "@/lib/hotkeys";
+import { isCommand, isTyping, useHotkey } from "@/lib/hotkeys";
 import {
   SEARCH_DROPDOWN_CLASS,
   SearchResultList,
@@ -64,6 +64,17 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
     event.preventDefault();
     inputRef.current?.focus();
     inputRef.current?.select();
+  });
+
+  // A letter or a digit typed anywhere else on this page goes to the field,
+  // as the overlay takes it on a doc page. Focused during the key down, the
+  // field gets the key's character itself.
+  useHotkey((event) => {
+    const target = event.target as HTMLElement;
+    if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (!/^[\p{L}\p{N}]$/u.test(event.key) || isTyping(target)) return;
+    if (target.closest("[role=menu], [role=listbox], [role=dialog]")) return;
+    inputRef.current?.focus();
   });
 
   useEffect(() => {
