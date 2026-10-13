@@ -5,6 +5,7 @@ import { MENU_PANEL, useMenu } from "@/lib/ui/menu";
 import { ACTION, QUIET } from "@/lib/ui/button";
 import { MenuList, type MenuEntry } from "@/components/ui/MenuList";
 import { sideFxUrl } from "@/lib/sidefx";
+import { pageLink } from "@/lib/link";
 import { invoke, inTauri } from "@/lib/backend";
 import { pageHtml } from "@/lib/markdown/html";
 import { showToast } from "@/components/ui/toast-notification";
@@ -123,9 +124,9 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
     void save().catch((reason) => showToast(String(reason), "error"));
   });
 
-  // Ctrl/Cmd+L copies the page's web address, as the menus say.
+  // Ctrl/Cmd+L copies the page's link, in the form Settings names.
   const copyLink = useCallback(async () => {
-    await navigator.clipboard.writeText(sideFxUrl(path));
+    await navigator.clipboard.writeText(await pageLink(path));
     showToast("Link copied");
   }, [path]);
   useHotkey((event) => {

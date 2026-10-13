@@ -15,17 +15,18 @@ import { revealInSidebar } from "@/components/shell/sidebar/PageTree";
 import { MenuList, type MenuEntry, type MenuGroups } from "@/components/ui/MenuList";
 import { useTrail } from "@/lib/nav";
 import { pageActions } from "@/lib/page-actions";
-import { sideFxUrl } from "@/lib/sidefx";
+import { pageLink } from "@/lib/link";
 import { BACK_KEYS, COMMAND_KEY, FORWARD_KEYS } from "@/lib/hotkeys";
 import { invoke, inTauri } from "@/lib/backend";
 import { openLightbox, PAGE_PICTURES } from "@/lib/lightbox";
 import { showToast } from "@/components/ui/toast-notification";
 import { used } from "@/lib/telemetry";
 
-/** The web address of a link the app draws: the same page on sidefx.com. */
-function shareable(href: string): string {
+/** The address of a link the app draws: a page of the app as Settings
+    names it, anything else as it is. */
+function shareable(href: string): Promise<string> {
   const url = new URL(href, location.href);
-  return url.origin === location.origin ? `${sideFxUrl(url.pathname.slice(1))}${url.hash}` : url.href;
+  return url.origin === location.origin ? pageLink(url.pathname.slice(1), url.hash) : Promise.resolve(url.href);
 }
 
 async function copyText(text: string, said: string) {
@@ -69,7 +70,7 @@ export function ContextMenu() {
             run: () => invoke("new_window", { path: `${url.pathname}${url.hash}` }),
           });
         }
-        group.push({ label: "Copy link address", icon: Link2, run: () => copyText(shareable(link.href), "Link copied") });
+        group.push({ label: "Copy link address", icon: Link2, run: () => shareable(link.href).then((text) => copyText(text, "Link copied")) });
         menu.push(group);
       }
       const picture = target?.closest<HTMLImageElement>(PAGE_PICTURES);

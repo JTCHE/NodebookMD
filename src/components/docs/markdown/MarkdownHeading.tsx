@@ -3,19 +3,18 @@ import { Hint } from "@/components/ui/Hint";
 import type { Components } from "react-markdown";
 import { useLocation } from "react-router";
 import { showToast } from "@/components/ui/toast-notification";
-import { sideFxUrl } from "@/lib/sidefx";
+import { pageLink } from "@/lib/link";
 
 type Tag = "h2" | "h3" | "h4";
 
-/** A section heading with a button that copies a link to it. The link is to
-    the same section on sidefx.com, which anyone can open: the local server
-    is on this machine only. */
+/** A section heading with a button that copies a link to it, in the form
+    Settings names. */
 function heading(Tag: Tag): NonNullable<Components[Tag]> {
   return function MarkdownHeading({ node: _node, children, ...props }) {
     const location = useLocation();
     const copy = () => {
       const path = location.pathname.replace(/^\/+/, "");
-      navigator.clipboard.writeText(`${sideFxUrl(path)}#${props.id}`).then(
+      void pageLink(path, props.id).then((link) => navigator.clipboard.writeText(link)).then(
         () => showToast("Copied the link to this section"),
         () => showToast("Could not copy the link", "error"),
       );

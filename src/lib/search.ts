@@ -493,10 +493,12 @@ function subsequence(query: string, name: Folded): number | null {
   return best;
 }
 
-/** A pasted SideFX link, or a path typed by hand, is a page to open outright. */
+/** A pasted SideFX link, an app link (`nodebookmd://docs/…`), or a path typed
+    by hand, is a page to open outright. */
 export function pastedPath(text: string): string {
   return text
     .trim()
+    .replace(/^[a-z][\w+.-]*:\/\/(?=docs\/)/i, "")
     .replace(/^https?:\/\/[^/]+/, "")
     .replace(/[#?].*$/, "")
     .replace(/^\/?docs\/houdini\d*\//, "")
