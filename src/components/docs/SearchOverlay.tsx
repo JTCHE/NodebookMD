@@ -19,7 +19,7 @@ import { invoke, inTauri } from "@/lib/backend";
 import { COMMAND_KEY, isCommand, isTyping, useHotkey } from "@/lib/hotkeys";
 import { Icons } from "@/lib/ui/icons";
 import { THEME_CHOICES, THEME_ICON, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
-import { pastedAnchor, pastedPath, recentSearches, rememberSearch, resolve, titles, type Hit } from "@/lib/search";
+import { pastedAnchor, pastedHit, pastedPath, recentSearches, rememberSearch, resolve, type Hit } from "@/lib/search";
 import { useSearch } from "@/lib/use-search";
 import { scopedInput } from "@/lib/scope";
 import { ScopeChip } from "@/components/search/ScopeChip";
@@ -144,9 +144,8 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
       return;
     }
     let live = true;
-    const wanted = pastedPath(trimmed);
-    titles().then((all) => {
-      if (live) setDirect(all.find((hit) => hit.path === wanted) ?? null);
+    void pastedHit(trimmed).then((hit) => {
+      if (live) setDirect(hit);
     });
     return () => {
       live = false;
@@ -267,8 +266,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
    */
   const submit = useCallback(async () => {
     if (!words) return;
-    const all = await titles();
-    const hit = resolve(all, trimmed, hits[0]);
+    const hit = await resolve(trimmed, hits[0]);
     if (!hit) {
       showToast(`Nothing in this Houdini build matches “${trimmed}”.`, "error");
       tell(-1);

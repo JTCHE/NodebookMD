@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
-import { pastedPath, rememberSearch, resolve, titles } from "@/lib/search";
+import { pastedAnchor, pastedPath, rememberSearch, resolve } from "@/lib/search";
 import { useSearch } from "@/lib/use-search";
 import { scopedInput } from "@/lib/scope";
 import { ScopeChip } from "@/components/search/ScopeChip";
@@ -96,8 +96,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
   async function submit(text: string) {
     const wanted = text.trim();
     if (!wanted) return;
-    const all = await titles();
-    const hit = resolve(all, wanted, rows[selected]?.hit);
+    const hit = await resolve(wanted, rows[selected]?.hit);
     if (!hit) {
       setError(`Nothing in this Houdini build matches “${wanted}”.`);
       tell(-1);
@@ -107,7 +106,8 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
     // A row of the list may name a heading of the page, not only the page.
     const row = open && rows[selected]?.hit === hit ? rows[selected] : null;
     rememberSearch(hit);
-    go(row ? rowPath(row) : hit.path, row?.section?.excerpt);
+    // A pasted link keeps the section it names.
+    go(row ? rowPath(row) : `${hit.path}${pastedAnchor(wanted)}`, row?.section?.excerpt);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {

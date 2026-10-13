@@ -512,6 +512,22 @@ export function pastedAnchor(text: string): string {
 }
 
 /**
+ * The page a pasted link or a typed path names, or null.
+ *
+ * The title list holds the newest version of each node only, and a SideFX link
+ * often names an older one (`nodes/sop/filemerge` beside `filemerge-2.0`). A
+ * path the list does not hold is asked of the build itself.
+ */
+export async function pastedHit(text: string): Promise<Hit | null> {
+  const path = pastedPath(text);
+  if (!path) return null;
+  const listed = (await titles()).find((hit) => hit.path === path);
+  if (listed || !path.includes("/")) return listed ?? null;
+  const [meta] = await invoke<Hit[]>("meta", { paths: [path] }).catch(() => []);
+  return meta ?? null;
+}
+
+/**
  * Which page the reader meant by what they typed, or null if nothing does.
  *
  * A path or a pasted link names a page outright. Anything else is a query, and
@@ -519,7 +535,6 @@ export function pastedAnchor(text: string): string {
  * have arrowed onto it. Nothing else navigates: `cptp` with nothing to show
  * must stay on the landing page and say so, not open a page that is not there.
  */
-export function resolve(hits: Hit[], text: string, best?: Hit): Hit | null {
-  const path = pastedPath(text);
-  return hits.find((hit) => hit.path === path) ?? best ?? null;
+export async function resolve(text: string, best?: Hit): Promise<Hit | null> {
+  return (await pastedHit(text)) ?? best ?? null;
 }
