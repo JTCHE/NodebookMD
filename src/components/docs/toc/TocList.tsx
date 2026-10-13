@@ -54,18 +54,16 @@ export function TocList({
             aria-current={active === i ? "location" : undefined}
             // Indent is data, and it has to beat the horizontal padding below.
             style={{ paddingLeft: `${(padded ? 0.625 : 0) + depth * 0.75}rem` }}
-            className={`grid cursor-interactive no-underline leading-snug transition-colors ${
+            className={`block cursor-interactive no-underline leading-snug transition-colors ${
               padded ? "rounded-xl pr-2.5 hover:bg-accent/70" : ""
             } ${depth === 0 ? "text-sm" : "text-[0.8125rem]"} ${rowHit} ${startsSection ? sectionGap : ""} ${
-              active === i ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
-            }`}
+              active === i ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            } ${padded ? "truncate" : ""}`}
           >
-            {/* A bold copy, hidden, in the same cell: the row is always as
-                wide and as tall as its bold state, so marking it moves nothing. */}
-            <span aria-hidden className={`invisible col-start-1 row-start-1 font-medium ${padded ? "truncate" : ""}`}>
-              {h.text}
-            </span>
-            <span className={`col-start-1 row-start-1 ${padded ? "truncate" : ""}`}>{h.text}</span>
+            {/* The mark is the colour alone. A bolder weight is wider: a row
+                that fits on one line wraps to two when marked, so the list
+                either moves or keeps a blank line under the row for it. */}
+            {h.text}
           </a>
         );
       })}
