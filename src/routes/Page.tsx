@@ -47,6 +47,23 @@ function nameOf(view: PageView, path: string): string {
   return last.charAt(0).toUpperCase() + last.slice(1);
 }
 
+/** Pixels a second for a held arrow key: near the pace of the browser's own. */
+const GLIDE_SPEED = 1100;
+
+/** Scrolls the box at a steady speed, one step per frame. Returns the stop. */
+function startGlide(box: HTMLElement, direction: 1 | -1): () => void {
+  let last = performance.now();
+  // Kept apart from scrollTop, which rounds a short step away on some screens.
+  let top = box.scrollTop;
+  let frame = requestAnimationFrame(function step(now) {
+    top += direction * GLIDE_SPEED * ((now - last) / 1000);
+    box.scrollTop = top;
+    last = now;
+    frame = requestAnimationFrame(step);
+  });
+  return () => cancelAnimationFrame(frame);
+}
+
 /** The reading view. Rust reads and parses the page; this draws it with the
     same component map the site uses. */
 export default function Page() {
@@ -264,6 +281,14 @@ export default function Page() {
     if (event.key === " " && target === document.body) by[" "] = event.shiftKey ? -page : page;
     if (!(event.key in by)) return;
     event.preventDefault();
+    // A held arrow glides at a steady speed until the key comes up. A smooth
+    // scroll per repeat restarts its ease on every press: the page crawls
+    // while the key is down, then runs on to the sum of all the presses.
+    if (event.repeat && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      if (!glide.current) glide.current = startGlide(shell, event.key === "ArrowDown" ? 1 : -1);
+      aim.current = null;
+      return;
+    }
     // A press during a smooth scroll adds to where that scroll goes, not to
     // where it is now. Otherwise quick presses move the page one step.
     const max = shell.scrollHeight - shell.clientHeight;
@@ -272,6 +297,20 @@ export default function Page() {
     shell.scrollTo({ top: aim.current, behavior: "smooth" });
   });
   const aim = useRef<number | null>(null);
+  const glide = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    const end = () => {
+      glide.current?.();
+      glide.current = null;
+    };
+    window.addEventListener("keyup", end);
+    window.addEventListener("blur", end);
+    return () => {
+      end();
+      window.removeEventListener("keyup", end);
+      window.removeEventListener("blur", end);
+    };
+  }, []);
 
   // Ctrl Alt C (⌘ ⌥ C) copies where an agent can read this page as a file:
   // the Markdown the local server answers at `<page>.md`. Houdini's help pane
