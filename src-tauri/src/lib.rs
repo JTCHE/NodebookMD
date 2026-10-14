@@ -576,6 +576,15 @@ fn meta(state: State<Db>, chosen: State<Arc<install::Chosen>>, cache: State<Arc<
     read_meta(&db, &install, &paths)
 }
 
+/// The text of one help icon, for Copy as SVG. The `hicon` scheme gives an
+/// `<img>` the same bytes, but a fetch from the page cannot read that origin.
+#[tauri::command(async)]
+fn icon_svg(app: tauri::AppHandle, name: String) -> Result<String, String> {
+    let install = current_for(&app)?;
+    let bytes = help::icon_layered(&install.root, &install.packages, &name)?;
+    String::from_utf8(bytes).map_err(|e| e.to_string())
+}
+
 /// The share card of a link that leaves the help, for its tooltip.
 #[tauri::command]
 async fn link_preview(url: String) -> Result<preview::Preview, String> {
@@ -843,8 +852,10 @@ fn icon_response(app: &tauri::AppHandle, request: Request<Vec<u8>>) -> Response<
     let name = request.uri().path().trim_start_matches('/').to_string();
     let name = percent_decode(&name);
     match current_for(app).and_then(|install| help::icon_layered(&install.root, &install.packages, &name)) {
+        // Any origin: the lightbox asks for its pictures with CORS.
         Ok(bytes) => Response::builder()
             .header("Content-Type", "image/svg+xml")
+            .header("Access-Control-Allow-Origin", "*")
             .header("Cache-Control", "max-age=31536000")
             .body(bytes)
             .unwrap(),
@@ -1177,7 +1188,8 @@ pub fn run() {
             obsidian_vaults,
             new_window,
             close_window,
-            open_devtools
+            open_devtools,
+            icon_svg
         ])
         .build(context)
         .expect("error while running the application")

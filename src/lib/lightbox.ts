@@ -7,6 +7,8 @@ export interface LightboxItem {
   alt: string;
   /** The ground the page chose for it (lib/ground). */
   ground?: Ground;
+  /** The help icon it shows, `SOP/box.svg`, for the icon's own menu. */
+  icon?: string;
 }
 
 export interface LightboxState {
@@ -42,6 +44,12 @@ export function openLightbox(from: HTMLElement) {
     index,
     from,
   });
+}
+
+/** Opens one picture alone, growing out of `from`: the page's icon, which is
+    not one of the page's figures. */
+export function openPicture(from: HTMLElement, item: LightboxItem) {
+  set({ items: [item], index: 0, from });
 }
 
 export function closeLightbox() {

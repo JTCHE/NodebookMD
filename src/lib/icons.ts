@@ -1,4 +1,5 @@
 import { iconUrl } from "./assets";
+import { invoke, inTauri } from "./backend";
 
 /** A help page names an icon by its path in `icons.zip`, e.g. `SOP/box.svg`. */
 export function localIconUrl(source: string): string {
@@ -34,4 +35,20 @@ export function warmIcons(sources: string[]): Promise<void> {
       return done;
     }),
   ).then(() => {});
+}
+
+/** The name Houdini itself gives an icon — `SOP_box` for `SOP/box.svg` — the
+    one a shelf tool, an HDA or `hou.qt.Icon` asks for. */
+export function houdiniIconName(source: string): string {
+  return source.replace(/\.svg$/i, "").split("/").filter(Boolean).join("_");
+}
+
+/** The SVG text of an icon. The desktop window asks Rust: its picture scheme
+    is another origin, which a fetch cannot read. The help pane serves the
+    icon on its own origin. */
+export async function iconSvg(source: string): Promise<string> {
+  if (inTauri) return invoke<string>("icon_svg", { name: source });
+  const answer = await fetch(iconUrl(source));
+  if (!answer.ok) throw new Error(`No icon at ${source}`);
+  return answer.text();
 }

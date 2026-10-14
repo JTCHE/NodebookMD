@@ -15,6 +15,9 @@ const CLICK_SLOP = 4;
 /** A small figure is drawn larger to fill the stage, but no more than this:
     past it a raster diagram turns to mush. */
 const MAX_UPSCALE = 2;
+/** How much of the stage an icon fills: big enough to read every line, with
+    a margin, so it does not read as a picture cropped to its edges. */
+const ICON_ROOM = 0.6;
 const MOTION = { duration: 220, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" };
 
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -185,7 +188,15 @@ function Viewer({ open }: { open: LightboxState }) {
     const img = picture.current;
     const box = stage.current;
     if (!img?.naturalWidth || !box) return;
-    const ratio = Math.min(box.clientWidth / img.naturalWidth, box.clientHeight / img.naturalHeight, MAX_UPSCALE);
+    // An icon is drawn in lines, not pixels: it grows to most of the stage
+    // with no blur, where a picture stops before its pixels show.
+    const icon = img.dataset.icon !== undefined;
+    const room = icon ? ICON_ROOM : 1;
+    const ratio = Math.min(
+      (box.clientWidth * room) / img.naturalWidth,
+      (box.clientHeight * room) / img.naturalHeight,
+      icon ? Infinity : MAX_UPSCALE,
+    );
     setSize({ width: Math.round(img.naturalWidth * ratio), height: Math.round(img.naturalHeight * ratio) });
   }, []);
 
@@ -291,6 +302,7 @@ function Viewer({ open }: { open: LightboxState }) {
             alt={item.alt}
             draggable={false}
             crossOrigin="anonymous"
+            data-icon={item.icon}
             onLoad={fit}
             width={size?.width}
             height={size?.height}
