@@ -228,7 +228,12 @@ fn parse_bracket(body: &str) -> Option<Inline> {
     if let Some((scheme, value)) = split_shortcut(target) {
         let value = value.trim();
         let target_kind = match scheme.as_str() {
-            "image" => return Some(Inline::Image { src: value.into() }),
+            "image" => {
+                return Some(Inline::Image {
+                    src: value.into(),
+                    size: None,
+                });
+            }
             "smallicon" => {
                 return Some(Inline::Icon {
                     src: value.into(),

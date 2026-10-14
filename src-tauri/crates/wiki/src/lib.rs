@@ -8,7 +8,7 @@ pub mod inline;
 pub mod markdown;
 pub mod model;
 
-pub use model::{Block, Entry, HeadingRef, Inline, LinkTarget, Page, Props, Title};
+pub use model::{Block, Entry, HeadingRef, Inline, LinkTarget, Page, Props, Size, Title};
 
 /// Parse one page.
 pub fn parse(source: &str) -> Page {

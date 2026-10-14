@@ -70,6 +70,8 @@ export function Card({ node, children, ...props }: React.ComponentProps<"li"> & 
   const icon =
     link?.children?.find((child) => child.tagName === "img") ?? title?.children?.find((child) => child.tagName === "img");
   const href = typeof link?.properties?.href === "string" ? link.properties.href : undefined;
+  // Without the size the page writes after a picture's address.
+  const iconSrc = typeof icon?.properties?.src === "string" ? icon.properties.src.split("#")[0] : undefined;
   const summaryText = summary && text(summary);
 
   return (
@@ -81,9 +83,9 @@ export function Card({ node, children, ...props }: React.ComponentProps<"li"> & 
             underline={false}
             mark={false}
           >
-            {typeof icon?.properties?.src === "string" && (
+            {iconSrc && (
               <DocIconClient
-                src={icon.properties.src}
+                src={iconSrc}
                 alt=""
               />
             )}
@@ -91,9 +93,9 @@ export function Card({ node, children, ...props }: React.ComponentProps<"li"> & 
           </DocLink>
         ) : (
           <>
-            {typeof icon?.properties?.src === "string" && (
+            {iconSrc && (
               <DocIconClient
-                src={icon.properties.src}
+                src={iconSrc}
                 alt=""
               />
             )}

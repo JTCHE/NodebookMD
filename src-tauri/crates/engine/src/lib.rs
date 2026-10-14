@@ -19,6 +19,7 @@ pub mod install;
 pub mod listing;
 pub mod packages;
 pub mod page;
+pub mod picture;
 pub mod place;
 pub mod search;
 pub mod sections;

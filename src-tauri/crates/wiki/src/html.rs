@@ -280,7 +280,7 @@ pub fn inlines(inlines: &[Inline]) -> String {
                 "<button class=\"fold\" data-fold=\"{}\"></button>",
                 escape(name)
             )),
-            Inline::Image { src } => {
+            Inline::Image { src, .. } => {
                 out.push_str(&format!("<img src=\"{}\" alt=\"\">", escape(src)))
             }
             // The icon name is resolved against the Houdini install later.

@@ -21,6 +21,16 @@ pub fn prop<'a>(props: &'a Props, name: &str) -> Option<&'a str> {
         .map(|(_, v)| v.as_str())
 }
 
+/// A picture's size in pixels.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct Size {
+    pub width: u32,
+    pub height: u32,
+    /// False for an SVG with a `viewBox` and no width of its own: the ratio
+    /// holds, and the page gives it a width.
+    pub fixed: bool,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Inline {
@@ -59,6 +69,10 @@ pub enum Inline {
     },
     Image {
         src: String,
+        /// Read from the file by the engine, so the app can hold the
+        /// picture's room before the file arrives.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        size: Option<Size>,
     },
     Icon {
         src: String,

@@ -100,6 +100,8 @@ pub struct Links<'a> {
     pub name_of: &'a dyn Fn(&str) -> Option<String>,
     /// Whether there is such a page, without reading it.
     pub exists: &'a dyn Fn(&str) -> bool,
+    /// The size of a picture, by the path `resolve` wrote.
+    pub size_of: &'a dyn Fn(&str) -> Option<wiki::Size>,
 }
 
 /// Rewrites every asset reference in a page to the path the `himage` protocol
@@ -164,8 +166,9 @@ pub fn rewrite(page: &str, blocks: &mut [Block], links: &Links) {
 
 fn inlines(page: &str, inlines: &mut Vec<Inline>, links: &Links) {
     inlines.retain_mut(|inline| match inline {
-        Inline::Image { src } => match resolve(page, src) {
+        Inline::Image { src, size } => match resolve(page, src) {
             Some(path) => {
+                *size = (links.size_of)(&path);
                 *src = path;
                 true
             }

@@ -199,6 +199,26 @@ pub fn asset_layered(roots: &[PathBuf], path: &str) -> Result<Vec<u8>, String> {
     Err(last)
 }
 
+/// The size of a picture named the way `assets::resolve` writes it, read
+/// from the head of its file alone. `None` for a video, or a picture no root
+/// holds.
+pub fn picture_size(roots: &[PathBuf], path: &str) -> Option<wiki::Size> {
+    let name = path.strip_prefix("images/")?;
+    if name.contains("..") {
+        return None;
+    }
+    roots.iter().find_map(|root| {
+        with_archive(&root.join("images.zip"), |archive| {
+            let entry = archive.by_name(name).ok()?;
+            let mut head = Vec::new();
+            entry.take(crate::picture::HEAD).read_to_end(&mut head).ok()?;
+            crate::picture::size(&head)
+        })
+        .ok()
+        .flatten()
+    })
+}
+
 /// A video or movie is read whole. The `himage` handler serves the range the
 /// player asked for out of these bytes; the largest file in the install is
 /// 6.3 MB.

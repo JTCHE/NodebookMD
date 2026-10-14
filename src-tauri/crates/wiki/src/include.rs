@@ -302,7 +302,7 @@ fn rebase(blocks: &mut [Block], dir: &str) {
 fn rebase_inline(inlines: &mut [Inline], dir: &str) {
     for inline in inlines {
         match inline {
-            Inline::Image { src } => *src = at(dir, src),
+            Inline::Image { src, .. } => *src = at(dir, src),
             Inline::Link { text, target } => {
                 if let LinkTarget::Wiki { path, .. } = target
                     && !path.is_empty()

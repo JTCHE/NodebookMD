@@ -79,6 +79,7 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
     let links = assets::Links {
         name_of: &|target| listing::title(&roots, target),
         exists: &|target| help::exists_layered(&roots, target),
+        size_of: &|picture| help::picture_size(&roots, picture),
     };
     assets::rewrite(&path, &mut parsed.blocks, &links);
     let prop = |name: &str| wiki::model::prop(&parsed.props, name).map(str::to_string);

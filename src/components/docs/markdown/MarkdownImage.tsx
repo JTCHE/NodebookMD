@@ -14,18 +14,30 @@ interface Seen {
 }
 const seen = new Map<string, Seen>();
 
+/** The address, and the size the Rust side read from the file and wrote
+    after it: `#640x480`, or `#640:480` for an SVG that has a ratio and no
+    width of its own. See `image_src` in the parser's `markdown.rs`. */
+function written(src: string): { path: string; size: Omit<Seen, "ground"> | null } {
+  const [path, mark = ""] = src.split("#");
+  const size = /^(\d+)([x:])(\d+)$/.exec(mark);
+  if (!size) return { path, size: null };
+  return { path, size: { natural: size[2] === "x" ? Number(size[1]) : 0, ratio: `${size[1]} / ${size[3]}` } };
+}
+
 /** A figure on a help page. The Rust side resolved the path against the page,
     so this only has to build the URL. An inline `[Icon:TOOLS/handles]` arrives
     here too, as an `<img data-icon>` with no `src` — see `icon` in the
     parser's `markdown.rs` — and `DocIconClient` draws it from `icons.zip`. */
 export const Image: Components["img"] = function MarkdownImage({ src, alt, ...props }) {
-  const url = typeof src === "string" ? assetUrl(src) : "";
-  // A picture seen before starts as it ended: its size and its ground from
-  // the first frame, so it never draws twice. A new one stays clear until it
-  // has loaded and been read; it then draws once, final, and fades in.
+  const { path, size } = written(typeof src === "string" ? src : "");
+  const url = path ? assetUrl(path) : "";
+  // A picture holds its room from the first frame: the page wrote its size.
+  // One seen before also has its ground, so it draws final at once. A new
+  // one stays clear until it has loaded and been read, then fades in.
   const [known, setKnown] = useState<Seen | null>(() => seen.get(url) ?? null);
   const ground = known?.ground ?? null;
-  const natural = known?.natural ?? 0;
+  const natural = known?.natural ?? size?.natural ?? 0;
+  const ratio = known?.ratio ?? size?.ratio;
   const data = props as Record<string, unknown>;
   if (typeof data["data-icon"] === "string") {
     return (
@@ -38,7 +50,7 @@ export const Image: Components["img"] = function MarkdownImage({ src, alt, ...pr
   }
   if (!src || typeof src !== "string") return null;
   // A drawing small enough to be a glyph stays a glyph.
-  const vector = /\.svg$/i.test(src) && (natural === 0 || natural >= 120);
+  const vector = /\.svg$/i.test(path) && (natural === 0 || natural >= 120);
   const width = vector ? "100vw" : natural ? `${natural}px` : "";
   return (
     <img
@@ -54,7 +66,7 @@ export const Image: Components["img"] = function MarkdownImage({ src, alt, ...pr
       className={`markdown-media my-4 block h-auto cursor-zoom-in transition-opacity duration-(--duration-fast) motion-reduce:transition-none ${
         known ? groundClass(ground) : "opacity-0"
       }`}
-      style={{ ...(width && { "--natural": width }), ...(known && { aspectRatio: known.ratio }) } as React.CSSProperties}
+      style={{ ...(width && { "--natural": width }), ...(ratio && { aspectRatio: ratio }) } as React.CSSProperties}
       data-ground={ground ?? undefined}
       // The ground is read from the pixels, and the app serves pictures from
       // another origin (`himage:`), which answers with CORS for this.
@@ -71,8 +83,8 @@ export const Image: Components["img"] = function MarkdownImage({ src, alt, ...pr
         const image = event.currentTarget;
         const next = {
           natural: image.naturalWidth,
-          // An SVG with only a viewBox reports 0 by 0: no ratio to keep.
-          ratio: image.naturalHeight ? `${image.naturalWidth} / ${image.naturalHeight}` : "auto",
+          // An SVG with only a viewBox reports 0 by 0: the page's ratio, if any.
+          ratio: image.naturalHeight ? `${image.naturalWidth} / ${image.naturalHeight}` : (size?.ratio ?? "auto"),
           ground: groundFor(image),
         };
         seen.set(url, next);

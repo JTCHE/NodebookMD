@@ -238,7 +238,7 @@ fn image_group(text: &[Inline]) -> Option<String> {
     let mut sources = Vec::new();
     for inline in text {
         match inline {
-            Inline::Image { src } => sources.push(src),
+            Inline::Image { src, size } => sources.push((src, *size)),
             Inline::Text { text } if text.trim().is_empty() => {}
             _ => return None,
         }
@@ -247,15 +247,24 @@ fn image_group(text: &[Inline]) -> Option<String> {
         return None;
     }
     if is_portable() {
-        let embeds: Vec<String> = sources.iter().map(|src| format!("![]({src})")).collect();
+        let embeds: Vec<String> = sources.iter().map(|(src, _)| format!("![]({src})")).collect();
         return Some(format!("{}\n\n", embeds.join("\n\n")));
     }
     let figures: String = sources
         .iter()
-        .map(|src| format!("<figure><img src=\"{}\" alt=\"\" /></figure>", attribute(src)))
+        .map(|(src, size)| format!("<figure><img src=\"{}\" alt=\"\" /></figure>", attribute(&image_src(src, *size))))
         .collect();
+    // Every figure takes the height of the shortest picture. Known here, the
+    // row has that height from its first frame; see `ImageGroup.tsx`.
+    let shortest = sources.iter().filter_map(|(_, size)| size.filter(|s| s.fixed).map(|s| s.height)).min();
+    let style = match shortest {
+        Some(height) if sources.iter().all(|(_, size)| size.is_some()) => {
+            format!(" style=\"--image-group-height: {height}px\"")
+        }
+        _ => String::new(),
+    };
     Some(format!(
-        "<div class=\"not-prose image-group\">{figures}</div>\n\n"
+        "<div class=\"not-prose image-group\"{style}>{figures}</div>\n\n"
     ))
 }
 
@@ -732,8 +741,8 @@ fn raw_inlines(text: &[Inline]) -> String {
             Inline::Key { key } => out.push_str(&format!("<code>{}</code>", escape(key))),
             Inline::Glyph { .. } | Inline::Fold { .. } => {}
             Inline::Icon { src, size } => push_icon(&mut out, src, *size),
-            Inline::Image { src } => {
-                out.push_str(&format!("<img src=\"{}\" alt=\"\">", attribute(src)))
+            Inline::Image { src, size } => {
+                out.push_str(&format!("<img src=\"{}\" alt=\"\">", attribute(&image_src(src, *size))))
             }
             Inline::Link { text, target } => out.push_str(&format!(
                 "<a href=\"{}\">{}</a>",
@@ -930,7 +939,7 @@ pub fn inlines(inlines: &[Inline]) -> String {
             Inline::Var { name } => out.push_str(&format!("`<{name}>`")),
             Inline::Key { key } => out.push_str(&format!("`{key}`")),
             Inline::Glyph { .. } | Inline::Fold { .. } => {}
-            Inline::Image { src } => out.push_str(&format!("![]({src})")),
+            Inline::Image { src, size } => out.push_str(&format!("![]({})", image_src(src, *size))),
             Inline::Icon { src, size } => push_icon(&mut out, src, *size),
             Inline::Link { text, target } => {
                 out.push_str(&format!("[{}]({})", self::inlines(text), url(target)))
@@ -983,6 +992,19 @@ thread_local! {
     /// Set while `portable` writes. Each shape the app draws from raw HTML
     /// checks it and writes its plain Markdown form instead.
     static PORTABLE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// A picture's address, and in the app its size after it: `#640x480`, or
+/// `#640:480` for a ratio alone. A fragment is never sent with the request.
+/// See `MarkdownImage.tsx`. Outside the app it is the address alone.
+fn image_src(src: &str, size: Option<crate::Size>) -> String {
+    match size {
+        Some(size) if !is_portable() => {
+            let mark = if size.fixed { 'x' } else { ':' };
+            format!("{src}#{}{mark}{}", size.width, size.height)
+        }
+        _ => src.to_string(),
+    }
 }
 
 fn is_portable() -> bool {
