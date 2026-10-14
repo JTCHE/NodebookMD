@@ -49,6 +49,8 @@ jobs:
 
       - name: run the dispatched check
         if: inputs.run != ''
+        # `shell: bash` adds pipefail: a failed check fails the step, not tee.
+        shell: bash
         env:
           RUN: ${{ inputs.run }}
         run: |
