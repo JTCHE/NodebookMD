@@ -16,7 +16,6 @@ import { useTrail } from "@/lib/nav";
 import { WindowControls, useWindowFlag } from "./WindowControls";
 import { TitleBarMenu } from "./TitleBarMenu";
 import { TabStrip, useTabKeys } from "./TabStrip";
-import { useTabs } from "@/lib/tabs";
 import { appWindow, inTauri } from "@/lib/backend";
 import { ALT_KEY, BACK_KEYS, COMMAND_KEY, FORWARD_KEYS, IS_MAC, historyStep, letterOf, useHotkey } from "@/lib/hotkeys";
 import { Hint } from "@/components/ui/Hint";
@@ -49,11 +48,10 @@ interface TitleBarProps {
 export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false }: TitleBarProps) {
   const navigate = useNavigate();
   const { canGoBack, canGoForward } = useTrail();
-  const { tabs } = useTabs();
-  const tabbed = inTauri && !bare && tabs.length > 1;
+  const tabbed = inTauri && !bare;
   // With tabs the arrows stay put, or the strip after them would jump
   // sideways on every switch to or from a home tab.
-  const showArrows = !bare && (showTrail || canGoBack || canGoForward || tabs.length > 1);
+  const showArrows = !bare && (showTrail || canGoBack || canGoForward || tabbed);
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   // macOS hides the traffic lights in full screen, and the room kept for
   // them goes with them.

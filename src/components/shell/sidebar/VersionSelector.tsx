@@ -185,7 +185,7 @@ function F1Chip({
         }}
         onMouseEnter={() => setHint(true)}
         onMouseLeave={() => setHint(false)}
-        onFocus={() => setHint(true)}
+        onFocus={(e) => e.currentTarget.matches(":focus-visible") && setHint(true)}
         onBlur={() => setHint(false)}
         className={cn(
           CHIP,

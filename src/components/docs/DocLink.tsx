@@ -144,7 +144,12 @@ export default function DocLink({
       setVisible(true);
     },
     onMouseLeave: () => setVisible(false),
-    onFocus: () => {
+    // Keyboard focus only. A click focuses the link too, and the window
+    // focuses it again when the reader comes back from the browser an
+    // external link opened, with the pointer elsewhere: no leave would put
+    // that tooltip away.
+    onFocus: (e: React.FocusEvent) => {
+      if (!e.currentTarget.matches(":focus-visible")) return;
       hoverPosRef.current = null;
       setVisible(true);
     },
@@ -171,6 +176,9 @@ export default function DocLink({
           rel="noopener noreferrer"
           className={classes}
           {...hover}
+          // The browser opens over the window, and the pointer leaves the
+          // link with no leave event.
+          onClick={() => setVisible(false)}
         >
           {children}
         </a>

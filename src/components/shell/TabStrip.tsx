@@ -1,6 +1,6 @@
 /**
- * The tabs of the window, in the title bar. Drawn once there are two: a
- * single tab is the window itself, and a lone chip would only take room.
+ * The tabs of the window, in the title bar. Always drawn, a lone tab too:
+ * the strip does not appear and push the bar about when a second tab opens.
  *
  * Motion stays out of the reader's way. A switch is instant — it happens
  * dozens of times an hour. Only a change of place moves: a tab that opens

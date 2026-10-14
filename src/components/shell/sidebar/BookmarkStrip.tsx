@@ -73,7 +73,7 @@ function BookmarkTile({ entry }: { entry: LibraryEntry }) {
         onPointerEnter={() => warm(entry.path)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onFocus={() => setHovered(true)}
+        onFocus={(e) => e.currentTarget.matches(":focus-visible") && setHovered(true)}
         onBlur={() => setHovered(false)}
         onClick={() => setHovered(false)}
         aria-label={entry.title}
