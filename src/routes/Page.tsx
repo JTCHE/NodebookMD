@@ -199,6 +199,8 @@ export default function Page() {
     // Only on the page the address names: the old page stays on screen while
     // the next one is read, and it does not have the next page's sections.
     if (!id || page?.path !== path) return;
+    // A search excerpt aims at its own words, below, and holds that aim.
+    if ((location.state as { find?: string } | null)?.find) return;
     // A return to the entry puts the reader where they left it, above.
     if (navigationType === "POP" && offsets.has(location.key)) return;
     const box = scroller.current;
@@ -239,7 +241,7 @@ export default function Page() {
       cancelAnimationFrame(frame);
       stop();
     };
-  }, [location.hash, location.key, navigationType, page, path]);
+  }, [location.hash, location.key, location.state, navigationType, page, path]);
 
   // A search excerpt the reader picked: the page opens at those words and
   // marks them. Once per navigation, so the same excerpt picked twice marks
@@ -254,8 +256,9 @@ export default function Page() {
       const article = shell?.querySelector("article");
       const main = article?.parentElement;
       if (!shell || !article || !main) return;
-      const section = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
-      flashText(article, main, shell, find, section);
+      const section = location.hash ? findAnchor(decodeURIComponent(location.hash.slice(1))) : null;
+      // Words the page no longer has: the section the hit named, at least.
+      if (!flashText(article, main, shell, find, section) && section) jumpTo(section);
     });
     return () => cancelAnimationFrame(frame);
   }, [location.key, location.state, location.hash, page, path]);
