@@ -50,6 +50,7 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
   const navigate = useNavigate();
   const { canGoBack, canGoForward } = useTrail();
   const { tabs } = useTabs();
+  const tabbed = inTauri && !bare && tabs.length > 1;
   // With tabs the arrows stay put, or the strip after them would jump
   // sideways on every switch to or from a home tab.
   const showArrows = !bare && (showTrail || canGoBack || canGoForward || tabs.length > 1);
@@ -134,13 +135,15 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
           // need more room than one glyph. A whole-pixel width: the text is a
           // fraction wide, and the arrows after it drew soft on half pixels.
           "ml-sm flex h-[28px] w-[117px] shrink-0 cursor-interactive items-center gap-[6px] rounded-md px-sm",
+          // A narrow window with tabs gives the name's room to the tabs.
+          tabbed && "max-[760px]:w-auto",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
           "pointer-hover:bg-neutral-200",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         )}
       >
         <BrandLogo className="h-[16px] w-auto shrink-0" />
-        <span className="translate-y-[0.5px] text-[12.5px] font-medium tracking-[-0.01em] text-neutral-950">
+        <span className={cn("translate-y-[0.5px] text-[12.5px] font-medium tracking-[-0.01em] text-neutral-950", tabbed && "max-[760px]:hidden")}>
           {APP_NAME}
         </span>
       </Link>
@@ -180,7 +183,7 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
         </span>
       )}
 
-      {inTauri && !bare && tabs.length > 1 && <TabStrip />}
+      {tabbed && <TabStrip />}
 
       {/* The stretch between the app's controls and the window's is the part of
           the bar a reader grabs to move the window. */}
@@ -192,7 +195,7 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
 
       {/* Which build of the app this is, beside the window's own buttons:
           it is read, not pressed, and the arrows stay next to the name. */}
-      <span data-tauri-drag-region className="mr-sm shrink-0 translate-y-[0.5px] text-caption text-neutral-500">
+      <span data-tauri-drag-region className={cn("mr-sm shrink-0 translate-y-[0.5px] text-caption text-neutral-500", tabbed && "max-[760px]:hidden")}>
         v{version}
       </span>
 
