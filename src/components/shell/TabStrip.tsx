@@ -18,7 +18,7 @@ import { Icons } from "@/lib/ui/icons";
 import { Hint } from "@/components/ui/Hint";
 import { MenuList } from "@/components/ui/MenuList";
 import DocIconClient from "@/components/docs/markdown/DocIconClient";
-import { COMMAND_KEY, IS_MAC, useHotkey } from "@/lib/hotkeys";
+import { COMMAND_KEY, IS_MAC, letterOf, useHotkey } from "@/lib/hotkeys";
 import { hitOf } from "@/lib/search";
 import { useLibrary } from "@/lib/store/library";
 import {
@@ -26,6 +26,7 @@ import {
   canReopenTab,
   closeTab,
   closeTabs,
+  closeWindow,
   current,
   cycleTab,
   duplicateTab,
@@ -63,9 +64,10 @@ export function useTabKeys() {
       event.preventDefault();
       action();
     };
-    // `code` for the letters and digits: the key a layout types there varies.
-    if (event.code === "KeyT") run(event.shiftKey ? reopenTab : newTab);
-    else if (event.code === "KeyW" && !event.shiftKey) run(() => closeTab(active));
+    // `code` for the digits: AZERTY types "&" on the 1 key.
+    const letter = letterOf(event);
+    if (letter === "t") run(event.shiftKey ? reopenTab : newTab);
+    else if (letter === "w") run(event.shiftKey ? closeWindow : () => closeTab(active));
     else if (event.key === "Tab") run(() => cycleTab(event.shiftKey ? -1 : 1));
     else if (event.key === "PageDown" && !event.shiftKey) run(() => cycleTab(1));
     else if (event.key === "PageUp" && !event.shiftKey) run(() => cycleTab(-1));
@@ -169,7 +171,7 @@ export function TabStrip() {
       style={{ flexBasis: tabs.length * (TAB_WIDTH + 4) + 28 }}
       className={cn(
         // Relative: each tab's `offsetLeft` is then its place in the strip.
-        "relative ml-xs flex h-full min-w-0 items-center gap-2xs overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
+        "relative flex h-full min-w-0 items-center px-[8px] overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
         "transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none",
       )}
     >
@@ -186,7 +188,7 @@ export function TabStrip() {
         />
       ))}
       {/* It stays at the end of the window when the tabs scroll under it. */}
-      <Hint label="New tab" keys={NEW_TAB_KEYS} className="sticky right-0 rounded-md bg-neutral-50 shadow-[0_0_0_3px_var(--color-neutral-50)]">
+      <Hint label="New tab" keys={NEW_TAB_KEYS} className="sticky right-0 mb-[2px] self-end rounded-md bg-neutral-50 shadow-[0_0_0_3px_var(--color-neutral-50)]">
         <button
           type="button"
           tabIndex={-1}
@@ -302,44 +304,59 @@ function TabChip({
       style={style}
       className={cn(
         // Wide enough for a name, and every tab gives way alike when the bar
-        // runs short. Below the width of icon and close, the name goes.
-        "group/tab @container relative flex h-[26px] min-w-[36px] shrink basis-(--tab) cursor-interactive items-center gap-[6px] rounded-md pr-[3px] pl-[8px]",
-        "touch-none select-none",
+        // runs short. A size container: the layout inside reads its width.
+        "group/tab @container relative h-[28px] min-w-[36px] shrink basis-(--tab) self-end cursor-interactive",
+        "touch-none select-none rounded-t-[8px]",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
+        // The divider on the left of a tab: none beside the active tab or
+        // the one under the pointer, which draw their own edge.
+        "before:absolute before:top-[7px] before:left-0 before:h-[14px] before:w-px before:bg-neutral-300",
+        "first:before:hidden [[aria-selected=true]+&]:before:opacity-0 [:hover+&]:before:opacity-0",
         active
-          ? "bg-raised text-neutral-950 shadow-chip"
-          : "text-neutral-600 pointer-hover:bg-neutral-200/70 pointer-hover:text-neutral-900",
+          ? "z-10 bg-background text-neutral-950 before:opacity-0"
+          : "text-neutral-600 pointer-hover:bg-neutral-200/70 pointer-hover:text-neutral-900 pointer-hover:before:opacity-0",
       )}
     >
-      {/* A narrow tab keeps its icon; the active one keeps its close. */}
-      <span className={cn("grid shrink-0 place-items-center", active && "@max-[40px]:hidden")}>
-        {icon ? (
-          <DocIconClient src={icon} alt="" className="size-[14px]" fallback={<Icons.page className="size-[14px]" />} />
-        ) : title === "Home" ? (
-          <Icons.home className="size-[14px]" />
-        ) : (
-          <Icons.page className="size-[14px]" />
-        )}
+      {active && (
+        // The active tab is part of the page under it, as in a browser: it
+        // covers the bar's hairline and flares into the page at each foot.
+        <>
+          <span aria-hidden className="absolute bottom-0 -left-[8px] size-[8px] bg-[radial-gradient(circle_at_0_0,transparent_8px,var(--background)_8.5px)]" />
+          <span aria-hidden className="absolute -right-[8px] bottom-0 size-[8px] bg-[radial-gradient(circle_at_100%_0,transparent_8px,var(--background)_8.5px)]" />
+        </>
+      )}
+      {/* Narrow, a tab shows one thing, centred: its icon, or its close
+          when it is the active one. */}
+      <span className="flex size-full items-center gap-[6px] pr-[4px] pl-[10px] @max-[72px]:justify-center @max-[72px]:px-0">
+        <span className={cn("grid shrink-0 place-items-center", active && "@max-[72px]:hidden")}>
+          {icon ? (
+            <DocIconClient src={icon} alt="" className="size-[14px]" fallback={<Icons.page className="size-[14px]" />} />
+          ) : title === "Home" ? (
+            <Icons.home className="size-[14px]" />
+          ) : (
+            <Icons.page className="size-[14px]" />
+          )}
+        </span>
+        <span className="min-w-0 flex-1 translate-y-[0.5px] truncate text-[12px] leading-none @max-[72px]:hidden">{title}</span>
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-label={`Close ${title}`}
+          // The press would also reach the tab, which activates and drags.
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={onClose}
+          className={cn(
+            "grid size-[20px] shrink-0 place-items-center rounded-[4px] text-neutral-500",
+            "transition-[opacity,background-color,color] duration-(--duration-fast) motion-reduce:transition-none",
+            "pointer-hover:bg-neutral-300/70 pointer-hover:text-neutral-950",
+            // The active tab always shows its close; another only under the
+            // pointer, and a narrow one never, so its icon keeps the room.
+            active ? "opacity-100" : "opacity-0 group-hover/tab:opacity-100 @max-[72px]:hidden",
+          )}
+        >
+          <Icons.dismiss className="size-[12px]" />
+        </button>
       </span>
-      <span className="min-w-0 flex-1 translate-y-[0.5px] truncate text-[12px] leading-none @max-[44px]:hidden">{title}</span>
-      <button
-        type="button"
-        tabIndex={-1}
-        aria-label={`Close ${title}`}
-        // The press would also reach the tab, which activates and drags.
-        onPointerDown={(event) => event.stopPropagation()}
-        onClick={onClose}
-        className={cn(
-          "grid size-[20px] shrink-0 place-items-center rounded-[4px] text-neutral-500",
-          "transition-[opacity,background-color,color] duration-(--duration-fast) motion-reduce:transition-none",
-          "pointer-hover:bg-neutral-300/70 pointer-hover:text-neutral-950",
-          // The active tab always shows its close; another only under the
-          // pointer, and a narrow one never, so its icon keeps the room.
-          active ? "opacity-100" : "opacity-0 group-hover/tab:opacity-100 @max-[64px]:hidden",
-        )}
-      >
-        <Icons.dismiss className="size-[12px]" />
-      </button>
     </div>
   );
 }

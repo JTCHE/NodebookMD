@@ -38,6 +38,17 @@ export function historyStep(event: KeyboardEvent): number {
   return 0;
 }
 
+/**
+ * The letter a shortcut names, in lower case. The letter the layout types,
+ * so Ctrl+W is the W key on AZERTY too, where it sits on QWERTY's Z. A key
+ * that types no Latin letter (Alt on macOS types "ç", a Cyrillic layout types
+ * "ц") falls back to the key's QWERTY place.
+ */
+export function letterOf(event: KeyboardEvent): string {
+  if (/^[a-z]$/i.test(event.key)) return event.key.toLowerCase();
+  return /^Key[A-Z]$/.test(event.code) ? event.code.slice(3).toLowerCase() : "";
+}
+
 /** Ctrl on Windows and Linux, Command on macOS. One of the two, never both. */
 export function isCommand(event: KeyboardEvent): boolean {
   return (event.ctrlKey || event.metaKey) && !event.altKey;

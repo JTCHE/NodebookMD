@@ -202,10 +202,7 @@ export function cycleTab(step: 1 | -1) {
 /** Closes the tabs `which` names. The last tab closes the window. */
 export function closeTabs(which: (index: number) => boolean) {
   const kept = state.tabs.filter((_, i) => !which(i));
-  if (!kept.length) {
-    void invoke("close_window").catch(() => {});
-    return;
-  }
+  if (!kept.length) return closeWindow();
   state.tabs.forEach((tab, at) => {
     if (which(at)) closed.unshift({ tab, at });
   });
@@ -219,6 +216,12 @@ export function closeTabs(which: (index: number) => boolean) {
   }
   openedBehind = 0;
   set({ tabs: kept, active });
+}
+
+/** Closes the window, all its tabs with it: Ctrl+Shift+W. The main window
+    hides to the tray when the reader keeps it running. */
+export function closeWindow() {
+  void invoke("close_window").catch(() => {});
 }
 
 export const closeTab = (index: number) => closeTabs((i) => i === index);

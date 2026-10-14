@@ -18,7 +18,7 @@ import { recordVisit } from "@/lib/store/library";
 import { sideFxUrl } from "@/lib/sidefx";
 import { forgetPages, known, read, type PageError, type PageView } from "@/lib/pages";
 import { onBuildChanged } from "@/lib/install";
-import { isTyping, useHotkey } from "@/lib/hotkeys";
+import { isTyping, letterOf, useHotkey } from "@/lib/hotkeys";
 import { invoke, inTauri } from "@/lib/backend";
 import { flashText } from "@/lib/ui/flash-text";
 import { findAnchor, jumpTo } from "@/components/docs/toc/measure";
@@ -320,8 +320,7 @@ export default function Page() {
   // the Markdown the local server answers at `<page>.md`. Houdini's help pane
   // is already on that server; the desktop window asks for its port.
   useHotkey((event) => {
-    // `code`: on macOS, Alt makes the C key type "ç".
-    const wanted = (event.ctrlKey || event.metaKey) && event.altKey && event.code === "KeyC";
+    const wanted = (event.ctrlKey || event.metaKey) && event.altKey && letterOf(event) === "c";
     if (!wanted || isTyping(event.target)) return;
     event.preventDefault();
     void (inTauri ? invoke<number>("server_port").catch(() => 0) : Promise.resolve(Number(window.location.port)))

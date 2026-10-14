@@ -18,7 +18,7 @@ import { TitleBarMenu } from "./TitleBarMenu";
 import { TabStrip, useTabKeys } from "./TabStrip";
 import { useTabs } from "@/lib/tabs";
 import { appWindow, inTauri } from "@/lib/backend";
-import { ALT_KEY, BACK_KEYS, COMMAND_KEY, FORWARD_KEYS, IS_MAC, historyStep, useHotkey } from "@/lib/hotkeys";
+import { ALT_KEY, BACK_KEYS, COMMAND_KEY, FORWARD_KEYS, IS_MAC, historyStep, letterOf, useHotkey } from "@/lib/hotkeys";
 import { Hint } from "@/components/ui/Hint";
 import { APP_NAME } from "@/lib/brand";
 import { version } from "../../../src-tauri/tauri.conf.json";
@@ -97,8 +97,10 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
         nativeFrame && "pr-xs",
         // The hairline is drawn INSIDE the bar. A border would take a pixel
         // off the row, and the caption buttons would stop a pixel short of
-        // the bottom of the window's own bar.
-        "shadow-[inset_0_-1px_0_var(--hairline)] bg-neutral-50 select-none",
+        // the bottom of the window's own bar. It is a layer over the bar's
+        // contents, so the tabs sit behind it, as they do in a browser.
+        "relative bg-neutral-50 select-none",
+        "after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-20 after:h-px after:bg-(--hairline)",
       )}
     >
       {!bare && (
@@ -220,9 +222,8 @@ function PinButton() {
       .then(() => setPinned(next))
       .catch(() => {});
   };
-  // `code`, not `key`: Alt changes the character the key types on macOS.
   useHotkey((event) => {
-    if (event.code !== "KeyT" || !(event.ctrlKey || event.metaKey) || !event.altKey || event.shiftKey) return;
+    if (letterOf(event) !== "t" || !(event.ctrlKey || event.metaKey) || !event.altKey || event.shiftKey) return;
     event.preventDefault();
     toggle();
   });
