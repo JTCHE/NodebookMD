@@ -29,7 +29,7 @@ export function PageTitle({ name, nodeType, icon }: PageTitleProps) {
           type="button"
           aria-label={`Show the ${name} icon`}
           data-icon={icon}
-          onClick={(event) => openPicture(event.currentTarget, { src: localIconUrl(icon), alt: `${name} icon`, icon })}
+          onClick={(event) => openPicture(event.currentTarget, { src: localIconUrl(icon), alt: `${name} icon`, icon, ground: "none" })}
           className="-m-1 shrink-0 cursor-zoom-in rounded-md p-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           <DocIconClient src={icon} alt="" className="size-8 select-none" priority />
