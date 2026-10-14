@@ -2,10 +2,19 @@
 # debug build of the app, and keeps a screenshot and the app's logs as the
 # run's artifact. No Houdini is installed here, so the app shows its no-install
 # state; F1 into a real Houdini still needs a real Mac.
+#
+# A dispatch can run a check instead of the screenshot, with the built app at
+# ./src-tauri/target/debug/houdinimd and `out/` kept as the artifact:
+#   gh workflow run macos-check.yml -f run="bash harness/mac/zoom-french.sh"
+#   gh run download <id> -n macos-check
 name: macos-check
 
 on:
   workflow_dispatch:
+    inputs:
+      run:
+        description: A command to run on the Mac after the build
+        default: ""
   push:
     branches: [main]
     paths: ["src-tauri/**", "src/**", ".github/workflows/macos-check.yml"]
@@ -38,7 +47,16 @@ jobs:
       - name: build
         run: bun run tauri build --debug --no-bundle
 
+      - name: run the dispatched check
+        if: inputs.run != ''
+        env:
+          RUN: ${{ inputs.run }}
+        run: |
+          mkdir -p out
+          bash -c "$RUN" 2>&1 | tee out/run.log
+
       - name: start the app and take a screenshot
+        if: inputs.run == ''
         run: |
           mkdir out
           ./src-tauri/target/debug/houdinimd > out/stdout.log 2>&1 &
