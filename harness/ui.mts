@@ -240,6 +240,75 @@ async function pressThrough(
   return { down, drawn };
 }
 
+/** Waits for the next page heading, from a stamp the caller set. */
+async function drawnSince(page: Page): Promise<number | null> {
+  const drew = await page
+    .waitForFunction(() => window.__marks.article !== null, null, { timeout: PRESS_WAIT })
+    .then(() => true)
+    .catch(() => false);
+  return drew ? page.evaluate(() => window.__marks.article - window.__act) : null;
+}
+
+/** Stamps the start of an action that should draw a page other than this one. */
+async function expectOtherPage(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    window.__marks.article = null;
+    window.__wanted = "";
+    var heading = document.querySelector("article.prose h1");
+    window.__notHeading = heading ? heading.textContent.trim() : "";
+    window.__act = performance.now();
+  });
+}
+
+/**
+ * TABS, THE DESKTOP WINDOW'S OWN FLOWS.
+ *
+ * A link opened with Ctrl+Shift comes up in a new tab at once: press to drawn.
+ * Ctrl+Shift+Tab goes back to the tab it came from, which already read its
+ * page: key to drawn. Ctrl+Tab and Ctrl+W then close the new tab, so every
+ * round starts from one tab.
+ */
+async function tabFlows(page: Page, pages: Doc[], runs: number, known: Set<string>): Promise<{ opened: number[]; switched: number[] }> {
+  const opened: number[] = [];
+  const switched: number[] = [];
+  for (let run = 0; run < runs; run++) {
+    for (const path of pages) {
+      await openPage(page, path);
+      const target = await page.evaluate((known) => {
+        const pages = new Set(known);
+        const link = [...document.querySelectorAll<HTMLAnchorElement>("article a[href]")].find((a) => {
+          const href = a.getAttribute("href") ?? "";
+          return href.startsWith("/") && href !== location.pathname && pages.has(href.slice(1).split("#")[0]);
+        });
+        if (!link) return null;
+        const box = link.getBoundingClientRect();
+        return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+      }, [...known]);
+      if (!target) continue;
+      await page.mouse.move(target.x, target.y);
+      await expectOtherPage(page);
+      await page.keyboard.down("Control");
+      await page.keyboard.down("Shift");
+      await page.mouse.click(target.x, target.y);
+      await page.keyboard.up("Shift");
+      await page.keyboard.up("Control");
+      const open = await drawnSince(page);
+      if (open === null) continue;
+      opened.push(open);
+
+      await expectOtherPage(page);
+      await page.keyboard.press("Control+Shift+Tab");
+      const back = await drawnSince(page);
+      if (back !== null) switched.push(back);
+
+      await page.keyboard.press("Control+Tab");
+      await page.keyboard.press("Control+w");
+      await page.waitForTimeout(50);
+    }
+  }
+  return { opened, switched };
+}
+
 /** Opens one page by its route and returns how long it took to draw. */
 async function openPage(page: Page, target: Doc): Promise<{ drawn: number; blank: number }> {
   const path = target.path;
@@ -315,7 +384,7 @@ export async function measureUi(port: number, runs = 3): Promise<UiMetric[]> {
     // 1. OPENING THE APP. Navigation to a search field a reader can type in.
     const start: number[] = [];
     for (let run = 0; run < runs; run++) {
-      await page.goto(base + "/", { waitUntil: "commit" });
+      await page.goto(base, { waitUntil: "commit" });
       await page.waitForFunction(() => window.__marks.field !== null, null, { timeout: WAIT });
       start.push(await page.evaluate(() => window.__marks.field));
     }
@@ -438,6 +507,13 @@ export async function measureUi(port: number, runs = 3): Promise<UiMetric[]> {
         metrics.push(measured(`press.${name}.${hoverMs}ms.route`, "µs", us(downs), "press to the route changing"));
         metrics.push(measured(`press.${name}.${hoverMs}ms.drawn`, "µs", us(draws), `press to drawn, after a ${hoverMs}ms hover`));
       }
+    }
+
+    // 5c. TABS. Only the desktop window has them; the probe serves it.
+    if (await page.evaluate(() => "__TAURI_INTERNALS__" in window)) {
+      const tabs = await tabFlows(page, pages, runs, known);
+      metrics.push(measured("tab.open", "µs", us(tabs.opened), "Ctrl+Shift+press on a link to drawn, in a new tab"));
+      metrics.push(measured("tab.switch", "µs", us(tabs.switched), "Ctrl+Shift+Tab to the tab before, to drawn"));
     }
 
     // 6. HAMMERING IT. Straight from page to page with no pause, which is what

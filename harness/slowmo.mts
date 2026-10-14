@@ -63,6 +63,14 @@ interface Flow {
   act: (page: Page) => Promise<void>;
 }
 
+/** An address change made by script, as the router sees a link. */
+async function go(page: Page, path: string) {
+  await page.evaluate((to) => {
+    history.pushState(null, "", `/${to}`);
+    dispatchEvent(new PopStateEvent("popstate"));
+  }, path);
+}
+
 /** One per kind of move a reader makes. Paths are shapes, not SideFX text. */
 const FLOWS: Flow[] = [
   { name: "boot", from: "about:blank", act: async (page) => void (await page.goto(`${base()}nodes/sop/box`)) },
@@ -119,6 +127,23 @@ const FLOWS: Flow[] = [
     name: "index-link",
     from: "nodes/sop/index",
     act: async (page) => page.click('article a[href="/nodes/sop/sphere"]'),
+  },
+  {
+    // A page with pictures at the top, read for the first time: a picture
+    // must come in once, at its own size, not blink or grow.
+    name: "pictures",
+    from: "nodes/sop/box",
+    act: async (page) => go(page, "nodes/sop/polyreduce"),
+  },
+  {
+    // Back to it: the pictures are known and must be there at once.
+    name: "pictures-again",
+    from: "nodes/sop/polyreduce",
+    setup: async (page) => {
+      await go(page, "nodes/sop/box");
+      await page.waitForTimeout(1500);
+    },
+    act: async (page) => void (await page.goBack()),
   },
   {
     name: "search",

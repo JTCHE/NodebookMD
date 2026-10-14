@@ -83,7 +83,16 @@ function fresh(): TabsState {
 }
 
 let state: TabsState = restored() ?? fresh();
-if (inTauri) window.history.replaceState(null, "", createPath(current(state.tabs[state.active])));
+if (inTauri) {
+  window.history.replaceState(null, "", createPath(current(state.tabs[state.active])));
+  // Code that moves the address by itself — the harness, a devtools line —
+  // moves the active tab there, as it moved the page before there were tabs.
+  window.addEventListener("popstate", () => {
+    const { pathname, search, hash } = window.location;
+    const path = `${pathname}${search}${hash}`;
+    if (path !== createPath(current(state.tabs[state.active]))) navigator.push(path);
+  });
+}
 const listeners = new Set<() => void>();
 /** Tabs closed in this session, last one first, for Ctrl+Shift+T. */
 const closed: { tab: Tab; at: number }[] = [];

@@ -237,7 +237,10 @@ export async function launch(options: { clean?: boolean; telemetry?: string; env
   // A panic prints here before the app aborts; the error below quotes it.
   const stderr = join(dir, "stderr.log");
   const errors = openSync(stderr, "w");
-  const child: ChildProcess = spawn(join(dir, "houdinimd.exe"), options.clean ? ["--clean"] : [], {
+  // `--background`, as Houdini starts it: the window is never shown, so it
+  // never takes the foreground (tao's `set_focus` sends an Alt press to get
+  // it). The page still draws: the webview is told not to stop a hidden one.
+  const child: ChildProcess = spawn(join(dir, "houdinimd.exe"), ["--background", ...(options.clean ? ["--clean"] : [])], {
     cwd: dir,
     stdio: ["ignore", "ignore", errors],
     env: {
@@ -248,7 +251,8 @@ export async function launch(options: { clean?: boolean; telemetry?: string; env
       // Port 0: the webview picks its own and writes it to DevToolsActivePort.
       // A port picked here first can fall in a range Hyper-V reserves, and
       // then the webview opens no port at all and says nothing.
-      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: "--remote-debugging-port=0",
+      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS:
+        "--remote-debugging-port=0 --disable-features=CalculateNativeWinOcclusion --disable-renderer-backgrounding --disable-background-timer-throttling --disable-backgrounding-occluded-windows",
       HOUDINIMD_TELEMETRY_URL: options.telemetry ?? "http://127.0.0.1:9/v1/event",
       ...options.env,
     },
@@ -345,6 +349,141 @@ async function openPages(page: Page, count: number) {
   }
 }
 
+/**
+ * WHAT A READER WAITS FOR, IN THE SHIPPED WINDOW.
+ *
+ * Each time runs from the input event's own `timeStamp` — the moment the
+ * webview received the press or the key — to the second frame after the new
+ * heading is in the page, which is the frame a reader sees. Nothing of the
+ * driver's own round trip is in it.
+ *
+ * - `route`: an address change made by script, the router's share alone.
+ * - `press`: a real press on a link in the page, the number a reader feels.
+ * - `tab_open`: Ctrl+Shift+press on a link, drawn in a new tab.
+ * - `tab_switch`: Ctrl+Shift+Tab back to the tab before.
+ */
+const TIMED = 12;
+
+/** Starts a stopwatch at the next pointer press or key press, and stops it
+    two frames after the article heading changes. */
+async function stopwatch(page: Page): Promise<() => Promise<number | null>> {
+  await page.evaluate(() => {
+    const w = window as unknown as Record<string, unknown>;
+    w.__from = null;
+    w.__was = document.querySelector("article.prose h1")?.textContent?.trim() ?? null;
+    const start = (event: Event) => {
+      if (w.__from === null) w.__from = event.timeStamp;
+    };
+    addEventListener("pointerdown", start, { capture: true, once: true });
+    addEventListener("keydown", start, { capture: true, once: true });
+    w.__start = start;
+  });
+  return () =>
+    page.evaluate(
+      () =>
+        new Promise<number | null>((done) => {
+          const w = window as unknown as Record<string, unknown>;
+          const give = performance.now() + 10_000;
+          const tick = () => {
+            const text = document.querySelector("article.prose h1")?.textContent?.trim() ?? null;
+            if (w.__from !== null && text !== null && text !== w.__was) {
+              requestAnimationFrame(() => requestAnimationFrame(() => done(performance.now() - (w.__from as number))));
+              return;
+            }
+            if (performance.now() > give) return done(null);
+            requestAnimationFrame(tick);
+          };
+          tick();
+        }),
+    );
+}
+
+/** A link in the article to another page, at a point the pointer can press. */
+async function linkInPage(page: Page): Promise<{ x: number; y: number } | null> {
+  return page.evaluate(() => {
+    const link = [...document.querySelectorAll<HTMLAnchorElement>("article a[href^='/']")].find((a) => {
+      const box = a.getBoundingClientRect();
+      const href = a.getAttribute("href") ?? "";
+      return box.width > 0 && box.top > 60 && box.bottom < innerHeight - 20 && href.split("#")[0] !== location.pathname;
+    });
+    if (!link) return null;
+    const box = link.getBoundingClientRect();
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  });
+}
+
+export type Timings = Record<"route" | "press" | "tab_open" | "tab_switch", number[]>;
+
+async function timeFlows(page: Page): Promise<Timings> {
+  const out: Timings = { route: [], press: [], tab_open: [], tab_switch: [] };
+  const paths = await page.evaluate(async (want) => {
+    const all = (await window.__TAURI_INTERNALS__.invoke("titles")) as { path: string }[];
+    const step = Math.max(1, Math.floor(all.length / want));
+    return all.filter((_, i) => i % step === 0).slice(0, want).map((hit) => hit.path.replace(/^\//, ""));
+  }, TIMED);
+  for (const path of paths) {
+    // Route: the stopwatch starts on the script's own stamp.
+    const before = await heading(page);
+    const routed = await page.evaluate(
+      ([to, was]) =>
+        new Promise<number | null>((done) => {
+          const from = performance.now();
+          history.pushState({}, "", `/${to}`);
+          dispatchEvent(new PopStateEvent("popstate"));
+          const give = from + 10_000;
+          const tick = () => {
+            const text = document.querySelector("article.prose h1")?.textContent?.trim() ?? null;
+            if (text !== null && text !== was) return requestAnimationFrame(() => requestAnimationFrame(() => done(performance.now() - from)));
+            if (performance.now() > give) return done(null);
+            requestAnimationFrame(tick);
+          };
+          tick();
+        }),
+      [path, before] as [string, string | null],
+    );
+    if (routed !== null) out.route.push(routed);
+    await sleep(300);
+
+    // Press: a reader's pointer crosses the link, then presses.
+    let link = await linkInPage(page);
+    if (link) {
+      await page.mouse.move(link.x, link.y);
+      await sleep(60);
+      const stop = await stopwatch(page);
+      await page.mouse.down();
+      await page.mouse.up();
+      const pressed = await stop();
+      if (pressed !== null) out.press.push(pressed);
+      await sleep(300);
+    }
+
+    // A new tab in front, then back to the tab before, then close the new one.
+    link = await linkInPage(page);
+    if (link) {
+      await page.mouse.move(link.x, link.y);
+      await page.keyboard.down("Control");
+      await page.keyboard.down("Shift");
+      const stop = await stopwatch(page);
+      await page.mouse.click(link.x, link.y);
+      await page.keyboard.up("Shift");
+      await page.keyboard.up("Control");
+      const opened = await stop();
+      if (opened !== null) {
+        out.tab_open.push(opened);
+        await sleep(300);
+        const back = await stopwatch(page);
+        await page.keyboard.press("Control+Shift+Tab");
+        const switched = await back();
+        if (switched !== null) out.tab_switch.push(switched);
+        await page.keyboard.press("Control+Tab");
+        await page.keyboard.press("Control+w");
+      }
+      await sleep(300);
+    }
+  }
+  return out;
+}
+
 const QUERIES = ["copy to points", "pyro", "noise", "attribute wrangle", "vellum", "hou.node", "for each", "rbd", "usd", "karma"];
 
 /** Types each query into the search overlay, waits for its rows, closes it. */
@@ -367,6 +506,13 @@ const STEPS: Step[] = [
   { name: "started", note: "the window is up", run: async () => {} },
   { name: "settled", note: "20 s later: index pass and page catalog done", run: async () => sleep(20_000) },
   { name: "one_page", note: "one page open", run: async ({ page }) => openPages(page, 1) },
+  {
+    name: "timed",
+    note: `${TIMED} pages by route, by press, in a new tab, and back`,
+    run: async ({ page }) => {
+      timings = await timeFlows(page);
+    },
+  },
   { name: "fifty_pages", note: "49 more pages", run: async ({ page }) => openPages(page, 49) },
   { name: "searched", note: "10 searches typed in the overlay", run: async ({ page }) => search(page) },
   {
@@ -379,6 +525,9 @@ const STEPS: Step[] = [
   },
   { name: "idle", note: "hidden, 30 s more", run: async () => sleep(30_000) },
 ];
+
+/** Filled by the `timed` step. */
+let timings: Timings = { route: [], press: [], tab_open: [], tab_switch: [] };
 
 export interface StepResult {
   name: string;
@@ -398,6 +547,7 @@ export interface Audit {
   /** Processor time over the `idle` step, as a share of one core. */
   idleCores: number;
   telemetrySent: number;
+  timings: Timings;
 }
 
 export async function auditApp(options: { clean?: boolean } = {}): Promise<Audit> {
@@ -431,6 +581,7 @@ export async function auditApp(options: { clean?: boolean } = {}): Promise<Audit
     samples: sampler.samples,
     idleCores: (idle.cpu - hidden.cpu) / ((idle.at - hidden.at) / 1000),
     telemetrySent: sink.count(),
+    timings,
   };
 }
 
@@ -449,6 +600,11 @@ export function auditMarkdown(audit: Audit): string {
     const s = step.sample;
     md += `| ${step.name} | ${r1(s.app)} | ${last ? (s.app - last >= 0 ? "+" : "") + r1(s.app - last) : "–"} | ${r1(step.peak)} | ${r1(s.commit)} | ${s.threads} | ${s.handles} | ${r1(s.webview)} | ${r1(step.jsHeap)} | ${s.webviewProcesses} | ${step.note} |\n`;
     last = s.app;
+  }
+  md += `\n| flow | median ms | worst ms | runs |\n| --- | ---: | ---: | ---: |\n`;
+  for (const [name, all] of Object.entries(audit.timings)) {
+    const sorted = [...all].sort((a, b) => a - b);
+    md += `| ${name} | ${sorted.length ? r1(sorted[sorted.length >> 1]) : "–"} | ${sorted.length ? r1(sorted.at(-1)!) : "–"} | ${sorted.length} |\n`;
   }
   md += `\nIdle: ${r1(audit.idleCores * 100)}% of one core. Priority ${audit.steps[0].sample.priority}. `;
   md += `${audit.telemetrySent} telemetry request(s) went to the local sink.\n`;
