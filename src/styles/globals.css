@@ -655,15 +655,27 @@ img.markdown-media {
   pointer-events: none;
 }
 
+/* The blur's masks read this alpha (@jtche/progressive-blur). Registered as
+   a number so it can transition: the blur fades out with the controls. */
+@property --progressive-blur-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
 /* A sibling of the controls, not a child: the controls fade with `opacity`,
-   and an opacity below 1 on a parent leaves the blur nothing to blur. */
+   and an opacity below 1 on a parent leaves the blur nothing to blur. So the
+   blur fades through the alpha of its masks instead. */
 .video-blur {
   position: absolute;
   inset-inline: 0;
   bottom: 0;
   z-index: 1;
   height: calc(var(--video-controls-height) + 1rem);
-  transition: visibility 0s;
+  --progressive-blur-opacity: 1;
+  transition:
+    --progressive-blur-opacity var(--duration-base) var(--ease-out-quint),
+    visibility 0s;
 }
 .video-controls {
   position: absolute;
@@ -679,15 +691,18 @@ img.markdown-media {
   transition: opacity var(--duration-base) var(--ease-out-quint);
 }
 /* A playing clip hides its controls once the pointer rests. Focus from the
-   keyboard keeps them up. The blur is not faded: an animated backdrop blur
-   costs a frame of GPU work per step, so it waits out the fade, then goes. */
+   keyboard keeps them up. The blur fades with them, then stops drawing: a
+   hidden backdrop blur would still cost GPU work on every frame of video. */
 .markdown-video[data-idle]:not(:has(:focus-visible)) .video-controls {
   opacity: 0;
   pointer-events: none;
 }
 .markdown-video[data-idle]:not(:has(:focus-visible)) .video-blur {
+  --progressive-blur-opacity: 0;
   visibility: hidden;
-  transition: visibility 0s var(--duration-base);
+  transition:
+    --progressive-blur-opacity var(--duration-base) var(--ease-out-quint),
+    visibility 0s var(--duration-base);
 }
 @media (prefers-reduced-motion: reduce) {
   .video-controls,
