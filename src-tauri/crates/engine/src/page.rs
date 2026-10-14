@@ -89,7 +89,7 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
         name: name(&path, &parsed),
         path,
         node_type: node_type(&parsed.props),
-        icon: prop("icon").map(|icon| format!("{icon}.svg")),
+        icon: prop("icon").map(|icon| help::icon_file(&icon)),
         since: prop("since"),
         // The declared summary only: the fallback repeats the body's first
         // paragraph right above it. Search and listings use `summary()`.

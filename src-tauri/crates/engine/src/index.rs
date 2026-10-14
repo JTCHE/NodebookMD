@@ -195,7 +195,7 @@ fn row(
         path: path.clone(),
         title: crate::page::name(path, &parsed),
         node_type: crate::page::node_type(&parsed.props),
-        icon: wiki::model::prop(&parsed.props, "icon").map(|icon| format!("{icon}.svg")),
+        icon: wiki::model::prop(&parsed.props, "icon").map(crate::help::icon_file),
         summary: crate::page::summary(&parsed),
         sections: crate::sections::split(&markdown),
         mark: crate::versions::mark(path, &parsed.props),

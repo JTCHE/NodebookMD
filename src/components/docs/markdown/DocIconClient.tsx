@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { flushSync } from "react-dom";
-import { loaded, localIconUrl, missing } from "@/lib/icons";
+import { iconName, loaded, localIconUrl, missing } from "@/lib/icons";
 
 function first(src: string) {
-  return missing.has(src) ? "broken" : loaded.has(src) ? "instant" : "loading";
+  return !src || missing.has(src) ? "broken" : loaded.has(src) ? "instant" : "loading";
 }
 
 /**
@@ -22,7 +22,7 @@ function first(src: string) {
  * an icon broken.
  */
 export default function DocIconClient({
-  src,
+  src: source,
   alt,
   className = "doc-icon mr-2",
   priority = false,
@@ -39,6 +39,7 @@ export default function DocIconClient({
       gives nothing, where a box the size of an icon would be a hole. */
   fallback?: React.ReactNode;
 } & { width?: number; height?: number }) {
+  const src = iconName(source);
   const [state, setState] = useState<"loading" | "skeleton" | "instant" | "loaded" | "broken">(() => first(src));
   // The page title and a recycled list row keep this mounted while `src`
   // changes. The new icon starts over like a new mount: the old picture kept

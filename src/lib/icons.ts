@@ -1,9 +1,20 @@
 import { iconUrl } from "./assets";
 import { invoke, inTauri } from "./backend";
 
+/** The icon's path in `icons.zip`, `SOP/box.svg`. The help writes it in
+    several forms: `PLAYBAR/play_forward.svg`, `TOOLS/handles` with no
+    extension, `/icons/BUTTONS/chooser.svg` from the root of the help. Empty
+    for a name that names nothing. */
+export function iconName(source: string): string {
+  if (source.startsWith("http")) return source;
+  const name = source.trim().replace(/^\/+/, "").replace(/^icons\//i, "").replace(/(\.svg)+$/i, ".svg");
+  if (!name || name === "null" || name === ".svg") return "";
+  return /\.[a-z]+$/i.test(name) ? name : `${name}.svg`;
+}
+
 /** A help page names an icon by its path in `icons.zip`, e.g. `SOP/box.svg`. */
 export function localIconUrl(source: string): string {
-  return source.startsWith("http") ? source : iconUrl(source);
+  return source.startsWith("http") ? source : iconUrl(iconName(source));
 }
 
 /** Icons this window holds, and icons the install does not ship.
@@ -20,8 +31,8 @@ const fetching = new Map<string, Promise<void>>();
     Settles when every one is in or known missing. */
 export function warmIcons(sources: string[]): Promise<void> {
   return Promise.all(
-    sources.map((source) => {
-      if (loaded.has(source) || missing.has(source)) return;
+    sources.map(iconName).map((source) => {
+      if (!source || loaded.has(source) || missing.has(source)) return;
       let done = fetching.get(source);
       if (!done) {
         const image = new Image();

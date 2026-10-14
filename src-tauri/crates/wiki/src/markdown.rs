@@ -162,15 +162,17 @@ fn one(block: &Block, depth: u8) -> String {
         // A blank line between them made two paragraphs as far apart as any
         // two, and the term no longer read as the name of the text under it.
         // The hard break holds only before a paragraph: before a list or a
-        // code fence the backslash prints.
+        // code fence the backslash prints. The text is not indented: Markdown
+        // has no definition list to hold it, and three levels down the indent
+        // reached four spaces, which made the text a code block.
         Block::Definition { term, id, children, .. } => {
             let tight = matches!(children.first(), Some(Block::Paragraph { text }) if image_group(text).is_none());
             format!(
-                "{}**{}**{}{}",
+                "{}**{}**{}{}\n\n",
                 anchor(id),
                 inlines(term),
                 if tight { "\\\n" } else { "\n\n" },
-                indent(&blocks(children, depth + 1))
+                blocks(children, depth + 1).trim_end()
             )
         }
         Block::Item {

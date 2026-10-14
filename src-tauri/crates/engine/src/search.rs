@@ -317,7 +317,7 @@ pub fn read_meta(
             title: crate::page::name(&path, &parsed),
             path,
             summary: crate::page::summary(&parsed),
-            icon: wiki::model::prop(&parsed.props, "icon").map(|icon| format!("{icon}.svg")),
+            icon: wiki::model::prop(&parsed.props, "icon").map(crate::help::icon_file),
         });
     }
     Ok(found)

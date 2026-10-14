@@ -42,7 +42,7 @@ export const Image: Components["img"] = function MarkdownImage({ src, alt, ...pr
   if (typeof data["data-icon"] === "string") {
     return (
       <DocIconClient
-        src={`${data["data-icon"]}.svg`}
+        src={data["data-icon"]}
         alt={alt ?? ""}
         className={`doc-icon inline-icon-${String(data["data-size"] ?? "normal")} mx-0.5`}
       />

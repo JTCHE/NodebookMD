@@ -150,6 +150,18 @@ pub fn icon(install_root: &Path, name: &str) -> Result<Vec<u8>, String> {
 /// a package's node-doc icons actually live (SideFX Labs ships 167 there);
 /// `config/Icons/` is checked too, since that is where `icon()` itself reads
 /// core icons from and a package can use it the same way.
+/// The path in `icons.zip` of the icon a page's `#icon:` names. Most pages
+/// write `SOP/box`; some write `SOP/quadremesh.svg`.
+pub fn icon_file(name: &str) -> String {
+    let name = name.trim().trim_start_matches('/');
+    let name = name.strip_prefix("icons/").unwrap_or(name);
+    if name.ends_with(".svg") {
+        name.to_string()
+    } else {
+        format!("{name}.svg")
+    }
+}
+
 pub fn icon_layered(install_root: &Path, packages: &[PathBuf], name: &str) -> Result<Vec<u8>, String> {
     if let Ok(bytes) = icon(install_root, name) {
         return Ok(bytes);
