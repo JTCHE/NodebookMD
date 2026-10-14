@@ -11,6 +11,7 @@ import { startTheme } from "./lib/ui/theme";
 import { startPress } from "./lib/ui/press";
 import { startBlurCheck } from "./lib/ui/blur";
 import { startIconStroke } from "./lib/ui/icon-stroke";
+import { startZoomKeys } from "./lib/ui/zoom";
 import { current, navigator as tabNavigator, openTab, useTabs } from "./lib/tabs";
 import "./styles/globals.css";
 
@@ -60,6 +61,8 @@ if (inTauri) {
   window.addEventListener("error", (event) => report(`${event.message}\n${event.error?.stack ?? ""}`));
   window.addEventListener("unhandledrejection", (event) => report(String(event.reason?.stack ?? event.reason)));
 }
+
+if (inTauri && !/Windows/.test(navigator.userAgent)) startZoomKeys();
 
 // Every control in the window acts on the press from here on — one listener,
 // no prop to remember. See lib/ui/press.

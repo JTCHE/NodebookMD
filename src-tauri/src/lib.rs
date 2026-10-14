@@ -493,6 +493,12 @@ fn window<'a, R: tauri::Runtime, M: Manager<R>>(
         .title_bar_style(tauri::TitleBarStyle::Overlay)
         .hidden_title(true)
         .traffic_light_position(tauri::LogicalPosition::new(14.0, 18.0));
+    // WebView2 zooms on the keys of any layout by itself. Elsewhere Tauri adds
+    // a script that reads the typed character, and a French keyboard types no
+    // "0" without Shift. The front end's own zoom keys take over there
+    // (src/lib/ui/zoom.ts).
+    #[cfg(not(target_os = "windows"))]
+    let builder = builder.zoom_hotkeys_enabled(false);
     Ok(builder)
 }
 
