@@ -51,5 +51,5 @@ until [ -e /tmp/held ]; do sleep 0.05; done
 shot pulled
 wait $pull
 
-cmp -s /tmp/still.bmp /tmp/pulled.bmp || { echo "FAIL: the window moved during a pull past the top"; exit 1; }
+node harness/mac/same.mjs /tmp/still.bmp /tmp/pulled.bmp || { echo "FAIL: the window moved during a pull past the top"; exit 1; }
 echo "PASS: the window stays still during a pull past the top"

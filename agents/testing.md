@@ -37,6 +37,17 @@ Three levels, cheapest first.
    [Front-end](frontend.md).
 3. `bun run app` — the real window on the real install. The user runs this.
 
+## macOS
+
+There is no Mac on this machine. The `macos-check` workflow is one: a dispatch
+runs a command there after the build, and keeps `out/` as the artifact. The
+checks in `harness/mac/` drive the real window with System Events and compare
+screenshots. Read the workflow's header for the commands.
+
+Never drive a window on this machine with the mouse or the keys: the user works
+here while tests run. Playwright runs headless, and `harness/app.mts` starts
+the app with `--background`, so its window never shows.
+
 ## Fixtures
 
 Prefer a real check over a mock. A page is only confirmed against a real page
