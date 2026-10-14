@@ -45,6 +45,8 @@ export const REOPEN_TAB_KEYS = IS_MAC ? "⇧+⌘+T" : "Ctrl+Shift+T";
 const SLIDE = { duration: 180, easing: "cubic-bezier(0.2, 0, 0, 1)" };
 /** The width a tab takes when the bar has room. */
 const TAB_WIDTH = 184;
+/** The new tab button and its gap, which cover the end of a scrolled strip. */
+const NEW_TAB_ROOM = 32;
 /** Pixels a press travels before it is a drag and not a click. */
 const DRAG_START = 4;
 
@@ -126,6 +128,15 @@ export function TabStrip() {
       }
     }
   }, [tabs, frozen]);
+  // A strip too full for the window scrolls, and keeps the active tab in view.
+  useEffect(() => {
+    const box = strip.current;
+    const el = box?.querySelector<HTMLElement>(`[data-tab="${tabs[active]?.id}"]`);
+    if (!box || !el) return;
+    const room = box.clientWidth - NEW_TAB_ROOM;
+    if (el.offsetLeft < box.scrollLeft) box.scrollLeft = el.offsetLeft;
+    else if (el.offsetLeft + el.offsetWidth > box.scrollLeft + room) box.scrollLeft = el.offsetLeft + el.offsetWidth - room;
+  }, [tabs, active]);
   // A window that changes width moves every tab without a change to slide.
   useEffect(() => {
     const box = strip.current;
@@ -149,12 +160,16 @@ export function TabStrip() {
       role="tablist"
       aria-label="Tabs"
       onPointerLeave={() => setFrozen(null)}
+      // A mouse wheel has no sideways turn: its turn scrolls a full strip.
+      onWheel={(event) => {
+        if (!event.deltaX && strip.current) strip.current.scrollLeft += event.deltaY;
+      }}
       // Each tab is a size container, which gives it no width of its own to
       // offer the row, so the strip asks for the room its tabs want.
       style={{ flexBasis: tabs.length * (TAB_WIDTH + 4) + 28 }}
       className={cn(
         // Relative: each tab's `offsetLeft` is then its place in the strip.
-        "relative ml-xs flex h-full min-w-0 items-center gap-2xs",
+        "relative ml-xs flex h-full min-w-0 items-center gap-2xs overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
         "transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none",
       )}
     >
@@ -170,7 +185,8 @@ export function TabStrip() {
           onMenu={(x, y) => setMenu({ x, y, index })}
         />
       ))}
-      <Hint label="New tab" keys={NEW_TAB_KEYS}>
+      {/* It stays at the end of the window when the tabs scroll under it. */}
+      <Hint label="New tab" keys={NEW_TAB_KEYS} className="sticky right-0 rounded-md bg-neutral-50 shadow-[0_0_0_3px_var(--color-neutral-50)]">
         <button
           type="button"
           tabIndex={-1}
@@ -236,7 +252,7 @@ function TabChip({
       }
       const chips = [...box.querySelectorAll<HTMLElement>("[data-tab]")];
       const from = chips.indexOf(el);
-      const left = box.getBoundingClientRect().left;
+      const left = box.getBoundingClientRect().left - box.scrollLeft;
       // Kept in the strip: a tab dragged past either end stops there.
       const first = chips[0].offsetLeft;
       const last = chips[chips.length - 1].offsetLeft + chips[chips.length - 1].offsetWidth - el.offsetWidth;
