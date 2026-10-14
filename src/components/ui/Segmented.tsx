@@ -1,5 +1,6 @@
 import { useRef, type KeyboardEvent } from "react";
 import { cn } from "@/lib/utils";
+import { Hint } from "@/components/ui/Hint";
 
 /**
  * One choice out of a few short ones, side by side in one track: a theme, a
@@ -14,7 +15,8 @@ export function Segmented<T extends string>({
 }: {
   /** Null while the setting is read: the track draws, no chip is lifted. */
   value: T | null;
-  options: readonly { value: T; label: string }[];
+  /** `hint` shows under the pointer, for a choice whose label needs an example. */
+  options: readonly { value: T; label: string; hint?: string }[];
   onChange: (next: T) => void;
   label: string;
 }) {
@@ -38,7 +40,7 @@ export function Segmented<T extends string>({
     >
       {options.map((one) => {
         const chosen = one.value === value;
-        return (
+        const button = (
           <button
             key={one.value}
             type="button"
@@ -57,6 +59,13 @@ export function Segmented<T extends string>({
           >
             {one.label}
           </button>
+        );
+        return one.hint ? (
+          <Hint key={one.value} label={one.hint}>
+            {button}
+          </Hint>
+        ) : (
+          button
         );
       })}
     </div>

@@ -1,8 +1,9 @@
 /**
  * Settings, over the page the reader is on, not in place of it.
  *
- * Every section is the same shape: a title, a line on what it is for, and rows
- * of label, state and control, so no part reads as a different app. A setting
+ * Every section is the same shape: a title, then rows of label, state and
+ * control, so no part reads as a different app. A label says what a setting
+ * is; no line under it explains it again. A setting
  * is read from the backend each time the dialog opens, never cached, so it
  * says what is true now: a Houdini installed since the setup, an agent that
  * got Houdini MCP from somewhere else.
@@ -40,7 +41,6 @@ const SECTIONS = [
   { key: "mcp", label: "Houdini MCP", icon: Icons.newWindow },
   { key: "obsidian", label: "Obsidian", icon: Icons.bookmark },
   { key: "usage", label: "Usage data", icon: Icons.recent },
-  { key: "appearance", label: "Appearance", icon: Icons.themeSystem },
 ] as const;
 type SectionKey = (typeof SECTIONS)[number]["key"];
 
@@ -79,11 +79,7 @@ export function SettingsDialog() {
         ))}
       </nav>
       <div className={cn("min-w-0 flex-1 overflow-y-auto px-xl pb-lg", MODAL_TOP)}>
-        {shown === "appearance" ? (
-          // The one setting kept in the browser, so it works in Houdini's
-          // help pane too.
-          <AppearanceSection />
-        ) : shown === "general" ? (
+        {shown === "general" ? (
           <GeneralSection />
         ) : !inTauri ? (
           <p className="text-meta text-neutral-500">Settings live in the {APP_NAME} app, not in Houdini's help pane.</p>
@@ -101,27 +97,25 @@ export function SettingsDialog() {
   );
 }
 
-function Section({ title, detail, action, children }: { title: string; detail: string; action?: ReactNode; children: ReactNode }) {
+function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-md">
-      <header className="flex flex-col gap-2xs">
-        {/* The close button sits at the end of this line. */}
-        <div className={cn(MODAL_LINE, "gap-md pr-lg")}>
-          <h2 className="min-w-0 flex-1 text-[17px] font-semibold tracking-[-0.01em] text-neutral-950">{title}</h2>
-          {action}
-        </div>
-        <p className="text-meta text-neutral-500">{detail}</p>
+    <section className="flex flex-col gap-sm">
+      {/* The close button sits at the end of this line. */}
+      <header className={cn(MODAL_LINE, "gap-md pr-lg")}>
+        <h2 className="min-w-0 flex-1 text-[17px] font-semibold tracking-[-0.01em] text-neutral-950">{title}</h2>
+        {action}
       </header>
       <div className="flex flex-col">{children}</div>
     </section>
   );
 }
 
-/** One setting: what it is, what it says now, and its control. */
+/** One setting: what it is, what it says now, and its control. A control
+    too wide for the line goes under the label, not over it. */
 function Row({ label, detail, children }: { label: string; detail?: ReactNode; children?: ReactNode }) {
   return (
-    <div className={cn(ROW, "flex items-center gap-md")}>
-      <div className="flex min-w-0 flex-1 flex-col">
+    <div className={cn(ROW, "flex flex-wrap items-center justify-end gap-x-md gap-y-sm")}>
+      <div className="flex min-w-fit flex-1 flex-col">
         <span className="truncate text-[14px] font-medium text-neutral-950">{label}</span>
         {detail && <span className="text-caption text-neutral-500">{detail}</span>}
       </div>
@@ -177,7 +171,7 @@ function HelpSection() {
   }
 
   return (
-    <Section title={`Set ${APP_NAME} as the default help server`} detail="Which installed Houdini releases open their help here when you press F1.">
+    <Section title={`Set ${APP_NAME} as the default help server`}>
       {releases?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
       {releases?.map((one) => (
         <Row
@@ -234,7 +228,6 @@ function McpSection() {
   return (
     <Section
       title="Houdini MCP"
-      detail="Lets an AI agent drive Houdini and read these docs from the local index, so it answers about the Houdini build you have installed."
       action={
         <button type="button" disabled={agents === null} className={TEXT_BUTTON} onClick={scan}>
           Scan again
@@ -292,15 +285,12 @@ function ObsidianSection() {
     { value: "text", label: "Text only" },
   ];
   return (
-    <Section title="Obsidian" detail="Send to Obsidian sends a page with no pictures as text. For a page with pictures, it can write the pictures into your vault too.">
+    <Section title="Obsidian">
       <Row label="Pictures">
         <Segmented label="Pictures" value={choice} options={choices} onChange={(next) => void pick(next)} />
       </Row>
       <div className={cn(ROW, "flex flex-col gap-sm")}>
-        <span className="flex flex-col">
-          <span className="text-[14px] font-medium text-neutral-950">Vault</span>
-          <span className="text-caption text-neutral-500">Where the pictures go. Obsidian's own vaults are listed first.</span>
-        </span>
+        <span className="text-[14px] font-medium text-neutral-950">Vault</span>
         <VaultPicker value={vault} onChange={(path) => void keep(path)} />
       </div>
     </Section>
@@ -310,8 +300,11 @@ function ObsidianSection() {
 /** What the close button does. The Rust side reads the same key (`tray.rs`). */
 const CLOSE_TO_TRAY = "close_to_tray";
 
-/** How the app behaves as a whole: the links it copies, and its window. */
+/** How the app behaves as a whole: its theme, the links it copies, its
+    tabs and its window. The theme and the link form are kept in the browser
+    too, so they work in Houdini's help pane. */
 function GeneralSection() {
+  const theme = useThemeChoice();
   const [format, setFormat] = useState<LinkFormat | null>(null);
   const [tray, setTray] = useState<boolean | null>(null);
   const [restore, setRestore] = useState(restoresTabs);
@@ -333,28 +326,31 @@ function GeneralSection() {
   }
 
   return (
-    <Section title="General" detail={`How ${APP_NAME} copies links, opens its tabs, and what its window does when you close it.`}>
-      <Row
-        label="Copied links"
-        detail={
-          <>
-            {`${COMMAND_KEY}+L and the link buttons copy `}
-            <span className="font-mono text-[11.5px] text-neutral-700">{LINK_FORMATS[format ?? "path"].example}</span>
-          </>
-        }
-      >
+    <Section title="General">
+      <Row label="Theme">
+        <Segmented
+          label="Theme"
+          value={theme}
+          options={THEME_CHOICES.map((choice) => ({ value: choice, label: THEME_LABEL[choice] }))}
+          onChange={setTheme}
+        />
+      </Row>
+      <Row label="Copied links">
+        {/* What each form looks like is in its tooltip, for the reader who
+            asks; the row itself stays one line. */}
         <Segmented
           label="Copied links"
           value={format}
-          options={(Object.keys(LINK_FORMATS) as LinkFormat[]).map((key) => ({ value: key, label: LINK_FORMATS[key].label }))}
+          options={(Object.keys(LINK_FORMATS) as LinkFormat[]).map((key) => ({
+            value: key,
+            label: LINK_FORMATS[key].label,
+            hint: LINK_FORMATS[key].example,
+          }))}
           onChange={(next) => void pickFormat(next)}
         />
       </Row>
       {inTauri && (
-        <Row
-          label="Open tabs again at start"
-          detail={restore ? "The tabs you left open come back when the app starts." : "The app starts on one tab, at the home page."}
-        >
+        <Row label="Open tabs again at start">
           <Toggle
             checked={restore}
             onChange={(next) => {
@@ -366,34 +362,10 @@ function GeneralSection() {
         </Row>
       )}
       {inTauri && (
-        <Row
-          label="Keep running in the tray"
-          detail={
-            tray === false
-              ? `Closing the window quits ${APP_NAME}. F1 in Houdini starts it again.`
-              : `Closing the window keeps the app in the ${IS_MAC ? "menu bar" : "notification area"}, so F1 in Houdini opens at once.`
-          }
-        >
+        <Row label={IS_MAC ? "Keep running in the menu bar" : "Keep running in the tray"}>
           {tray !== null && <Toggle checked={tray} onChange={(next) => void flipTray(next)} label="Keep running in the tray" />}
         </Row>
       )}
-    </Section>
-  );
-}
-
-/** Light, dark, or whatever the system is set to. */
-function AppearanceSection() {
-  const theme = useThemeChoice();
-  return (
-    <Section title="Appearance" detail="System follows the light or dark setting of your computer, and changes when it changes.">
-      <Row label="Theme">
-        <Segmented
-          label="Theme"
-          value={theme}
-          options={THEME_CHOICES.map((choice) => ({ value: choice, label: THEME_LABEL[choice] }))}
-          onChange={setTheme}
-        />
-      </Row>
     </Section>
   );
 }
@@ -413,7 +385,7 @@ function UsageSection() {
   }
 
   return (
-    <Section title="Usage data" detail="Anonymous timings and counts of how the app is used, and a signal once an hour that the app is running. No page, no search and no file path leaves the machine.">
+    <Section title="Usage data">
       <Row
         label="Send anonymous usage data"
         detail={
