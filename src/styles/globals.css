@@ -34,6 +34,17 @@ html {
   color-scheme: light dark;
 }
 
+/* The shell holds the window still and only its columns scroll. On macOS the
+   webview still bounces the page itself at the end of a scroll, which moves
+   the title bar and the panel with it, as no native window does. */
+@media screen {
+  html,
+  body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+
 /* A list that scrolls says so. The gutter is reserved in both states, so the
    thumb appearing under the pointer never re-flows the rows beside it; the
    track stays empty because the fade at the bottom already says there is
