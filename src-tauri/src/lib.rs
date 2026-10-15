@@ -21,7 +21,7 @@ pub use engine::{
     read_page,
 };
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, LazyLock, Mutex};
 
 use serde::Serialize;
 use tauri::http::{Request, Response};
@@ -509,6 +509,13 @@ fn window<'a, R: tauri::Runtime, M: Manager<R>>(
 /// Windows.
 #[tauri::command]
 async fn new_window(app: tauri::AppHandle, path: Option<String>) -> Result<(), String> {
+    open_window(&app, path, None).map(|_| ())
+}
+
+/// Where a torn-off tab's window goes, and its size, in logical pixels.
+type Place = (tauri::LogicalPosition<f64>, tauri::LogicalSize<f64>);
+
+fn open_window(app: &tauri::AppHandle, path: Option<String>, place: Option<Place>) -> Result<String, String> {
     use std::sync::atomic::{AtomicU32, Ordering};
     use tauri::webview::PageLoadEvent;
     static NEXT: AtomicU32 = AtomicU32::new(1);
@@ -522,8 +529,11 @@ async fn new_window(app: tauri::AppHandle, path: Option<String>) -> Result<(), S
         }
         config.url = tauri::WebviewUrl::App(path.trim_start_matches('/').into());
     }
-    window(&app, &config)
-        .map_err(|e| e.to_string())?
+    let mut builder = window(app, &config).map_err(|e| e.to_string())?;
+    if let Some((at, size)) = place {
+        builder = builder.position(at.x, at.y).inner_size(size.width, size.height);
+    }
+    builder
         .on_page_load(|window, load| {
             if load.event() == PageLoadEvent::Finished {
                 let _ = window.show();
@@ -532,7 +542,61 @@ async fn new_window(app: tauri::AppHandle, path: Option<String>) -> Result<(), S
         })
         .build()
         .map_err(|e| e.to_string())?;
-    Ok(())
+    Ok(config.label)
+}
+
+/// The trail of a torn-off tab, kept for the window it opens in until that
+/// window asks for it (`take_tab`). The window opens on the tab's page, so
+/// the trail only adds its back and forward.
+static TORN: LazyLock<Mutex<std::collections::HashMap<String, serde_json::Value>>> = LazyLock::new(Default::default);
+
+/// A tab dragged off its strip and let go. Over another window of the app it
+/// joins that window, at the point it was let go. Anywhere else it opens in
+/// a window of its own, the size of the one it left, with the tab under the
+/// pointer: `grab` is where the pointer holds it, in CSS pixels from the top
+/// left of the page. A window's only tab has nowhere else to go, so it moves
+/// only into another window. Returns whether the tab left.
+#[tauri::command]
+async fn drop_tab(
+    app: tauri::AppHandle,
+    window: tauri::WebviewWindow,
+    tab: serde_json::Value,
+    path: String,
+    grab: (f64, f64),
+    alone: bool,
+) -> Result<bool, String> {
+    let cursor = app.cursor_position().map_err(|e| e.to_string())?;
+    for (label, other) in app.webview_windows() {
+        if label == window.label() || !other.is_visible().unwrap_or(false) || other.is_minimized().unwrap_or(true) {
+            continue;
+        }
+        let (Ok(at), Ok(size), Ok(scale)) = (other.inner_position(), other.inner_size(), other.scale_factor()) else {
+            continue;
+        };
+        let (x, y) = (cursor.x - at.x as f64, cursor.y - at.y as f64);
+        if x < 0.0 || y < 0.0 || x >= size.width as f64 || y >= size.height as f64 {
+            continue;
+        }
+        let into = serde_json::json!({ "target": label, "tab": tab, "x": x / scale });
+        other.emit("tab-in", into).map_err(|e| e.to_string())?;
+        let _ = other.set_focus();
+        return Ok(true);
+    }
+    if alone {
+        return Ok(false);
+    }
+    let scale = window.scale_factor().map_err(|e| e.to_string())?;
+    let size = window.inner_size().map_err(|e| e.to_string())?.to_logical::<f64>(scale);
+    let at = tauri::LogicalPosition::new(cursor.x / scale - grab.0, cursor.y / scale - grab.1);
+    let label = open_window(&app, Some(path), Some((at, size)))?;
+    TORN.lock().map_err(|e| e.to_string())?.insert(label, tab);
+    Ok(true)
+}
+
+/// The trail of the tab this window was torn off with, once.
+#[tauri::command]
+fn take_tab(window: tauri::WebviewWindow) -> Option<serde_json::Value> {
+    TORN.lock().ok()?.remove(window.label())
 }
 
 /// Closes the window that asks, as its own close button does: the first
@@ -1187,6 +1251,8 @@ pub fn run() {
             send_to_obsidian,
             obsidian_vaults,
             new_window,
+            drop_tab,
+            take_tab,
             close_window,
             open_devtools,
             icon_svg

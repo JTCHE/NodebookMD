@@ -93,6 +93,15 @@ if (inTauri) {
     if (path !== createPath(current(state.tabs[state.active]))) navigator.push(path);
   });
 }
+// A window opened by a tear-off gets the trail of its tab, which the
+// window's address alone does not carry.
+if (inTauri && !KEEPS_TABS) {
+  void invoke<SavedTab | null>("take_tab")
+    .then((tab) => {
+      if (tab) set({ tabs: [tabOfSaved(tab)], active: 0 });
+    })
+    .catch(() => {});
+}
 const listeners = new Set<() => void>();
 /** Tabs closed in this session, last one first, for Ctrl+Shift+T. */
 const closed: { tab: Tab; at: number }[] = [];
@@ -263,6 +272,40 @@ export function moveTab(from: number, to: number) {
   tabs.splice(to, 0, tab);
   const activeTab = state.tabs[state.active];
   set({ tabs, active: tabs.indexOf(activeTab) });
+}
+
+/** A tab as it travels to another window: its trail as paths. */
+export interface SavedTab {
+  entries: string[];
+  index: number;
+}
+
+export function tabData(index: number): SavedTab {
+  const tab = state.tabs[index];
+  return { entries: tab.entries.map((entry) => createPath(entry)), index: tab.index };
+}
+
+function tabOfSaved(saved: SavedTab): Tab {
+  return tabOf(saved.entries.map((path) => entryOf(path)), Math.min(Math.max(saved.index, 0), saved.entries.length - 1));
+}
+
+/** A tab that came from another window, at place `at`, in front. */
+export function insertTab(saved: SavedTab, at: number) {
+  const tabs = [...state.tabs];
+  const place = Math.min(Math.max(at, 0), tabs.length);
+  tabs.splice(place, 0, tabOfSaved(saved));
+  openedBehind = 0;
+  set({ tabs, active: place });
+}
+
+/** A tab that left for another window. It is not closed, so Ctrl+Shift+T
+    does not bring it back. The last one takes the window with it. */
+export function removeTab(index: number) {
+  if (state.tabs.length === 1) return closeWindow();
+  const tabs = state.tabs.filter((_, i) => i !== index);
+  const active = index < state.active ? state.active - 1 : Math.min(state.active, tabs.length - 1);
+  openedBehind = 0;
+  set({ tabs, active });
 }
 
 /** Where back and forward lead in the active tab. */

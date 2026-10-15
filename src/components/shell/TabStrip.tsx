@@ -8,12 +8,17 @@
  * new place, so the eye can follow where each one went. After a close by
  * pointer the tabs keep their width until the pointer leaves the strip, so
  * the next close button lands under the pointer, as in a browser.
+ *
+ * A tab dragged off the strip leaves the window: let go over another window
+ * of the app, it joins that window's strip; anywhere else it opens in a
+ * window of its own (`drop_tab` in lib.rs).
  */
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { CopyPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { inTauri } from "@/lib/backend";
+import { createPath } from "react-router";
+import { appWindow, inTauri, invoke, listen } from "@/lib/backend";
 import { Icons } from "@/lib/ui/icons";
 import { Hint } from "@/components/ui/Hint";
 import { MenuList } from "@/components/ui/MenuList";
@@ -30,11 +35,15 @@ import {
   current,
   cycleTab,
   duplicateTab,
+  insertTab,
   moveTab,
   newTab,
+  removeTab,
   reopenTab,
+  tabData,
   tabsState,
   useTabs,
+  type SavedTab,
   type Tab,
 } from "@/lib/tabs";
 
@@ -50,6 +59,8 @@ const TAB_WIDTH = 184;
 const NEW_TAB_ROOM = 32;
 /** Pixels a press travels before it is a drag and not a click. */
 const DRAG_START = 4;
+/** Pixels above or below the strip past which a dragged tab leaves it. */
+const TEAR = 28;
 
 const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -139,6 +150,20 @@ export function TabStrip() {
     if (el.offsetLeft < box.scrollLeft) box.scrollLeft = el.offsetLeft;
     else if (el.offsetLeft + el.offsetWidth > box.scrollLeft + room) box.scrollLeft = el.offsetLeft + el.offsetWidth - room;
   }, [tabs, active]);
+  // A tab dragged here from another window takes the place it was let go at.
+  useEffect(() => {
+    const label = appWindow()?.label;
+    const stop = listen<{ target: string; tab: SavedTab; x: number }>("tab-in", ({ payload }) => {
+      if (payload.target !== label) return;
+      const chips = [...(strip.current?.querySelectorAll<HTMLElement>("[data-tab]") ?? [])];
+      const at = chips.filter((chip) => {
+        const box = chip.getBoundingClientRect();
+        return box.left + box.width / 2 < payload.x;
+      }).length;
+      insertTab(payload.tab, at);
+    });
+    return () => void stop.then((unlisten) => unlisten());
+  }, []);
   // A window that changes width moves every tab without a change to slide.
   useEffect(() => {
     const box = strip.current;
@@ -242,7 +267,9 @@ function TabChip({
     const box = strip.current!;
     const grab = event.clientX - el.getBoundingClientRect().left;
     const startX = event.clientX;
+    const startY = event.clientY;
     let dragging = false;
+    let out = false;
     // On the window, not captured by the tab: a swap moves the tab in the
     // DOM, and a moved element loses its capture.
 
@@ -266,6 +293,15 @@ function TabChip({
       while (to > 0 && middle <= chips[to - 1].offsetLeft + chips[to - 1].offsetWidth / 2) to--;
       el.dataset.drag = String(x);
       el.style.transform = `translateX(${x - el.offsetLeft}px)`;
+      // Off the strip, the tab fades: let go now, it leaves the window.
+      const bar = box.getBoundingClientRect();
+      out =
+        inTauri &&
+        (moved.clientY < bar.top - TEAR || moved.clientY > bar.bottom + TEAR || moved.clientX < 0 || moved.clientX > window.innerWidth);
+      // It waits in its own place, so it covers no other tab.
+      el.style.opacity = out ? "0.5" : "";
+      if (out) el.style.transform = "";
+      if (out) return;
       // The strip draws the swap now, so the next move reads the new order,
       // and puts the tab back under the pointer.
       if (to !== from) flushSync(() => moveTab(from, to));
@@ -277,8 +313,25 @@ function TabChip({
       if (!dragging) return;
       const settle = el.style.transform;
       el.style.transform = "";
+      el.style.opacity = "";
       delete el.dataset.drag;
+      if (out) return void tear();
       if (settle && !still()) el.animate([{ transform: settle }, { transform: "none" }], SLIDE);
+    };
+    // The new window puts the tab where the first tab of a strip sits, with
+    // the pointer on it where it held this one.
+    const tear = async () => {
+      const { tabs } = tabsState();
+      const at = tabs.findIndex((one) => one.id === tab.id);
+      const first = box.querySelector<HTMLElement>("[data-tab]")!;
+      const grabAt = [box.getBoundingClientRect().left + first.offsetLeft + grab, startY];
+      const left = await invoke<boolean>("drop_tab", {
+        tab: tabData(at),
+        path: createPath(current(tabs[at])),
+        grab: grabAt,
+        alone: tabs.length === 1,
+      }).catch(() => false);
+      if (left) removeTab(tabsState().tabs.findIndex((one) => one.id === tab.id));
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", end);
