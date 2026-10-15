@@ -14,8 +14,10 @@ import { Hint } from "@/components/ui/Hint";
 /** The ground behind every modal: the page dimmed and blurred, the same in
     Settings, a question and the search overlay. The blur is dropped where the
     window draws in software: see lib/ui/blur. What sits on top keeps a layer
-    of its own (`transform-gpu`). */
-export const SCRIM = "absolute inset-0 bg-black/50 scrim-blur";
+    of its own (`transform-gpu`). It fades in with the panel: a dim that comes
+    at once, before the panel, reads as a black flash. */
+export const SCRIM =
+  "absolute inset-0 bg-black/50 scrim-blur transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none";
 
 export const MODAL_TOP = "pt-[20px]";
 export const MODAL_LINE = "flex h-7 shrink-0 items-center";
