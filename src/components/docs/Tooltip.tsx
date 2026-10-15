@@ -222,18 +222,20 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
 
   // A tooltip comes at once and goes slowly: the reader waits for the first,
   // and the second only must not blink. The owner has already dropped the box
-  // when it goes, so a copy of it fades in its place.
-  useLayoutEffect(
-    () => () => {
+  // when it goes, so a copy of it fades in its place. A new tooltip ends the
+  // fade at once, or the old box shows from under the new one.
+  useLayoutEffect(() => {
+    for (const ghost of document.querySelectorAll("[data-tooltip-ghost]")) ghost.remove();
+    return () => {
       const el = tooltipRef.current;
       if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const ghost = el.cloneNode(true) as HTMLElement;
       ghost.classList.add("pop-out");
+      ghost.setAttribute("data-tooltip-ghost", "");
       document.body.append(ghost);
       setTimeout(() => ghost.remove(), 200);
-    },
-    [],
-  );
+    };
+  }, []);
 
   if (!line) return null;
 
@@ -250,7 +252,7 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
             }
       }
       className={cn(
-        "[@media(hover:none)]:hidden rounded-lg fixed z-50 bg-background border border-border shadow-lg p-2 text-xs pointer-events-none whitespace-normal",
+        "[@media(hover:none)]:hidden rounded-lg fixed z-50 bg-background border border-border shadow-lg p-2 text-xs pointer-events-none whitespace-normal [overflow-wrap:anywhere]",
         className,
       )}
     >
