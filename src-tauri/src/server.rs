@@ -146,13 +146,13 @@ fn answer(
     }
 
     if let Some(name) = path.strip_prefix("/hicon/") {
-        return match current(db, chosen, cache).and_then(|install| help::icon(&install.root, name)) {
+        return match current(db, chosen, cache).and_then(|install| help::icon_layered(&install.root, &install.packages, name)) {
             Ok(bytes) => (200, bytes, "image/svg+xml"),
             Err(reason) => not_found(reason),
         };
     }
     if let Some(name) = path.strip_prefix("/himage/") {
-        return match current(db, chosen, cache).and_then(|install| help::asset(&install.help, name)) {
+        return match current(db, chosen, cache).and_then(|install| help::asset_layered(&install.help_roots(), name)) {
             Ok(bytes) => (200, bytes, crate::media_type(name)),
             Err(reason) => not_found(reason),
         };

@@ -145,11 +145,6 @@ pub fn icon(install_root: &Path, name: &str) -> Result<Vec<u8>, String> {
     found(read(&zip, name.trim_matches('/')), &format!("no icon {name}"))
 }
 
-/// The same read as `icon`, then a package's own icons — loose files, not a
-/// zip; a package ships too few to be worth archiving. `help/icons/` is where
-/// a package's node-doc icons actually live (SideFX Labs ships 167 there);
-/// `config/Icons/` is checked too, since that is where `icon()` itself reads
-/// core icons from and a package can use it the same way.
 /// The path in `icons.zip` of the icon a page's `#icon:` names. Most pages
 /// write `SOP/box`; some write `SOP/quadremesh.svg`.
 pub fn icon_file(name: &str) -> String {
@@ -162,6 +157,11 @@ pub fn icon_file(name: &str) -> String {
     }
 }
 
+/// The same read as `icon`, then a package's own icons — loose files, not a
+/// zip; a package ships too few to be worth archiving. `help/icons/` is where
+/// a package's node-doc icons actually live (SideFX Labs ships 167 there);
+/// `config/Icons/` is checked too, since that is where `icon()` itself reads
+/// core icons from and a package can use it the same way.
 pub fn icon_layered(install_root: &Path, packages: &[PathBuf], name: &str) -> Result<Vec<u8>, String> {
     if let Ok(bytes) = icon(install_root, name) {
         return Ok(bytes);
@@ -185,14 +185,16 @@ pub fn icon_layered(install_root: &Path, packages: &[PathBuf], name: &str) -> Re
 /// `images/shelf/copy.jpg` is an entry in `images.zip`. `videos/tween.webm` is
 /// a loose file: the install ships 958 of them beside the zips, not inside one.
 /// `movies/rotate.gif` is the same shape as `videos`, under the name a
-/// package's own help uses for it.
+/// package's own help uses for it. A package keeps its pictures loose too, in
+/// `help/images/`, with no `images.zip`.
 pub fn asset(help: &Path, path: &str) -> Result<Vec<u8>, String> {
     let absent = format!("no asset {path}");
     let Some((store, name)) = path.trim_matches('/').split_once('/') else {
         return Err(absent);
     };
     match store {
-        "images" => found(read(&help.join("images.zip"), name), &absent),
+        "images" => found(read(&help.join("images.zip"), name), &absent)
+            .or_else(|absent| loose(help, "images", name).ok_or(absent)),
         "videos" => loose(help, "videos", name).ok_or(absent),
         "movies" => loose(help, "movies", name).ok_or(absent),
         _ => Err(absent),
@@ -220,14 +222,25 @@ pub fn picture_size(roots: &[PathBuf], path: &str) -> Option<wiki::Size> {
         return None;
     }
     roots.iter().find_map(|root| {
-        with_archive(&root.join("images.zip"), |archive| {
+        let zipped = with_archive(&root.join("images.zip"), |archive| {
             let entry = archive.by_name(name).ok()?;
             let mut head = Vec::new();
             entry.take(crate::picture::HEAD).read_to_end(&mut head).ok()?;
-            crate::picture::size(&head)
-        })
-        .ok()
-        .flatten()
+            Some(head)
+        });
+        let head = match zipped {
+            Ok(Some(head)) => head,
+            _ => {
+                let mut head = Vec::new();
+                File::open(root.join("images").join(name))
+                    .ok()?
+                    .take(crate::picture::HEAD)
+                    .read_to_end(&mut head)
+                    .ok()?;
+                head
+            }
+        };
+        crate::picture::size(&head)
     })
 }
 
