@@ -3,7 +3,7 @@ members = ["crates/engine", "crates/wiki"]
 
 [package]
 name = "houdinimd"
-version = "0.2.2"
+version = "0.3.0"
 description = "Version-exact Houdini documentation, offline and local."
 authors = ["JTCHE"]
 edition = "2024"
