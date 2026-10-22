@@ -99,6 +99,7 @@ impl<'a> Parser<'a> {
         match self.src[self.pos] {
             b'`' => self.code(rest),
             b'[' => self.bracket(rest),
+            b'<' if rest.get(..4).is_some_and(|head| head.eq_ignore_ascii_case("<img")) => self.img(rest),
             b'<' if rest.starts_with("<<") => {
                 self.wrapped(rest, "<<", ">>", |name| Inline::Var { name })
             }
@@ -122,6 +123,32 @@ impl<'a> Parser<'a> {
         let text = rest[1..1 + end].to_string();
         self.push(Inline::Code { text });
         self.pos += end + 2;
+        true
+    }
+
+    /// `<img src="../../icons/LOP/layout.svg" width="128" />`: a picture the
+    /// source writes as HTML, in a table cell where the wiki form has no
+    /// place. A help icon becomes the icon, anything else the picture.
+    fn img(&mut self, rest: &str) -> bool {
+        let Some(end) = rest.find('>') else {
+            return false;
+        };
+        let tag = &rest[..end];
+        let Some(src) = attribute(tag, "src") else {
+            return false;
+        };
+        let inline = match src.rsplit_once("icons/") {
+            Some((_, name)) => Inline::Icon {
+                src: name.into(),
+                size: IconSize::Large,
+            },
+            None => Inline::Image {
+                src: src.into(),
+                size: None,
+            },
+        };
+        self.push(inline);
+        self.pos += end + 1;
         true
     }
 
@@ -455,9 +482,32 @@ const TYPOGRAPHY: &[(&str, &str)] = &[
     ("(R)", "\u{ae}"),
 ];
 
+/// The value of `name="..."` in an HTML tag.
+fn attribute<'a>(tag: &'a str, name: &str) -> Option<&'a str> {
+    let at = tag.find(&format!("{name}=\""))? + name.len() + 2;
+    let len = tag[at..].find('"')?;
+    Some(&tag[at..at + len])
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn an_html_img_is_an_icon_or_a_picture_not_text() {
+        assert_eq!(
+            parse(r#"<img src="../../icons/SOP/box.svg" width="128" height="128" /> next"#),
+            vec![
+                Inline::Icon { src: "SOP/box.svg".into(), size: IconSize::Large },
+                Inline::Text { text: " next".into() },
+            ]
+        );
+        assert_eq!(
+            parse(r#"<IMG alt="a" src="/images/a.png">"#),
+            vec![Inline::Image { src: "/images/a.png".into(), size: None }]
+        );
+        assert_eq!(parse("a <imgx b"), vec![Inline::Text { text: "a <imgx b".into() }]);
+    }
 
     fn target(text: &str) -> LinkTarget {
         match parse(text).as_slice() {
