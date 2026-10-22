@@ -11,9 +11,11 @@
  * spec: Local — Multiple Houdini Versions, Local — What the help pane shows.
  */
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
 import { invoke, inTauri } from "@/lib/backend";
+import { hooked as hookedIn, readReleases, seriesOf, setHelpServer, useReleases } from "@/lib/help-server";
 import { announceBuildChanged, indexedShare, pagesLabel, pickInstall, useIndex, type IndexStatus } from "@/lib/install";
 import { showToast } from "@/components/ui/toast-notification";
 import { TooltipBox } from "@/components/docs/Tooltip";
@@ -49,25 +51,9 @@ const CHIP =
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none " +
   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** One Houdini release series, as `houdini_releases` sees its preferences. */
-interface Release {
-  release: string;
-  external: boolean;
-  ours: boolean;
-}
-
-/** `22.0.368` is `22.0`: the hook is per preferences folder, which is per
-    series. Rust's `hook::series_of` does the same. */
-function seriesOf(version: string): string {
-  return version.split(".").slice(0, 2).join(".");
-}
-
-/** Which series F1 opens this app in. A series with no preferences folder is
-    absent: that Houdini never ran, and has no F1 to take yet. */
-async function readHooks(): Promise<Map<string, boolean>> {
-  const list = await invoke<Release[]>("houdini_releases").catch(() => []);
-  return new Map(list.map((r) => [r.release, r.external && r.ours]));
-}
+/** Keys that work the picker itself. Any other key closes it: the reader
+    has moved on to something else. */
+const PICKER_KEYS = new Set(["Tab", "Shift", "Enter", " ", "ArrowUp", "ArrowDown"]);
 
 /** What the right of a row says about a build. Only the current build can be
     mid-pass: a switch stops the pass of the build it leaves. */
@@ -145,9 +131,13 @@ function Card({
 function F1Chip({
   release,
   hooked,
+  nudge = false,
   onToggle,
 }: {
   release: string;
+  /** On the closed card, where it only shows while F1 is not taken: lit in
+      the brand colour, so the reader sees it without opening the picker. */
+  nudge?: boolean;
   /** `undefined` when the series has no preferences folder yet. */
   hooked: boolean | undefined;
   onToggle: () => Promise<void>;
@@ -193,6 +183,8 @@ function F1Chip({
             ? "cursor-default border-hairline text-neutral-300"
             : hooked
               ? "cursor-interactive border-brand/40 bg-brand/10 text-brand"
+              : nudge
+                ? "cursor-interactive border-brand/60 text-brand pointer-hover:bg-brand/10"
               : "cursor-interactive border-hairline text-neutral-400 pointer-hover:text-neutral-700",
           busy && "opacity-50",
         )}
@@ -217,9 +209,10 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<BuildRow[] | null>(null);
   const [switching, setSwitching] = useState<string | null>(null);
-  const [hooks, setHooks] = useState<Map<string, boolean> | null>(null);
+  const releases = useReleases();
   const wrapper = useRef<HTMLDivElement>(null);
   const { status } = useIndex();
+  const { pathname } = useLocation();
 
   // A rescan is the picker's own cost to pay, not every page's — see
   // spec: Local — Multiple Houdini Versions.
@@ -229,33 +222,50 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
     void invoke<BuildRow[]>("available_installs")
       .catch(() => [])
       .then(setRows);
-    void readHooks().then(setHooks);
+    void readReleases();
   }, [open]);
 
   async function toggleF1(release: string, hooked: boolean) {
-    try {
-      await invoke(hooked ? "unhook_houdini" : "hook_houdini", { releases: [release] });
-      setHooks(await readHooks());
-    } catch (reason) {
-      showToast(String(reason), "error");
-    }
+    await setHelpServer(release, !hooked).then(showToast, (reason) => showToast(String(reason), "error"));
   }
 
+  // Open, the picker is the one thing the reader is doing. Anything else —
+  // a press elsewhere, a shortcut, a wheel, another page, another window —
+  // puts it away.
   useEffect(() => {
     if (!open) return;
-    function onDown(e: MouseEvent) {
-      if (!wrapper.current?.contains(e.target as Node)) setOpen(false);
+    const close = () => setOpen(false);
+    function outside(e: Event) {
+      if (!wrapper.current?.contains(e.target as Node)) close();
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (!PICKER_KEYS.has(e.key) || !wrapper.current?.contains(e.target as Node)) close();
     }
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", outside, true);
+    document.addEventListener("wheel", outside, true);
+    document.addEventListener("focusin", outside);
+    window.addEventListener("keydown", onKey, true);
+    window.addEventListener("blur", close);
     return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", outside, true);
+      document.removeEventListener("wheel", outside, true);
+      document.removeEventListener("focusin", outside);
+      window.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("blur", close);
     };
   }, [open]);
+
+  // A move to another page, by a key or a link, is an interaction too.
+  const [shownPath, setShownPath] = useState(pathname);
+  if (pathname !== shownPath) {
+    setShownPath(pathname);
+    setOpen(false);
+  }
+
+  // The nudge: F1 in this build's Houdini does not open the app yet. Only
+  // for a release that has run once, so there is an F1 to take.
+  const currentSeries = version ? seriesOf(version) : "";
+  const nudge = !open && currentSeries !== "" && hookedIn(releases, currentSeries) === false;
 
   async function pick(row: BuildRow) {
     if (row.current) {
@@ -294,6 +304,13 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
         onClick={() => setOpen((v) => !v)}
         expanded={open}
       />
+      {nudge && (
+        // Beside the chevron, over the card and not inside it: a button
+        // cannot hold a button.
+        <div className="absolute top-1/2 right-lg flex -translate-y-1/2">
+          <F1Chip release={currentSeries} hooked={false} nudge onToggle={() => toggleF1(currentSeries, false)} />
+        </div>
+      )}
       <div
         role="listbox"
         aria-label="Houdini installs on this machine"
@@ -311,7 +328,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
             {rows.length === 0 && <p className="px-sm py-sm text-caption text-neutral-500">No Houdini install found.</p>}
             {rows.map((row) => {
               const release = seriesOf(row.version);
-              const hooked = hooks?.get(release);
+              const hooked = hookedIn(releases, release);
               return (
                 <div
                   key={row.version}
@@ -330,7 +347,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
                       {indexState(row, switching === row.version, status)}
                     </span>
                   </button>
-                  {hooks === null ? (
+                  {releases === null ? (
                     <span
                       aria-hidden="true"
                       className={cn(CHIP, "invisible")}

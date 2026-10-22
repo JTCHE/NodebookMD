@@ -69,3 +69,25 @@ export function useHotkey(run: (event: KeyboardEvent) => void) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 }
+
+/**
+ * Text pasted with nothing to paste into: no field, no menu, no dialog. The
+ * search takes it, as it takes a letter typed on the page. The lightbox is a
+ * view of the page, so a paste over it counts too.
+ */
+export function usePagePaste(run: (text: string) => void) {
+  const latest = useRef(run);
+  latest.current = run;
+  useEffect(() => {
+    const onPaste = (event: ClipboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (isTyping(target) || target?.closest?.("[role=menu], [role=listbox], [role=dialog]:not([data-lightbox])")) return;
+      const text = event.clipboardData?.getData("text/plain").trim();
+      if (!text) return;
+      event.preventDefault();
+      latest.current(text);
+    };
+    document.addEventListener("paste", onPaste);
+    return () => document.removeEventListener("paste", onPaste);
+  }, []);
+}

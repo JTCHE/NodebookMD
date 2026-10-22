@@ -10,14 +10,14 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { AppWindow, ArrowLeft, ArrowRight, Code, Copy, ExternalLink, Image, Link2, ListTree, Plus, Tag } from "lucide-react";
+import { AppWindow, ArrowLeft, ArrowRight, Code, Copy, Download, ExternalLink, Image, ImageDown, Link2, ListTree, Plus, Tag } from "lucide-react";
 import { revealInSidebar } from "@/components/shell/sidebar/PageTree";
 import { MenuList, type MenuEntry, type MenuGroups } from "@/components/ui/MenuList";
 import { useTrail } from "@/lib/nav";
 import { pageActions } from "@/lib/page-actions";
 import { pageLink } from "@/lib/link";
 import { openTab } from "@/lib/tabs";
-import { houdiniIconName, iconSvg } from "@/lib/icons";
+import { copyIconPng, houdiniIconName, iconSvg, saveIcon } from "@/lib/icons";
 import { BACK_KEYS, COMMAND_KEY, FORWARD_KEYS } from "@/lib/hotkeys";
 import { invoke, inTauri } from "@/lib/backend";
 import { openLightbox, PAGE_PICTURES } from "@/lib/lightbox";
@@ -38,6 +38,30 @@ async function copyText(text: string, said: string) {
   } catch {
     showToast("Couldn't copy", "error");
   }
+}
+
+/** What can be done with a help icon's file. In the lightbox, Ctrl+C and
+    Ctrl+S run these (Lightbox), so the menu names the keys there only. */
+export function iconFileEntries(source: string, keyed: boolean): MenuEntry[] {
+  const entries: MenuEntry[] = [
+    { label: "Copy as SVG", icon: Code, run: () => iconSvg(source).then((svg) => copyText(svg, "SVG copied")) },
+    {
+      label: "Copy as PNG",
+      icon: ImageDown,
+      keys: keyed ? `${COMMAND_KEY}+C` : undefined,
+      run: () => copyIconPng(source).then(() => showToast("PNG copied"), () => showToast("Couldn't copy", "error")),
+    },
+  ];
+  // The help pane has no dialog to ask where.
+  if (inTauri) {
+    entries.push({
+      label: "Save as…",
+      icon: Download,
+      keys: keyed ? `${COMMAND_KEY}+S` : undefined,
+      run: () => saveIcon(source).then((saved) => saved && showToast("Icon saved"), (reason) => showToast(String(reason), "error")),
+    });
+  }
+  return entries;
 }
 
 export function ContextMenu() {
@@ -75,19 +99,26 @@ export function ContextMenu() {
         group.push({ label: "Copy link address", icon: Link2, run: () => shareable(link.href).then((text) => copyText(text, "Link copied")) });
         menu.push(group);
       }
+      // The lightbox is the picture alone: anywhere on it, the menu is the
+      // picture's, with nothing of the page under it.
+      const lightbox = target?.closest<HTMLElement>("[data-lightbox]");
+
       // A help icon, in the page's title or large in the lightbox: what a
-      // pipeline developer comes for is its name in Houdini and its SVG.
-      const icon = target?.closest<HTMLElement>("[data-icon]");
+      // pipeline developer comes for is its name in Houdini and the file.
+      const icon = lightbox
+        ? lightbox.querySelector<HTMLElement>("[data-icon]")
+        : target?.closest<HTMLElement>("[data-icon]");
       if (icon?.dataset.icon) {
         const source = icon.dataset.icon;
         const name = houdiniIconName(source);
         const group: MenuEntry[] = [];
         if (icon.tagName === "BUTTON") group.push({ label: "Open icon", icon: Image, run: () => icon.click() });
-        group.push(
-          { label: `Copy icon name (${name})`, icon: Tag, run: () => copyText(name, "Icon name copied") },
-          { label: "Copy as SVG", icon: Code, run: () => iconSvg(source).then((svg) => copyText(svg, "SVG copied")) },
-        );
-        menu.push(group);
+        group.push({ label: `Copy icon name (${name})`, icon: Tag, run: () => copyText(name, "Icon name copied") });
+        menu.push(group, iconFileEntries(source, !!lightbox));
+      }
+      if (lightbox) {
+        if (menu.length) setAt({ x: event.clientX, y: event.clientY, menu });
+        return;
       }
 
       const picture = target?.closest<HTMLImageElement>(PAGE_PICTURES);

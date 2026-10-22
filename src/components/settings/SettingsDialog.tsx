@@ -24,6 +24,7 @@ import { APP_NAME } from "@/lib/brand";
 import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
 import { LINK_FORMATS, linkFormat, setLinkFormat, type LinkFormat } from "@/lib/link";
 import { restoresTabs, setRestoresTabs } from "@/lib/tabs";
+import { setHelpServer, useReleases } from "@/lib/help-server";
 import { OBSIDIAN_PICTURES, OBSIDIAN_VAULT, picturesChoice, rememberedVault, type PicturesChoice } from "@/lib/obsidian";
 
 const OPEN = "houdinimd:settings";
@@ -142,32 +143,13 @@ const SMALL_BUTTON =
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-interface Release {
-  release: string;
-  url: string | null;
-  /** Whether the release uses an external help server at all. */
-  external: boolean;
-  ours: boolean;
-}
 
 /** F1 in each Houdini release installed on the machine. */
 function HelpSection() {
-  const [releases, setReleases] = useState<Release[] | null>(null);
-  const load = useCallback(() => {
-    void invoke<Release[]>("houdini_releases")
-      .then(setReleases)
-      .catch(() => setReleases([]));
-  }, []);
-  useEffect(load, [load]);
+  const releases = useReleases();
 
   async function flip(release: string, on: boolean) {
-    try {
-      await invoke(on ? "hook_houdini" : "unhook_houdini", { releases: [release] });
-      showToast(on ? `F1 in Houdini ${release} now opens ${APP_NAME}. Restart Houdini.` : `F1 in Houdini ${release} opens its own help again.`);
-    } catch (reason) {
-      showToast(String(reason), "error");
-    }
-    load();
+    await setHelpServer(release, on).then(showToast, (reason) => showToast(String(reason), "error"));
   }
 
   return (

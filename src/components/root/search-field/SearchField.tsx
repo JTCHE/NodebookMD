@@ -5,7 +5,7 @@ import { pastedAnchor, pastedPath, rememberSearch, resolve } from "@/lib/search"
 import { useSearch } from "@/lib/use-search";
 import { scopedInput } from "@/lib/scope";
 import { ScopeChip } from "@/components/search/ScopeChip";
-import { isCommand, isTyping, useHotkey } from "@/lib/hotkeys";
+import { isCommand, isTyping, useHotkey, usePagePaste } from "@/lib/hotkeys";
 import {
   SEARCH_DROPDOWN_CLASS,
   SearchResultList,
@@ -160,13 +160,20 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
     setError("");
   }
 
-  async function pasteAndSearch() {
-    const text = await navigator.clipboard.readText().catch(() => "");
+  function pasted(text: string) {
     if (!text.trim()) return;
     changeQuery(text);
+    inputRef.current?.focus();
     // A pasted link is a destination, so it opens without waiting for the list.
     if (pastedPath(text) !== text.trim()) void submit(text);
   }
+
+  async function pasteAndSearch() {
+    pasted(await navigator.clipboard.readText().catch(() => ""));
+  }
+
+  // Ctrl+V anywhere else on this page does what the paste button does.
+  usePagePaste(pasted);
 
   const mode = query.trim() ? "search" : "paste";
   // One word in both modes. The button changes what it DOES on an empty field

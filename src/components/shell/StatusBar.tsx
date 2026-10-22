@@ -1,6 +1,5 @@
 /**
- * The strip along the bottom: the three keys worth knowing, and the address
- * Houdini reaches the app on.
+ * The strip along the bottom: the three keys worth knowing.
  *
  * The keys are stated rather than discovered. A desktop reader who learns
  * ⌘K once never opens the search field with the pointer again, and the row
@@ -12,7 +11,6 @@
 import { cn } from "@/lib/utils";
 import { COMMAND_KEY } from "@/lib/hotkeys";
 import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
-import { ServerPortBadge } from "@/components/root/ServerPortBadge";
 
 const HINTS: Array<{ keys: string[]; label: string }> = [
   { keys: [COMMAND_KEY, "K"], label: "Search" },
@@ -51,12 +49,6 @@ export function StatusBar({ className }: { className?: string }) {
             <span className="ml-2xs text-meta text-neutral-500">{hint.label}</span>
           </span>
         ))}
-      </div>
-
-      {/* The right of the strip states what the app is, not what the reader
-          can do: the address Houdini reaches it on. */}
-      <div className="ml-auto flex shrink-0 items-center gap-md text-meta text-neutral-500">
-        <ServerPortBadge />
       </div>
     </footer>
   );

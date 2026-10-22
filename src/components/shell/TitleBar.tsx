@@ -16,7 +16,7 @@ import { useTrail } from "@/lib/nav";
 import { WindowControls, useWindowFlag } from "./WindowControls";
 import { TitleBarMenu } from "./TitleBarMenu";
 import { TabStrip, useTabKeys } from "./TabStrip";
-import { appWindow, inTauri } from "@/lib/backend";
+import { appWindow, inTauri, invoke } from "@/lib/backend";
 import { ALT_KEY, BACK_KEYS, COMMAND_KEY, FORWARD_KEYS, IS_MAC, historyStep, letterOf, useHotkey } from "@/lib/hotkeys";
 import { Hint } from "@/components/ui/Hint";
 import { APP_NAME } from "@/lib/brand";
@@ -53,6 +53,12 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
   // sideways on every switch to or from a home tab.
   const showArrows = !bare && (showTrail || canGoBack || canGoForward || tabbed);
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
+  // Read before the menu opens, so its server row is there on the first frame.
+  // 0 when the server never started.
+  const [port, setPort] = useState(0);
+  useEffect(() => {
+    if (inTauri) void invoke<number>("server_port").catch(() => 0).then(setPort);
+  }, []);
   // macOS hides the traffic lights in full screen, and the room kept for
   // them goes with them.
   const fullscreen = useWindowFlag((shell) => shell.isFullscreen());
@@ -202,7 +208,7 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
       <PinButton />
       <WindowControls />
 
-      {menuAt && <TitleBarMenu at={menuAt} onClose={() => setMenuAt(null)} />}
+      {menuAt && <TitleBarMenu at={menuAt} port={port} onClose={() => setMenuAt(null)} />}
     </header>
   );
 }

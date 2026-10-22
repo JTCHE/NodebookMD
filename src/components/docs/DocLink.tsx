@@ -4,15 +4,16 @@ import { cn } from "@/lib/utils";
 import { warm } from "@/lib/pages";
 import { showToast } from "@/components/ui/toast-notification";
 import { findAnchor, jumpTo } from "./toc/measure";
-import { DocTooltip, LinkTooltip, SectionTooltip, registerSlug, usePageMark } from "./Tooltip";
+import { DocTooltip, LinkTooltip, SectionTooltip, registerSlug, usePageMark, warmPreview } from "./Tooltip";
 import { Icons } from "@/lib/ui/icons";
 import DocIconClient from "./markdown/DocIconClient";
 
 // Shared across all DocLink instances so a link-dense page (1000+ links) uses
-// one observer instead of one per link. A link's slug is warmed only once it is
-// actually scrolled into view, not on mount.
+// one observer instead of one per link. A link is warmed only once it is
+// actually scrolled into view, not on mount: a page link asks for its page's
+// name, an outside address for its share card, so the tooltip opens full.
 let linkObserver: IntersectionObserver | null = null;
-const observedSlugs = new WeakMap<Element, string>();
+const observedLinks = new WeakMap<Element, () => void>();
 
 function getLinkObserver() {
   if (linkObserver) return linkObserver;
@@ -20,10 +21,9 @@ function getLinkObserver() {
     (entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
-        const slug = observedSlugs.get(entry.target);
-        if (slug) registerSlug(slug);
+        observedLinks.get(entry.target)?.();
         linkObserver!.unobserve(entry.target);
-        observedSlugs.delete(entry.target);
+        observedLinks.delete(entry.target);
       }
     },
     { rootMargin: "200px" },
@@ -126,17 +126,18 @@ export default function DocLink({
     )
   ) : null;
 
+  const web = /^https?:/i.test(href);
   useEffect(() => {
-    if (!slug || !linkRef.current) return;
     const el = linkRef.current;
+    if (!el || (!slug && !web)) return;
     const observer = getLinkObserver();
-    observedSlugs.set(el, slug);
+    observedLinks.set(el, slug ? () => registerSlug(slug) : () => warmPreview(href));
     observer.observe(el);
     return () => {
       observer.unobserve(el);
-      observedSlugs.delete(el);
+      observedLinks.delete(el);
     };
-  }, [slug]);
+  }, [slug, web, href]);
 
   const hover = {
     onMouseEnter: (e: React.MouseEvent) => {
@@ -159,7 +160,7 @@ export default function DocLink({
   // An address off the machine gets its share card, an anchor on this page
   // gets the words it lands on, and a page in the help gets its name.
   const tooltip = !visible ? null : external ? (
-    /^https?:/i.test(href) && <LinkTooltip url={href} {...anchored} />
+    web && <LinkTooltip url={href} {...anchored} />
   ) : samePage() && anchor ? (
     <SectionTooltip id={decodeURIComponent(anchor)} {...anchored} />
   ) : (

@@ -16,7 +16,7 @@ import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
 import { showToast } from "@/components/ui/toast-notification";
 import { findAnchor, jumpTo } from "@/components/docs/toc/measure";
 import { invoke, inTauri } from "@/lib/backend";
-import { COMMAND_KEY, isCommand, isTyping, useHotkey } from "@/lib/hotkeys";
+import { COMMAND_KEY, isCommand, isTyping, useHotkey, usePagePaste } from "@/lib/hotkeys";
 import { Icons } from "@/lib/ui/icons";
 import { THEME_CHOICES, THEME_ICON, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
 import { pastedAnchor, pastedHit, pastedPath, recentSearches, rememberSearch, resolve, type Hit } from "@/lib/search";
@@ -25,6 +25,7 @@ import { scopedInput } from "@/lib/scope";
 import { ScopeChip } from "@/components/search/ScopeChip";
 import { useSearchReport, used } from "@/lib/telemetry";
 import { openTab, tabFor } from "@/lib/tabs";
+import { closeLightbox } from "@/lib/lightbox";
 import {
   SEARCH_LIST_CLASS,
   SearchResultList,
@@ -108,7 +109,9 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
       !event.altKey &&
       /^[\p{L}\p{N}]$/u.test(event.key) &&
       !isTyping(target) &&
-      !target.closest("[role=menu], [role=listbox], [role=dialog]")
+      // The lightbox is a view of the page, not a control: a letter typed
+      // over it starts a search too.
+      !target.closest("[role=menu], [role=listbox], [role=dialog]:not([data-lightbox])")
     ) {
       event.preventDefault();
       seed.current = event.key;
@@ -131,7 +134,11 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
   }
 
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (!open) return;
+    // The search goes over the page, and a picture left over the page would
+    // stand in front of it.
+    closeLightbox();
+    inputRef.current?.focus();
   }, [open]);
 
   // A pasted SideFX link names a page outright, so it does not go to the
@@ -246,6 +253,22 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
     },
     [location.pathname, navigate],
   );
+
+  // Ctrl+V on the page. A link is a destination and opens at once; any other
+  // text is the start of a search, as a typed letter is.
+  usePagePaste((text) => {
+    if (open) return;
+    const start = () => {
+      seed.current = text;
+      setOpen(true);
+    };
+    if (pastedPath(text) === text) return start();
+    void pastedHit(text).then((hit) => {
+      if (!hit) return start();
+      if (location.pathname !== `/${hit.path}`) rememberSearch(hit);
+      go(`${hit.path}${pastedAnchor(text)}`);
+    });
+  });
 
   // A pasted link is not a search, so it is reported as no query at all.
   const tell = useSearchReport(paste ? "" : trimmed, rows.length);

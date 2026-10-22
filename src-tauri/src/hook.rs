@@ -435,6 +435,12 @@ fn prefs_root() -> Option<PathBuf> {
     std::env::var_os("HOME").map(PathBuf::from)
 }
 
+/// Whether a Houdini is open, which would undo a change to its preferences.
+/// Onboarding asks before it hooks F1, to say so before it fails.
+pub fn houdini_open() -> bool {
+    running("")
+}
+
 /// Whether a Houdini of this release is open. It rewrites `houdini.pref` when
 /// it exits, so a write made while it runs is thrown away without a word.
 #[cfg(windows)]

@@ -355,11 +355,29 @@ interface LinkPreview {
 // One ask per address for the whole session. A failure is kept as null, so an
 // address that does not answer is not asked again on every hover.
 const previews = new Map<string, Promise<LinkPreview | null>>();
+/** The answers that are in, so a warmed card draws on the first frame. */
+const settled = new Map<string, LinkPreview | null>();
+/** Pictures fetched ahead. Held, or the webview can drop them again. */
+const pictures = new Map<string, HTMLImageElement>();
 
-function preview(url: string) {
+/** Asks for the share card of `url`, and fetches its picture. A link calls
+    it once it scrolls into view, so the tooltip opens with the card in it. */
+export function warmPreview(url: string) {
   let asked = previews.get(url);
   if (!asked) {
-    asked = invoke<LinkPreview>("link_preview", { url }).catch(() => null);
+    asked = invoke<LinkPreview>("link_preview", { url })
+      .catch(() => null)
+      .then((answer) => {
+        settled.set(url, answer);
+        const image = answer?.image;
+        if (image && !pictures.has(image)) {
+          const picture = new Image();
+          picture.referrerPolicy = "no-referrer";
+          picture.src = image;
+          pictures.set(image, picture);
+        }
+        return answer;
+      });
     previews.set(url, asked);
   }
   return asked;
@@ -381,15 +399,16 @@ function where(url: string) {
     card, it is the address alone — still more than the link text says. */
 export function LinkTooltip({ url, ...anchored }: Anchored & { url: string }) {
   // undefined while the answer is on its way.
-  const [card, setCard] = useState<LinkPreview | null | undefined>(undefined);
+  const [card, setCard] = useState<LinkPreview | null | undefined>(() => settled.get(url));
   const [broken, setBroken] = useState(false);
 
   useEffect(() => {
+    if (settled.has(url)) return setCard(settled.get(url));
     let live = true;
     // The same 75ms as a page link: a cursor crossing a line of links must not
     // ask about every one of them on the way past.
     const debounce = setTimeout(() => {
-      void preview(url).then((answer) => {
+      void warmPreview(url).then((answer) => {
         if (live) setCard(answer);
       });
     }, 75);

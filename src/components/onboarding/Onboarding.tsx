@@ -49,9 +49,36 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const [telemetryOn, setTelemetryOn] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  /** A Houdini is open on the F1 step. It writes its preferences when it
+      exits, which would undo the hook, so the step says to close it first. */
+  const [houdiniOpen, setHoudiniOpen] = useState(false);
+
+  // Asked again every two seconds, so the step changes as soon as the reader
+  // closes Houdini.
+  useEffect(() => {
+    if (step !== 2 || !hookOn) return setHoudiniOpen(false);
+    let live = true;
+    const ask = () =>
+      void invoke<boolean>("houdini_open")
+        .catch(() => false)
+        .then((open) => live && setHoudiniOpen(open));
+    ask();
+    const timer = setInterval(ask, 2000);
+    return () => {
+      live = false;
+      clearInterval(timer);
+    };
+  }, [step, hookOn]);
+  /** The F1 step was passed with Houdini open: F1 is left as it was. */
+  const skipsHook = hookOn && houdiniOpen;
+
+  /** Whether the F1 step was skipped for an open Houdini, for the setup's
+      one telemetry event. */
+  const [skippedHook, setSkippedHook] = useState(false);
 
   async function advance() {
     if (busy) return;
+    if (step === 2) setSkippedHook(skipsHook);
     setError("");
     setBusy(true);
     try {
@@ -74,7 +101,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     // The build was chosen on the screen itself, so the index has been running
     // while the reader answered the rest of the setup.
     if (leaving === 1) await choose(version);
-    if (leaving === 2 && hookOn) await invoke("hook_current_build");
+    if (leaving === 2 && hookOn && !skipsHook) await invoke("hook_current_build");
     // The download takes longer than the rest of the setup, so the setup does
     // not wait on it. The toast says how it ended, on whatever screen is open.
     if (leaving === 3 && mcpOn && agent) {
@@ -92,7 +119,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       // reader who had one and said no. `agents` is what the scan found, so
       // a missing agent is countable rather than guessed at.
       const mcp = mcpOn && agent ? agent : agentsFound.length === 0 ? "none" : "off";
-      setupDone(`hook=${hookOn} mcp=${mcp} agents=${agentsFound.join(",") || "none"}`);
+      setupDone(`hook=${hookOn ? (skippedHook ? "skipped" : "true") : "false"} mcp=${mcp} agents=${agentsFound.join(",") || "none"}`);
     }
   }
 
@@ -164,7 +191,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       <StepFrame
         {...common}
         step={2}
-        action="Continue"
+        action={skipsHook ? "Skip for now" : "Continue"}
         title="Integrate inside Houdini"
         body={`Set ${APP_NAME} as the default help server for this install. Press F1 or the “Get Help” button on any node, and ${APP_NAME} appears directly inside Houdini, on that page.`}
         media={
@@ -181,6 +208,11 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           checked={hookOn}
           onChange={setHookOn}
         />
+        {skipsHook && (
+          <p className="text-meta text-neutral-500">
+            Houdini is open. Close it to set the help server, or skip and set it later from the F1 key in the sidebar.
+          </p>
+        )}
       </StepFrame>
     );
   }

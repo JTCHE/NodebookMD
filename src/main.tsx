@@ -30,14 +30,6 @@ startTheme();
 startBlurCheck();
 startIconStroke();
 
-// An animation that runs against a window nobody is reading is pure cost, so
-// the body says when the window is idle and the stylesheet pauses the motion.
-// See AGENTS.md, "Animation and compositing".
-const idle = () => document.body.setAttribute("data-idle", String(!document.hasFocus()));
-window.addEventListener("focus", idle);
-window.addEventListener("blur", idle);
-idle();
-
 if (import.meta.env.PROD) {
   // Ctrl J opens the webview's downloads list, which this window has no use for.
   document.addEventListener("keydown", (event) => {

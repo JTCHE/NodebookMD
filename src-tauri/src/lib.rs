@@ -649,6 +649,42 @@ fn icon_svg(app: tauri::AppHandle, name: String) -> Result<String, String> {
     String::from_utf8(bytes).map_err(|e| e.to_string())
 }
 
+/// Asks where to save one help icon, then writes it there. The chosen name
+/// picks the form: `.png` writes the picture the page drew, anything else the
+/// icon's SVG. `name` is the icon's path in `icons.zip`, `file` the name the
+/// dialog offers (`SOP_box`).
+#[tauri::command]
+async fn save_icon(
+    app: tauri::AppHandle,
+    window: tauri::WebviewWindow,
+    name: String,
+    file: String,
+    png: Vec<u8>,
+) -> Result<bool, String> {
+    use tauri_plugin_dialog::DialogExt;
+    let Some(chosen) = app
+        .dialog()
+        .file()
+        .set_parent(&window)
+        .set_file_name(format!("{file}.svg"))
+        .add_filter("SVG", &["svg"])
+        .add_filter("PNG", &["png"])
+        .blocking_save_file()
+    else {
+        return Ok(false);
+    };
+    let path = chosen.into_path().map_err(|e| e.to_string())?;
+    let wants_png = path.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("png"));
+    let bytes = if wants_png {
+        png
+    } else {
+        let install = current_for(&app)?;
+        help::icon_layered(&install.root, &install.packages, &name)?
+    };
+    std::fs::write(path, bytes).map_err(|e| e.to_string())?;
+    Ok(true)
+}
+
 /// The share card of a link that leaves the help, for its tooltip.
 #[tauri::command]
 async fn link_preview(url: String) -> Result<preview::Preview, String> {
@@ -1052,6 +1088,12 @@ fn hook_current_build(
     hook::apply(&data.0, port.0, &[hook::series_of(&install.version)])
 }
 
+/// Whether a Houdini is open. Hooking F1 while one runs is undone when it exits.
+#[tauri::command(async)]
+fn houdini_open() -> bool {
+    hook::houdini_open()
+}
+
 /// The agents on this machine that Houdini MCP can connect to.
 #[tauri::command]
 fn mcp_agents() -> Vec<mcp::Agent> {
@@ -1255,7 +1297,9 @@ pub fn run() {
             take_tab,
             close_window,
             open_devtools,
-            icon_svg
+            icon_svg,
+            save_icon,
+            houdini_open
         ])
         .build(context)
         .expect("error while running the application")

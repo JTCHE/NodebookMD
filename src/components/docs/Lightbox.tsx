@@ -5,6 +5,8 @@ import { Icons } from "@/lib/ui/icons";
 import { closeLightbox, useLightbox, type LightboxState } from "@/lib/lightbox";
 import { groundClass } from "@/lib/ground";
 import { Hint } from "@/components/ui/Hint";
+import { iconFileEntries } from "@/components/shell/ContextMenu";
+import { COMMAND_KEY, isCommand, letterOf } from "@/lib/hotkeys";
 
 const MAX_SCALE = 8;
 /** One wheel notch, one key press: the same step either way. */
@@ -209,6 +211,15 @@ function Viewer({ open }: { open: LightboxState }) {
   // On the window, not the dialog: the keys work wherever the focus went.
   const onKey = useRef<(event: KeyboardEvent) => void>(() => {});
   onKey.current = (event) => {
+    // The page's own shortcuts act on a page the reader cannot see. Over an
+    // icon, Ctrl+C and Ctrl+S copy and save the icon instead.
+    if (isCommand(event) && !event.shiftKey && "cdls".includes(letterOf(event) || "-")) {
+      event.preventDefault();
+      event.stopPropagation();
+      const keys = `${COMMAND_KEY}+${letterOf(event).toUpperCase()}`;
+      if (item?.icon) iconFileEntries(item.icon, true).find((entry) => entry.keys === keys)?.run();
+      return;
+    }
     const keys: Record<string, () => void> = {
       Escape: close,
       ArrowLeft: () => go(-1),
@@ -258,6 +269,7 @@ function Viewer({ open }: { open: LightboxState }) {
       ref={root}
       role="dialog"
       aria-modal="true"
+      data-lightbox
       aria-label={item.alt || "Picture"}
       tabIndex={-1}
       className="fixed inset-x-0 top-titlebar bottom-0 z-[70] overflow-hidden outline-none select-none"

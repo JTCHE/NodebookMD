@@ -1921,34 +1921,3 @@ span.doc-icon.inline-icon-large {
   outline-offset: 2px;
 }
 
-/* ── The server dot: alive, and only while somebody is looking ─────────────
-   A ring grows out of the dot and fades. Transform and opacity only, so the
-   compositor carries it and the main thread never wakes for it. The body
-   carries `data-idle` when the window loses the focus, which pauses the
-   animation rather than leaving it to run against a window nobody reads.
-   See AGENTS.md, "Animation and compositing". */
-@keyframes server-ping {
-  from {
-    opacity: 0.55;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(2.6);
-  }
-}
-
-.server-ping {
-  animation: server-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-body[data-idle="true"] .server-ping {
-  animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .server-ping {
-    animation: none;
-    opacity: 0.35;
-  }
-}
