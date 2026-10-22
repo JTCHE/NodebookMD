@@ -290,6 +290,10 @@ fn command_response(state: &Serve, command: &str, query: &str) -> (u16, &'static
             read_meta(&state.db.lock().unwrap(), &install, &asked)
                 .and_then(|meta| serde_json::to_string(&meta).map_err(|e| e.to_string()))
         }
+        // Copy as SVG and Copy as PNG read the icon's text through this.
+        "icon_svg" => help::icon_layered(&install.root, &install.packages, &param(query, "name").unwrap_or_default())
+            .and_then(|bytes| String::from_utf8(bytes).map_err(|e| e.to_string()))
+            .and_then(|svg| serde_json::to_string(&svg).map_err(|e| e.to_string())),
         "has_example" => Ok(houdinimd_lib::example_file(&install, &param(query, "path").unwrap_or_default())
             .is_some()
             .to_string()),
