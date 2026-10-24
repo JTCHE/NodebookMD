@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { groupIcon } from "@/lib/ui/icons";
 import { VirtualList } from "@/components/ui/VirtualList";
 import { rowsOf, type TreeBranch } from "@/lib/landing/tree";
+import { warmIcons } from "@/lib/icons";
 import type { Hit } from "@/lib/search";
 import { SidebarRow } from "./SidebarRow";
 
@@ -90,6 +91,12 @@ function pathTo(folders: TreeBranch[], path: string): Open | null {
 /** Every page under a folder, in the order the panel draws them. */
 function pagesUnder(folder: TreeBranch): Hit[] {
   return [...(folder.lead ? [folder.lead] : []), ...folder.branches.flatMap(pagesUnder), ...folder.pages];
+}
+
+/** The icons of the rows that opening `folder` shows: its own, not deeper. */
+function iconsShownBy(folder: TreeBranch): string[] {
+  const rows = [...(folder.lead ? [folder.lead] : []), ...folder.branches, ...folder.pages];
+  return rows.flatMap((row) => (row.icon ? [row.icon] : []));
 }
 
 /* What the tree has open, kept outside it: the panel unmounts when it is
@@ -257,6 +264,9 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
       count: folder.count,
       disclosure: isOpen ? ("expanded" as const) : ("collapsed" as const),
       onClick: () => toggle(folder.id, depth),
+      // The hover comes a moment before the click: the icons the click shows
+      // are in by the time the rows draw.
+      onPointerEnter: isOpen ? undefined : () => void warmIcons(iconsShownBy(folder)),
       style: indent(depth),
       className: pinnedCopy ? "pointer-events-auto" : undefined,
     };

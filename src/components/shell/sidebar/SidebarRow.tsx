@@ -48,6 +48,9 @@ export interface SidebarRowProps {
       selected page row draws. */
   active?: boolean;
   onClick?: () => void;
+  /** Fired once the pointer rests over a row that opens a branch, ahead of
+      the click: warms the icons of what the click would reveal. */
+  onPointerEnter?: () => void;
   /** A kept page, marked where it is read from. The flag hangs off the left
       of the row rather than taking a column, so the marks of kept and unkept
       pages stay on one axis. */
@@ -75,6 +78,7 @@ export function SidebarRow({
   header = false,
   active = false,
   onClick,
+  onPointerEnter,
   to,
   className,
   style,
@@ -213,6 +217,7 @@ export function SidebarRow({
     <button
       type="button"
       onClick={() => onClick?.()}
+      onPointerEnter={onPointerEnter}
       {...shared}
       className={cn("group", shared.className)}
     >
