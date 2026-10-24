@@ -6,6 +6,7 @@ import { closeLightbox, useLightbox, type LightboxState } from "@/lib/lightbox";
 import { groundClass } from "@/lib/ground";
 import { Hint } from "@/components/ui/Hint";
 import { iconFileEntries } from "@/components/shell/ContextMenu";
+import { copyPicture } from "@/lib/pictures";
 import { COMMAND_KEY, isCommand, letterOf } from "@/lib/hotkeys";
 
 const MAX_SCALE = 8;
@@ -21,6 +22,20 @@ const MAX_UPSCALE = 2;
     a margin, so it does not read as a picture cropped to its edges. */
 const ICON_ROOM = 0.6;
 const MOTION = { duration: 220, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" };
+
+/** Pictures loaded ahead, held so the webview keeps them decoded: it does
+    not cache a `himage:` response, and a picture fetched again drew late. */
+const preloaded = new Map<string, HTMLImageElement>();
+function preload(src: string): HTMLImageElement {
+  let image = preloaded.get(src);
+  if (!image) {
+    image = new Image();
+    image.crossOrigin = "anonymous";
+    image.src = src;
+    preloaded.set(src, image);
+  }
+  return image;
+}
 
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -59,11 +74,16 @@ function Viewer({ open }: { open: LightboxState }) {
   const moved = useRef(false);
   const [dragging, setDragging] = useState(false);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+  /** The picture on screen, and its own size. It lags `index` while the
+      next one loads: the old picture stays until the new one can be drawn
+      whole, at its fitted size, in one frame. */
+  const [shown, setShown] = useState<{ index: number; width: number; height: number } | null>(null);
   // The wheel listener is attached once and reads the scale of the moment.
   const scaleNow = useRef(view.scale);
   scaleNow.current = view.scale;
 
   const item = open.items[index];
+  const picturedItem = shown ? open.items[shown.index] : undefined;
   const count = open.items.length;
   const zoomed = view.scale > 1;
 
@@ -104,11 +124,27 @@ function Viewer({ open }: { open: LightboxState }) {
     [zoomAt],
   );
 
-  const show = useCallback((next: number) => {
-    setIndex(next);
-    setView({ scale: 1, x: 0, y: 0 });
-    setSize(null);
-  }, []);
+  const show = useCallback((next: number) => setIndex(next), []);
+
+  // Decode the picture asked for, then put it on screen. A press that comes
+  // first wins: the one it replaced never draws. The neighbours load too, so
+  // the arrows find them ready.
+  useEffect(() => {
+    let live = true;
+    const image = preload(open.items[index].src);
+    image
+      .decode()
+      .catch(() => {})
+      .then(() => {
+        if (!live) return;
+        setShown({ index, width: image.naturalWidth, height: image.naturalHeight });
+        setView({ scale: 1, x: 0, y: 0 });
+      });
+    if (count > 1) for (const step of [1, -1]) preload(open.items[(index + step + count) % count].src);
+    return () => {
+      live = false;
+    };
+  }, [open, index, count]);
 
   const go = useCallback(
     (step: number) => {
@@ -190,26 +226,26 @@ function Viewer({ open }: { open: LightboxState }) {
   /** The picture's size at scale 1: as large as the stage allows, up to
       MAX_UPSCALE times its own. */
   const fit = useCallback(() => {
-    const img = picture.current;
     const box = stage.current;
-    if (!img?.naturalWidth || !box) return;
+    if (!shown?.width || !box) return;
     // An icon is drawn in lines, not pixels: it grows to most of the stage
     // with no blur, where a picture stops before its pixels show.
-    const icon = img.dataset.icon !== undefined;
+    const icon = open.items[shown.index].icon !== undefined;
     const room = icon ? ICON_ROOM : 1;
     const ratio = Math.min(
-      (box.clientWidth * room) / img.naturalWidth,
-      (box.clientHeight * room) / img.naturalHeight,
+      (box.clientWidth * room) / shown.width,
+      (box.clientHeight * room) / shown.height,
       icon ? Infinity : MAX_UPSCALE,
     );
-    setSize({ width: Math.round(img.naturalWidth * ratio), height: Math.round(img.naturalHeight * ratio) });
-  }, []);
+    setSize({ width: Math.round(shown.width * ratio), height: Math.round(shown.height * ratio) });
+  }, [open, shown]);
 
+  // Before the paint: the new picture and its size land in the same frame.
   useLayoutEffect(() => {
     fit();
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
-  }, [fit, index]);
+  }, [fit]);
 
   // On the window, not the dialog: the keys work wherever the focus went.
   const onKey = useRef<(event: KeyboardEvent) => void>(() => {});
@@ -221,6 +257,7 @@ function Viewer({ open }: { open: LightboxState }) {
       event.stopPropagation();
       const keys = `${COMMAND_KEY}+${letterOf(event).toUpperCase()}`;
       if (item?.icon) iconFileEntries(item.icon, true).find((entry) => entry.keys === keys)?.run();
+      else if (keys === `${COMMAND_KEY}+C` && picture.current) void copyPicture(picture.current);
       return;
     }
     const keys: Record<string, () => void> = {
@@ -314,14 +351,14 @@ function Viewer({ open }: { open: LightboxState }) {
         )}
       >
         <div ref={frame} className="flex max-h-full max-w-full items-center justify-center">
+          {picturedItem && (
           <img
             ref={picture}
-            src={item.src}
-            alt={item.alt}
+            src={picturedItem.src}
+            alt={picturedItem.alt}
             draggable={false}
             crossOrigin="anonymous"
-            data-icon={item.icon}
-            onLoad={fit}
+            data-icon={picturedItem.icon}
             width={size?.width}
             height={size?.height}
             onPointerDown={onPointerDown}
@@ -337,11 +374,12 @@ function Viewer({ open }: { open: LightboxState }) {
             className={cn(
               // The same ground the page gave the picture.
               "pointer-events-auto object-contain",
-              groundClass(item.ground),
+              groundClass(picturedItem.ground),
               zoomed ? (dragging ? "cursor-grabbing" : "cursor-grab") : "cursor-zoom-in",
               !dragging && "transition-transform duration-(--duration-fast) ease-out motion-reduce:transition-none",
             )}
           />
+          )}
         </div>
       </div>
 
