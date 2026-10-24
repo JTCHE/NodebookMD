@@ -98,7 +98,10 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
         // macOS draws its traffic lights over the left of the bar, and no
         // caption buttons sit at the right edge.
         nativeFrame && !fullscreen && "pl-[80px]",
-        nativeFrame && "pr-xs",
+        // The pin is concentric with macOS's corner, as the sidebar button is
+        // with Windows': 2px in, and a top-right radius of the window's 16px
+        // less that inset. Full screen has no corner.
+        nativeFrame && (fullscreen ? "pr-xs" : "pr-[2px]"),
         // The hairline is drawn INSIDE the bar. A border would take a pixel
         // off the row, and the caption buttons would stop a pixel short of
         // the bottom of the window's own bar. It is a layer over the bar's
@@ -205,7 +208,7 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
         v{version}
       </span>
 
-      <PinButton />
+      <PinButton corner={nativeFrame && !fullscreen} />
       <WindowControls />
 
       {menuAt && <TitleBarMenu at={menuAt} port={port} onClose={() => setMenuAt(null)} />}
@@ -217,7 +220,7 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
     stays in sight while the reader works. Only in the app's own window: the
     help pane is a panel inside Houdini. It lasts until the window closes.
     Ctrl+Alt+T does the same from the keyboard. */
-function PinButton() {
+function PinButton({ corner }: { corner: boolean }) {
   const [pinned, setPinned] = useState(false);
   const toggle = () => {
     const next = !pinned;
@@ -239,7 +242,7 @@ function PinButton() {
       tabIndex={-1}
       aria-label={pinned ? "Stop keeping on top" : "Keep on top"}
       aria-pressed={pinned}
-      className={cn(BAR_BUTTON, pinned && "text-brand")}
+      className={cn(BAR_BUTTON, corner && "rounded-tr-[14px]", pinned && "text-brand")}
       onClick={toggle}
     >
       <Icons.pin className={cn("size-[13px]", pinned && "fill-current")} />

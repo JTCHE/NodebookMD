@@ -127,7 +127,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
       <div className="not-prose print:hidden hidden @min-[780px]:block absolute top-0 left-full ml-lg h-full w-44">
         <nav
           aria-label="On this page"
-          className="sticky top-0 flex max-h-[calc(100dvh-var(--spacing-titlebar)-var(--spacing-statusbar))] flex-col bg-background"
+          className="sticky top-0 flex max-h-[calc(100dvh-var(--spacing-titlebar)-var(--spacing-statusbar))] flex-col"
         >
           <p className="flex h-(--page-bar-h) shrink-0 items-center text-sm font-medium text-foreground">On this page</p>
           <div
