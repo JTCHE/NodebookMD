@@ -104,14 +104,17 @@ function Viewer({ open }: { open: LightboxState }) {
     [zoomAt],
   );
 
+  const show = useCallback((next: number) => {
+    setIndex(next);
+    setView({ scale: 1, x: 0, y: 0 });
+    setSize(null);
+  }, []);
+
   const go = useCallback(
     (step: number) => {
-      if (count < 2) return;
-      setIndex((current) => (current + step + count) % count);
-      setView({ scale: 1, x: 0, y: 0 });
-      setSize(null);
+      if (count > 1) show((index + step + count) % count);
     },
-    [count],
+    [count, index, show],
   );
 
   /** The rectangle to grow from or shrink into: the pressed picture, when
@@ -305,7 +308,10 @@ function Viewer({ open }: { open: LightboxState }) {
 
       <div
         ref={stage}
-        className="pointer-events-none absolute inset-x-[64px] top-[52px] bottom-lg flex items-center justify-center"
+        className={cn(
+          "pointer-events-none absolute inset-x-[64px] top-[52px] flex items-center justify-center",
+          count > 1 ? "bottom-[88px]" : "bottom-lg",
+        )}
       >
         <div ref={frame} className="flex max-h-full max-w-full items-center justify-center">
           <img
@@ -341,6 +347,7 @@ function Viewer({ open }: { open: LightboxState }) {
 
       {count > 1 && (
         <>
+          <Strip items={open.items} index={index} hidden={zoomed} onPick={show} />
           <Hint label="Previous" keys="←" className="absolute top-1/2 left-sm -translate-y-1/2">
             <button type="button" aria-label="Previous picture" className={ROUND_BUTTON} onClick={() => go(-1)}>
               <Icons.stepBack className="size-[18px]" />
@@ -353,6 +360,60 @@ function Viewer({ open }: { open: LightboxState }) {
           </Hint>
         </>
       )}
+    </div>
+  );
+}
+
+/** Every picture of the page, small, under the stage: a press goes straight
+    to one. Out of the way while the reader looks closely, like the caption. */
+function Strip({
+  items,
+  index,
+  hidden,
+  onPick,
+}: {
+  items: LightboxState["items"];
+  index: number;
+  hidden: boolean;
+  onPick: (index: number) => void;
+}) {
+  const strip = useRef<HTMLDivElement>(null);
+  // The current one stays in view when the arrows walk past the edge.
+  useEffect(() => {
+    strip.current?.children[index]?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [index]);
+  return (
+    <div
+      ref={strip}
+      className={cn(
+        "absolute inset-x-0 bottom-0 z-10 mx-auto flex w-fit max-w-full gap-xs overflow-x-auto px-lg py-md [scrollbar-width:none]",
+        "transition-opacity duration-(--duration-fast) motion-reduce:transition-none",
+        hidden && "pointer-events-none opacity-0",
+      )}
+    >
+      {items.map((item, at) => (
+        <button
+          key={item.src}
+          type="button"
+          aria-label={item.alt ? `Show ${item.alt}` : `Show picture ${at + 1}`}
+          aria-current={at === index || undefined}
+          onClick={() => onPick(at)}
+          className={cn(
+            "h-[48px] shrink-0 cursor-interactive overflow-hidden rounded-sm ring-1 ring-white/10",
+            "transition-[opacity,box-shadow] duration-(--duration-fast) motion-reduce:transition-none",
+            "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+            at === index ? "opacity-100 ring-2 ring-white/80" : "opacity-50 pointer-hover:opacity-90",
+          )}
+        >
+          <img
+            src={item.src}
+            alt=""
+            draggable={false}
+            loading="lazy"
+            className={cn("h-full w-auto max-w-[96px] object-cover", groundClass(item.ground))}
+          />
+        </button>
+      ))}
     </div>
   );
 }
