@@ -72,27 +72,23 @@ const PNG_SIZE = 512;
     screen: that one comes from another origin and would taint the canvas. */
 export async function iconPng(source: string): Promise<Blob> {
   const svg = await iconSvg(source);
-  const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
-  try {
-    const image = new Image();
-    image.src = url;
-    await image.decode();
-    // Most help icons give a viewBox and no size, which an <img> draws at a
-    // default 150 px whatever the box's shape. The box gives the true shape.
-    const box = svg.match(/viewBox="\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)/);
-    const width = box ? Number(box[1]) : image.naturalWidth || 1;
-    const height = box ? Number(box[2]) : image.naturalHeight || 1;
-    const scale = PNG_SIZE / Math.max(width, height);
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(width * scale);
-    canvas.height = Math.round(height * scale);
-    canvas.getContext("2d")!.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return await new Promise<Blob>((done, fail) =>
-      canvas.toBlob((blob) => (blob ? done(blob) : fail(new Error("No PNG"))), "image/png"),
-    );
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+  // A data: URL, not a blob: one: the app's CSP allows data: pictures only.
+  const image = new Image();
+  image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  await image.decode();
+  // Most help icons give a viewBox and no size, which an <img> draws at a
+  // default 150 px whatever the box's shape. The box gives the true shape.
+  const box = svg.match(/viewBox="\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)/);
+  const width = box ? Number(box[1]) : image.naturalWidth || 1;
+  const height = box ? Number(box[2]) : image.naturalHeight || 1;
+  const scale = PNG_SIZE / Math.max(width, height);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(width * scale);
+  canvas.height = Math.round(height * scale);
+  canvas.getContext("2d")!.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return await new Promise<Blob>((done, fail) =>
+    canvas.toBlob((blob) => (blob ? done(blob) : fail(new Error("No PNG"))), "image/png"),
+  );
 }
 
 /** Asks where to save the icon, as SVG or PNG. Resolves false when the
