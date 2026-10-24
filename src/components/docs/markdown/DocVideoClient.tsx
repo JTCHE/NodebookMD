@@ -128,6 +128,19 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
     };
   }, []);
 
+  // A clip the reader scrolled past keeps playing and keeps making sound.
+  // Pause it when it leaves the viewport; a reader who scrolls back presses
+  // play again, same as one who paused it on purpose.
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting && !videoRef.current?.paused) videoRef.current?.pause();
+    });
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, []);
+
   const wake = () => {
     setIdle(false);
     clearTimeout(idleTimer.current);
