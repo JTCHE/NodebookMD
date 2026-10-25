@@ -1,3 +1,7 @@
+  # The app was com.houdinimd.app before 0.3.0.
+  for id in com.nodebookmd.app com.houdinimd.app; do
+    osascript -e "tell application id \"$id\" to quit" >/dev/null 2>&1 || true
+  done
 #!/bin/sh
 # Installs NodebookMD on a Mac with Apple Silicon:
 #
@@ -41,7 +45,10 @@ if [ -d "$dest/$APP" ]; then
   # Quit it first, then move the old copy to the Bin, where it can come back.
   # A Terminal without Full Disk Access may not write to the Bin; then the old
   # copy goes with the download.
-  osascript -e 'tell application id "com.houdinimd.app" to quit' >/dev/null 2>&1 || true
+  # Before 0.3.0 the app's id was com.houdinimd.app.
+  for id in com.nodebookmd.app com.houdinimd.app; do
+    osascript -e "tell application id \"$id\" to quit" >/dev/null 2>&1 || true
+  done
   sleep 1
   mv "$dest/$APP" "$HOME/.Trash/$APP $(date +%Y%m%d-%H%M%S)" 2>/dev/null || mv "$dest/$APP" "$tmp/old.app"
 fi
