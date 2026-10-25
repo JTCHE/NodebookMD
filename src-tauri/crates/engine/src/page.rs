@@ -23,8 +23,8 @@ pub struct PageView {
     pub since: Option<String>,
     pub summary: Option<String>,
     pub markdown: String,
-    /// The same body as plain Markdown, for every reader outside the app:
-    /// copy, save, Obsidian, the `.md` address. See `wiki::markdown::portable`.
+    /// The page as one plain Markdown file, for every reader outside the app:
+    /// copy, save, Obsidian, the `.md` address. See `document`.
     pub portable: String,
     /// The build the page was read from.
     pub version: String,
@@ -84,8 +84,7 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
     assets::rewrite(&path, &mut parsed.blocks, &links);
     let prop = |name: &str| wiki::model::prop(&parsed.props, name).map(str::to_string);
     let markdown = wiki::markdown::blocks(&parsed.blocks, 1);
-    let portable = wiki::markdown::portable(&parsed.blocks);
-    Ok(PageView {
+    let mut view = PageView {
         name: name(&path, &parsed),
         path,
         node_type: node_type(&parsed.props),
@@ -95,18 +94,20 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
         // paragraph right above it. Search and listings use `summary()`.
         summary: parsed.summary.as_ref().map(|text| wiki::inline::plain(text)),
         markdown,
-        portable,
+        portable: String::new(),
         version: install.version.clone(),
         node_versions: Vec::new(),
-    })
+    };
+    view.portable = view.document(&wiki::markdown::portable(&parsed.blocks));
+    Ok(view)
 }
 
 impl PageView {
-    /// The page as one Markdown file, for a reader outside the app: YAML
+    /// `body` as one Markdown file, for a reader outside the app: YAML
     /// frontmatter with what the app header shows, the title as an H1, then
     /// the body. A JSON string is a valid YAML scalar, so no value can break
     /// the block.
-    pub fn document(&self) -> String {
+    fn document(&self, body: &str) -> String {
         let mut out = String::from("---\n");
         let fields = [
             ("title", Some(&self.name)),
@@ -121,7 +122,7 @@ impl PageView {
                 out += &format!("{key}: {}\n", serde_json::Value::from(value.as_str()));
             }
         }
-        out + &format!("---\n\n# {}\n\n{}", self.name, self.portable)
+        out + &format!("---\n\n# {}\n\n{}", self.name, body)
     }
 }
 
