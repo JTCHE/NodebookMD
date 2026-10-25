@@ -1,6 +1,7 @@
 import { AsciiBackground } from "@/components/root/AsciiBackground";
 import { SearchField } from "@/components/root/search-field/SearchField";
 import { LibraryPanel } from "@/components/root/LibraryPanel";
+import { UpdatedPill } from "@/components/root/UpdatedPill";
 import { pagesLabel, useBuild, useIndex } from "@/lib/install";
 import { DISPLAY_TITLE } from "@/lib/ui/type";
 import { APP_NAME } from "@/lib/brand";
@@ -28,6 +29,8 @@ export default function Home() {
         glow={false}
         className="absolute top-[-30px] right-[-60px] left-auto h-[374px] w-[660px] [mask-image:radial-gradient(ellipse_at_center,black_10%,transparent_70%)]"
       />
+
+      <UpdatedPill />
 
       <div className="relative flex min-h-0 flex-1 flex-col justify-center px-lg py-lg">
         <div className="mx-auto flex min-h-0 w-full max-w-hero flex-col gap-xl">
