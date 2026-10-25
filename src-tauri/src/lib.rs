@@ -84,10 +84,19 @@ fn available_installs(
         .into_iter()
         .map(|install| {
             let status = index::status(&db, &install.version);
+            // The pages the card counts (`all_titles`): older versions of a
+            // node are files of the index, not pages of the build.
+            let pages = db
+                .query_row(
+                    "SELECT count(*) FROM pages WHERE build = ?1 AND rank = 0",
+                    [&install.version],
+                    |row| row.get(0),
+                )
+                .unwrap_or(status.pages);
             BuildRow {
                 current: install.version == now,
                 version: install.version,
-                pages: status.pages,
+                pages,
                 done: status.done,
             }
         })
