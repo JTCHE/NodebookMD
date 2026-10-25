@@ -1,7 +1,3 @@
-  # The app was com.houdinimd.app before 0.3.0.
-  for id in com.nodebookmd.app com.houdinimd.app; do
-    osascript -e "tell application id \"$id\" to quit" >/dev/null 2>&1 || true
-  done
 #!/bin/sh
 # Installs NodebookMD on a Mac with Apple Silicon:
 #
