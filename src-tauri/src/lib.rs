@@ -685,6 +685,44 @@ async fn save_icon(
     Ok(true)
 }
 
+/// Drags a picture of the page out of the window, as a file: to the desktop,
+/// a folder, or another app. The pictures live in the help's archives, so
+/// the file is written to a temporary folder first. `path` is the picture's
+/// address path (`/images/…`), as the `himage` scheme reads it; `preview` is
+/// the small PNG that follows the pointer.
+#[tauri::command]
+async fn drag_picture(
+    app: tauri::AppHandle,
+    window: tauri::WebviewWindow,
+    path: String,
+    preview: Vec<u8>,
+) -> Result<(), String> {
+    let name = percent_decode(&path);
+    let install = current_for(&app)?;
+    let bytes = help::asset_layered(&install.help_roots(), &name)?;
+    let file_name = std::path::Path::new(&name)
+        .file_name()
+        .ok_or("the picture has no file name")?
+        .to_owned();
+    let folder = std::env::temp_dir().join("NodebookMD pictures");
+    std::fs::create_dir_all(&folder).map_err(|e| e.to_string())?;
+    let file = folder.join(file_name);
+    std::fs::write(&file, bytes).map_err(|e| e.to_string())?;
+    // The drag holds its own loop until the drop, on the window's thread.
+    app.run_on_main_thread(move || {
+        let item = drag::DragItem::Files(vec![file]);
+        let image = drag::Image::Raw(preview);
+        #[cfg(target_os = "linux")]
+        let Ok(handle) = window.gtk_window() else { return };
+        #[cfg(target_os = "linux")]
+        let handle = &handle;
+        #[cfg(not(target_os = "linux"))]
+        let handle = &window;
+        let _ = drag::start_drag(handle, item, image, |_, _| {}, drag::Options::default());
+    })
+    .map_err(|e| e.to_string())
+}
+
 /// The share card of a link that leaves the help, for its tooltip.
 #[tauri::command]
 async fn link_preview(url: String) -> Result<preview::Preview, String> {
@@ -1299,6 +1337,7 @@ pub fn run() {
             open_devtools,
             icon_svg,
             save_icon,
+            drag_picture,
             houdini_open
         ])
         .build(context)

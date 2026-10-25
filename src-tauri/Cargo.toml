@@ -39,6 +39,7 @@ tauri-plugin-dialog = "2.7.3"
 # no second one.
 reqwest = { version = "0.13", default-features = false, features = ["json", "rustls-no-provider"] }
 rustls = { version = "0.23", default-features = false, features = ["ring"] }
+drag = "2.1.1"
 
 [profile.release]
 codegen-units = 1

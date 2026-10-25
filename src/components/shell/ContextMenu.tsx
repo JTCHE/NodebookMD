@@ -22,6 +22,7 @@ import { BACK_KEYS, COMMAND_KEY, FORWARD_KEYS } from "@/lib/hotkeys";
 import { invoke, inTauri } from "@/lib/backend";
 import { openLightbox, PAGE_PICTURES } from "@/lib/lightbox";
 import { showToast } from "@/components/ui/toast-notification";
+import { copyPicture } from "@/lib/pictures";
 import { used } from "@/lib/telemetry";
 
 /** The address of a link the app draws: a page of the app as Settings
@@ -116,13 +117,21 @@ export function ContextMenu() {
         group.push({ label: `Copy icon name (${name})`, icon: Tag, run: () => copyText(name, "Icon name copied") });
         menu.push(group, iconFileEntries(source, !!lightbox));
       }
+      // A picture, not an icon, large in the lightbox.
+      const large = lightbox && !icon ? lightbox.querySelector<HTMLImageElement>("img:not([data-icon])") : null;
+      if (large) menu.push([{ label: "Copy image", icon: Copy, keys: `${COMMAND_KEY}+C`, run: () => copyPicture(large) }]);
       if (lightbox) {
         if (menu.length) setAt({ x: event.clientX, y: event.clientY, menu });
         return;
       }
 
       const picture = target?.closest<HTMLImageElement>(PAGE_PICTURES);
-      if (picture) menu.push([{ label: "Open picture", icon: Image, run: () => openLightbox(picture) }]);
+      if (picture) {
+        menu.push([
+          { label: "Open picture", icon: Image, run: () => openLightbox(picture) },
+          { label: "Copy image", icon: Copy, run: () => copyPicture(picture) },
+        ]);
+      }
 
       const page = pageActions();
       if (page && target?.closest("[data-current-crumb]")) {

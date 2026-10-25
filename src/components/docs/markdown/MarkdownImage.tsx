@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { inTauri } from "@/lib/backend";
+import { dragPicture } from "@/lib/pictures";
 import { flushSync } from "react-dom";
 import type { Components } from "react-markdown";
 import { assetUrl } from "@/lib/assets";
@@ -72,6 +74,13 @@ export const Image: Components["img"] = function MarkdownImage({ src, alt, ...pr
       // another origin (`himage:`), which answers with CORS for this.
       crossOrigin="anonymous"
       onClick={(event) => openLightbox(event.currentTarget)}
+      // Out of the window, a picture is its file: the desktop app drags the
+      // file itself. The browser's own drag carries only the app's address.
+      onDragStart={(event) => {
+        if (!inTauri) return;
+        event.preventDefault();
+        void dragPicture(event.currentTarget);
+      }}
       // `loading="lazy"` never fires in this app: every doc page scrolls
       // inside its own `overflow-y-auto` shell, not the window, and Chromium's
       // native lazy loader watches the window's viewport only — an image two
