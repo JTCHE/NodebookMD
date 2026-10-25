@@ -256,10 +256,12 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
     setOpen(false);
   }
 
-  // The nudge: F1 in this build's Houdini does not open the app yet. Only
-  // for a release that has run once, so there is an F1 to take.
+  // The F1 key of this build's Houdini, on the card itself, so the reader
+  // sees and sets it without opening the picker. It stays, lit or not, as
+  // the key in the picker's row does. Only for a release that has run once,
+  // so there is an F1 to take.
   const currentSeries = version ? seriesOf(version) : "";
-  const nudge = !open && currentSeries !== "" && hookedIn(releases, currentSeries) === false;
+  const currentHooked = currentSeries ? hookedIn(releases, currentSeries) : undefined;
 
   async function pick(row: BuildRow) {
     if (row.current) {
@@ -298,11 +300,11 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
         onClick={() => setOpen((v) => !v)}
         expanded={open}
       />
-      {nudge && (
+      {currentHooked !== undefined && (
         // Beside the chevron, over the card and not inside it: a button
         // cannot hold a button.
         <div className="absolute top-1/2 right-lg flex -translate-y-1/2">
-          <F1Chip release={currentSeries} hooked={false} onToggle={() => toggleF1(currentSeries, false)} />
+          <F1Chip release={currentSeries} hooked={currentHooked} onToggle={() => toggleF1(currentSeries, currentHooked)} />
         </div>
       )}
       <div
