@@ -131,13 +131,9 @@ function Card({
 function F1Chip({
   release,
   hooked,
-  nudge = false,
   onToggle,
 }: {
   release: string;
-  /** On the closed card, where it only shows while F1 is not taken: lit in
-      the brand colour, so the reader sees it without opening the picker. */
-  nudge?: boolean;
   /** `undefined` when the series has no preferences folder yet. */
   hooked: boolean | undefined;
   onToggle: () => Promise<void>;
@@ -183,8 +179,6 @@ function F1Chip({
             ? "cursor-default border-hairline text-neutral-300"
             : hooked
               ? "cursor-interactive border-brand/40 bg-brand/10 text-brand"
-              : nudge
-                ? "cursor-interactive border-brand/60 text-brand pointer-hover:bg-brand/10"
               : "cursor-interactive border-hairline text-neutral-400 pointer-hover:text-neutral-700",
           busy && "opacity-50",
         )}
@@ -308,7 +302,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
         // Beside the chevron, over the card and not inside it: a button
         // cannot hold a button.
         <div className="absolute top-1/2 right-lg flex -translate-y-1/2">
-          <F1Chip release={currentSeries} hooked={false} nudge onToggle={() => toggleF1(currentSeries, false)} />
+          <F1Chip release={currentSeries} hooked={false} onToggle={() => toggleF1(currentSeries, false)} />
         </div>
       )}
       <div
