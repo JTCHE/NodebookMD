@@ -27,6 +27,15 @@
 ; An update (the updater runs this with /UPDATE) makes no shortcuts, and the
 ; old uninstaller in update mode keeps its own. So each old shortcut is
 ; replaced here by one with the new name.
+; Before 0.3.0 the exe was houdinimd.exe. The template closes the app by its
+; new name only, so an open older app is closed here. Left open, it holds the
+; data folders, which then cannot move, and the port F1 points at.
+!macro NSIS_HOOK_PREINSTALL
+  ${If} ${FileExists} "$INSTDIR\houdinimd.exe"
+    !insertmacro CheckIfAppIsRunning "$INSTDIR\houdinimd.exe" "${PRODUCTNAME}"
+  ${EndIf}
+!macroend
+
 !define OLD_PRODUCTNAME "HoudiniMD"
 !define TASKBAR_PINS "$APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
 !macro NSIS_HOOK_POSTINSTALL
