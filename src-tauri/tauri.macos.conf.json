@@ -11,7 +11,8 @@
     "macOS": {
       "signingIdentity": "-",
       "files": {
-        "Resources/Assets.car": "icons/Assets.car"
+        "Resources/Assets.car": "icons/Assets.car",
+        "MacOS/houdinimd": "macos/houdinimd"
       }
     }
   }
