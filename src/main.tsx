@@ -1,3 +1,4 @@
+import "./lib/old-keys";
 import { StrictMode, type ReactNode } from "react";
 import { invoke, inTauri } from "./lib/backend";
 import { createRoot } from "react-dom/client";
@@ -20,7 +21,7 @@ import "./styles/globals.css";
 // lives here, in the webview, so it is dropped here.
 if (await invoke<boolean>("clean_start").catch(() => false)) {
   for (const key of Object.keys(localStorage)) {
-    if (key.startsWith("houdinimd.")) localStorage.removeItem(key);
+    if (key.startsWith("nodebookmd.")) localStorage.removeItem(key);
   }
 }
 

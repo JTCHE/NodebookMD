@@ -44,7 +44,7 @@ function useTree(): TreeBranch[] {
   return tree;
 }
 
-const WIDTH_KEY = "houdinimd.sidebar-width";
+const WIDTH_KEY = "nodebookmd.sidebar-width";
 /** The panel as it first opens: room for a node name, and no more. */
 const DEFAULT_WIDTH = 260;
 const MIN_WIDTH = 200;

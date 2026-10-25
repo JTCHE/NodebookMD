@@ -2,7 +2,7 @@
 members = ["crates/engine", "crates/wiki"]
 
 [package]
-name = "houdinimd"
+name = "nodebookmd"
 version = "0.3.0"
 description = "Version-exact Houdini documentation, offline and local."
 authors = ["JTCHE"]
@@ -11,7 +11,7 @@ rust-version = "1.90"
 
 [lib]
 # The desktop binary and any future test harness both link this.
-name = "houdinimd_lib"
+name = "nodebookmd_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -39,6 +39,8 @@ tauri-plugin-dialog = "2.7.3"
 # no second one.
 reqwest = { version = "0.13", default-features = false, features = ["json", "rustls-no-provider"] }
 rustls = { version = "0.23", default-features = false, features = ["ring"] }
+# The folders Tauri names after the identifier, resolved the way it does.
+dirs = "7"
 drag = "2.1.1"
 
 [profile.release]

@@ -66,7 +66,7 @@ export interface Hit {
   place?: string[];
 }
 
-const RECENT_SEARCHES_KEY = "houdinimd:recent-searches";
+const RECENT_SEARCHES_KEY = "nodebookmd:recent-searches";
 const MAX_RECENT = 5;
 
 /** The pages the reader last opened from a search, newest first. Both search

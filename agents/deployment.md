@@ -54,7 +54,7 @@ The draft step stays, because it is where the notes are written.
 
 ## Release notes
 
-Write them in the vault, under `side projects/Houdini/HoudiniMD/specs/Release/`, one
+Write them in the vault, under `side projects/Houdini/NodebookMD/specs/Release/`, one
 file per version: `Open/` while the version is not out, `Closed/`
 once it is published. CI cannot read the vault — it is in iCloud — so the file is
 the source and the GitHub release body is a copy. Paste it into the draft
@@ -182,7 +182,7 @@ silent update. Read the manifest to check a build:
 
 `asInvoker` is right. `highestAvailable` is the broken one.
 
-Data lives in `%APPDATA%\com.houdinimd.app` and survives an uninstall, so a
+Data lives in `%APPDATA%\com.nodebookmd.app` and survives an uninstall, so a
 reinstall does not index the docs again.
 
 WebView2 comes from the downloading bootstrapper: the installer looks for the

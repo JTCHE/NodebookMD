@@ -487,6 +487,13 @@ fn window<'a, R: tauri::Runtime, M: Manager<R>>(
     config: &tauri::utils::config::WindowConfig,
 ) -> tauri::Result<tauri::WebviewWindowBuilder<'a, R, M>> {
     let builder = tauri::WebviewWindowBuilder::from_config(manager, config)?;
+    // Tauri's own choice, unless that folder still has its pre-0.3.0 name
+    // (`update::still_old`): the local storage and open tabs live there.
+    #[cfg(any(windows, target_os = "linux"))]
+    let builder = match manager.path().app_local_data_dir() {
+        Ok(dir) => builder.data_directory(update::still_old(dir)),
+        Err(_) => builder,
+    };
     #[cfg(target_os = "macos")]
     let builder = builder
         .decorations(true)
@@ -1201,14 +1208,25 @@ struct Port(u16);
 
 pub fn run() {
     let context = tauri::generate_context!();
+    let identifier = context.config().identifier.clone();
+    let moved = update::move_old_folders(&identifier);
     // The uninstaller asks for this, and the app can still be open then. So it
     // runs before the single-instance plugin can hand it to that app, and it
     // opens no window. The exit code tells the uninstaller to ask again.
     if std::env::args().any(|argument| argument == "--unhook") {
-        let done = update::data_dir_before_launch(&context.config().identifier)
+        let done = update::data_dir_before_launch(&identifier)
             .map_err(|e| e.to_string())
             .and_then(|data| hook::revert(&data, &[]));
         std::process::exit(if done.is_ok() { 0 } else { 1 });
+    }
+    // The installer asks for this after it puts the new exe in place, so the
+    // folders move and Houdini's startup script names the new exe even if
+    // the reader starts Houdini before the app.
+    if std::env::args().any(|argument| argument == "--migrate") {
+        if let Ok(data) = update::data_dir_before_launch(&identifier) {
+            hook::refresh(&data);
+        }
+        std::process::exit(0);
     }
     let builder = tauri::Builder::default();
     // One process owns the port Houdini's F1 points at, so a second launch
@@ -1227,17 +1245,20 @@ pub fn run() {
         .plugin(update::plugin())
         .register_asynchronous_uri_scheme_protocol("hicon", |ctx, request, responder| off_main(ctx.app_handle(), request, responder, icon_response))
         .register_asynchronous_uri_scheme_protocol("himage", |ctx, request, responder| off_main(ctx.app_handle(), request, responder, asset_response))
-        .setup(|app| {
+        .setup(move |app| {
             // `--clean` runs the app as a machine that has never run it: its
             // own data directory beside the real one, which is left untouched.
             let data = if clean_start() {
-                let fresh = std::env::temp_dir().join(format!("houdinimd-clean-{}", std::process::id()));
+                let fresh = std::env::temp_dir().join(format!("nodebookmd-clean-{}", std::process::id()));
                 std::fs::create_dir_all(&fresh)?;
                 fresh
             } else {
                 update::data_dir(app)?
             };
             log::start(&data, env!("CARGO_PKG_VERSION"));
+            for line in &moved {
+                crate::say!(Info, "rename", "{line}");
+            }
             telemetry::catch_panics(data.clone());
             app.manage(telemetry::Telemetry::new(data.clone()));
             app.manage(Db(Mutex::new(db::open(&data)?)));

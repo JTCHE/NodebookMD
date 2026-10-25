@@ -21,9 +21,9 @@ use std::time::SystemTime;
 /// One file may reach this before the next one starts. Three files of this
 /// size is the whole cost of logging on the reader's disk.
 const LIMIT: u64 = 512 * 1024;
-/// Older files kept beside the open one: `houdinimd.1.log`, `houdinimd.2.log`.
+/// Older files kept beside the open one: `nodebookmd.1.log`, `nodebookmd.2.log`.
 const KEEP: u32 = 2;
-const NAME: &str = "houdinimd";
+const NAME: &str = "nodebookmd";
 
 struct Sink {
     file: File,
@@ -33,7 +33,7 @@ struct Sink {
 
 static SINK: Mutex<Option<Sink>> = Mutex::new(None);
 
-/// Opens `logs/houdinimd.log` and writes the first line. Called once, before
+/// Opens `logs/nodebookmd.log` and writes the first line. Called once, before
 /// anything else in `setup`, so the log holds the whole launch.
 pub fn start(data: &Path, version: &str) {
     let dir = data.join("logs");
@@ -98,7 +98,7 @@ pub fn line(level: Level, area: &str, message: Arguments) {
     }
 }
 
-/// `houdinimd.1.log` becomes `.2.log`, the open file becomes `.1.log`, and the
+/// `nodebookmd.1.log` becomes `.2.log`, the open file becomes `.1.log`, and the
 /// oldest is written over. No file is ever left for the reader to find later.
 fn rotate(dir: &Path) {
     let at = |n: u32| dir.join(format!("{NAME}.{n}.log"));

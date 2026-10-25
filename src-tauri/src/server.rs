@@ -477,7 +477,7 @@ mod tests {
         static NEXT: AtomicU32 = AtomicU32::new(0);
         let n = NEXT.fetch_add(1, Ordering::Relaxed);
         let data = std::env::temp_dir()
-            .join(format!("houdinimd-server-test-{}-{n}", std::process::id()));
+            .join(format!("nodebookmd-server-test-{}-{n}", std::process::id()));
         Ok(Mutex::new(db::open(&data)?))
     }
 

@@ -4,7 +4,7 @@
 //!   cargo run --release --example probe -- --runs 5
 //!   cargo run --release --example probe -- --out ../harness/out/probe.json
 //!
-//! Every number here is a real call into `houdinimd_lib`, on the Houdini
+//! Every number here is a real call into `nodebookmd_lib`, on the Houdini
 //! install this machine has, with no app and no window around it. That is the
 //! point: the box this runs on has no interactive desktop, and a measurement
 //! that needs one is a measurement nobody takes.
@@ -21,7 +21,7 @@ use std::time::Instant;
 
 mod serve;
 
-use houdinimd_lib::{all_titles, db, find, help, index, install, read_page};
+use nodebookmd_lib::{all_titles, db, find, help, index, install, read_page};
 use rusqlite::Connection;
 use serde::Serialize;
 
@@ -71,7 +71,7 @@ fn main() {
         .and_then(|v| v.parse().ok())
         .unwrap_or(3usize);
     let out = flag(&args, "--out").map(PathBuf::from);
-    let work = std::env::temp_dir().join("houdinimd-probe");
+    let work = std::env::temp_dir().join("nodebookmd-probe");
 
     // `--serve` is the front-end half of the harness, not a measurement of its
     // own: it stands the app up without a window so `harness/ui.mts` can drive
@@ -84,7 +84,7 @@ fn main() {
         // rebuild: the harness runs the back-end probe again while this server
         // is up, and on Windows a folder cannot be removed out from under an
         // open connection.
-        let served = std::env::temp_dir().join("houdinimd-probe-serve");
+        let served = std::env::temp_dir().join("nodebookmd-probe-serve");
         if let Err(reason) = serve::run(port, &served, dist) {
             eprintln!("{reason}");
             std::process::exit(2);

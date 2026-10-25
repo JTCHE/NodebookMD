@@ -11,7 +11,7 @@
  *   sidefx     Houdini's own help server. The one a running Houdini has on
  *              48626 when it answers; otherwise `hhelp serve` from the newest
  *              install, which runs the same `hwebserver` Houdini runs.
- *   houdinimd  the shipped binary, from a staged copy on a copy of the
+ *   nodebookmd the shipped binary, from a staged copy on a copy of the
  *              reader's data (`launch` in `app.mts`), so its index is warm.
  *
  * Houdini's pane is not driven. It is QtWebEngine inside Houdini and has no
@@ -110,7 +110,7 @@ async function sidefxServer(): Promise<{ base: string; what: string; stop: () =>
 }
 
 /** This app's server, off a staged copy of the shipped binary. */
-async function houdinimdServer(): Promise<{ base: string; what: string; stop: () => Promise<void> }> {
+async function nodebookmdServer(): Promise<{ base: string; what: string; stop: () => Promise<void> }> {
   const running = await launch();
   return { base: `http://127.0.0.1:${running.port}/`, what: `${productName}'s server, the one F1 opens`, stop: running.stop };
 }
@@ -344,7 +344,7 @@ async function main() {
     } finally {
       sidefx.stop();
     }
-    const hmd = await houdinimdServer();
+    const hmd = await nodebookmdServer();
     try {
       notes.push(`${productName}: ${hmd.what}.`);
       results[productName] = await measure(browser, hmd.base, runs, gaps);

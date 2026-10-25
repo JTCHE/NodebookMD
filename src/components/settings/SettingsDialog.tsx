@@ -27,7 +27,7 @@ import { restoresTabs, setRestoresTabs } from "@/lib/tabs";
 import { setHelpServer, useReleases } from "@/lib/help-server";
 import { OBSIDIAN_PICTURES, OBSIDIAN_VAULT, picturesChoice, rememberedVault, type PicturesChoice } from "@/lib/obsidian";
 
-const OPEN = "houdinimd:settings";
+const OPEN = "nodebookmd:settings";
 
 /** The keys that open Settings, as the menu and the tooltip show them. */
 export const SETTINGS_KEYS = `${COMMAND_KEY}+,`;

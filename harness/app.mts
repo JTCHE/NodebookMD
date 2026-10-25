@@ -4,11 +4,11 @@
  *
  *   node harness/app.mts             # a normal launch, on a copy of the real data
  *   node harness/app.mts --clean     # a first launch: empty data, full index pass
- *   node harness/app.mts --no-build  # reuse target/release/houdinimd.exe
+ *   node harness/app.mts --no-build  # reuse target/release/nodebookmd.exe
  *   node harness/app.mts --exe <path> # another build, to compare two
  *
  * The number a reader sees is Task Manager's "Memory" column: the PRIVATE
- * WORKING SET of `houdinimd.exe`. The webview is a separate tree of
+ * WORKING SET of `nodebookmd.exe`. The webview is a separate tree of
  * `msedgewebview2.exe` processes and is reported beside it, never added in.
  *
  * The app runs from a copy in a temporary folder with a `.portable` marker, so
@@ -35,7 +35,7 @@ import { join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 const at = process.argv.indexOf("--exe");
-const EXE = at > 0 ? process.argv[at + 1] : "src-tauri/target/release/houdinimd.exe";
+const EXE = at > 0 ? process.argv[at + 1] : "src-tauri/target/release/nodebookmd.exe";
 /** The Windows temp folder. Git Bash hands node a `TEMP` Windows cannot use,
  *  and PowerShell's `Add-Type` then tries to compile into C:\Windows. */
 const TEMP = join(homedir(), "AppData", "Local", "Temp");
@@ -46,11 +46,11 @@ const OUT = "harness/out";
 export interface Sample {
   /** Milliseconds since launch. */
   at: number;
-  /** Private working set of `houdinimd.exe`, MB: Task Manager's number. */
+  /** Private working set of `nodebookmd.exe`, MB: Task Manager's number. */
   app: number;
-  /** Private bytes committed by `houdinimd.exe`, MB, in memory or not. */
+  /** Private bytes committed by `nodebookmd.exe`, MB, in memory or not. */
   commit: number;
-  /** Processor seconds `houdinimd.exe` has used since it started. */
+  /** Processor seconds `nodebookmd.exe` has used since it started. */
   cpu: number;
   threads: number;
   handles: number;
@@ -157,7 +157,7 @@ const dataAt = process.argv.indexOf("--data");
 /** Where the staged copy's index and settings come from: the reader's own, or
  *  `--data <dir>`. An index written by a newer build is thrown away and built
  *  again by an older one, and that pass is then what gets measured. */
-const DATA = dataAt > 0 ? process.argv[dataAt + 1] : join(homedir(), "AppData", "Roaming", "com.houdinimd.app");
+const DATA = dataAt > 0 ? process.argv[dataAt + 1] : join(homedir(), "AppData", "Roaming", "com.nodebookmd.app");
 
 /**
  * A portable copy of the app, on a copy of the reader's data (or none, with
@@ -186,10 +186,10 @@ export function recycle(dir: string) {
  * the exe. The same path is asked about once.
  */
 function stage(clean: boolean): string {
-  const dir = join(TEMP, "houdinimd-harness");
+  const dir = join(TEMP, "nodebookmd-harness");
   if (existsSync(dir)) recycle(dir);
   mkdirSync(dir);
-  copyFileSync(EXE, join(dir, "houdinimd.exe"));
+  copyFileSync(EXE, join(dir, "nodebookmd.exe"));
   writeFileSync(join(dir, ".portable"), "");
   if (!clean) {
     for (const file of ["index.db", "index.db-wal", "user.db"]) {
@@ -226,7 +226,7 @@ export interface Running {
  */
 export async function launch(options: { clean?: boolean; telemetry?: string; env?: Record<string, string> } = {}): Promise<Running> {
   const running = () =>
-    spawnSync("powershell", ["-NoProfile", "-Command", "(Get-CimInstance Win32_Process -Filter \"Name='houdinimd.exe'\").ExecutablePath"], { encoding: "utf8" })
+    spawnSync("powershell", ["-NoProfile", "-Command", "(Get-CimInstance Win32_Process -Filter \"Name='nodebookmd.exe'\").ExecutablePath"], { encoding: "utf8" })
       .stdout.split(/\r?\n/)
       .some((exe) => exe.trim() && !/\\target\\debug\\/i.test(exe));
   if (running()) console.error("# waiting for the NodebookMD that is already running to close");
@@ -240,7 +240,7 @@ export async function launch(options: { clean?: boolean; telemetry?: string; env
   // `--background`, as Houdini starts it: the window is never shown, so it
   // never takes the foreground (tao's `set_focus` sends an Alt press to get
   // it). The page still draws: the webview is told not to stop a hidden one.
-  const child: ChildProcess = spawn(join(dir, "houdinimd.exe"), ["--background", ...(options.clean ? ["--clean"] : [])], {
+  const child: ChildProcess = spawn(join(dir, "nodebookmd.exe"), ["--background", ...(options.clean ? ["--clean"] : [])], {
     cwd: dir,
     stdio: ["ignore", "ignore", errors],
     env: {
@@ -253,7 +253,7 @@ export async function launch(options: { clean?: boolean; telemetry?: string; env
       // then the webview opens no port at all and says nothing.
       WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS:
         "--remote-debugging-port=0 --disable-features=CalculateNativeWinOcclusion --disable-renderer-backgrounding --disable-background-timer-throttling --disable-backgrounding-occluded-windows",
-      HOUDINIMD_TELEMETRY_URL: options.telemetry ?? "http://127.0.0.1:9/v1/event",
+      NODEBOOKMD_TELEMETRY_URL: options.telemetry ?? "http://127.0.0.1:9/v1/event",
       ...options.env,
     },
   });
@@ -591,7 +591,7 @@ const r1 = (n: number) => Math.round(n * 10) / 10;
 
 export function auditMarkdown(audit: Audit): string {
   let md = `## App, ${audit.clean ? "first launch" : "normal launch"}\n\n`;
-  md += `Private working set of \`houdinimd.exe\` (Task Manager's number) at the end of each step. `;
+  md += `Private working set of \`nodebookmd.exe\` (Task Manager's number) at the end of each step. `;
   md += `The webview is its own processes, beside it.\n\n`;
   md += `| step | app MB | added | peak | commit MB | threads | handles | webview MB | JS heap MB | webview procs | what |\n`;
   md += `| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |\n`;

@@ -28,7 +28,22 @@
 ; old uninstaller in update mode keeps its own. So each old shortcut is
 ; replaced here by one with the new name.
 !define OLD_PRODUCTNAME "HoudiniMD"
+!define TASKBAR_PINS "$APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
 !macro NSIS_HOOK_POSTINSTALL
+  ; Before 0.3.0 the exe was houdinimd.exe and the data folders were named
+  ; com.houdinimd.app. The template moves the Start menu and desktop
+  ; shortcuts to the new exe, but not a pin on the taskbar.
+  ${If} $OldMainBinaryName != ""
+  ${AndIf} $OldMainBinaryName != "${MAINBINARYNAME}.exe"
+    !insertmacro IsShortcutTarget "${TASKBAR_PINS}\${PRODUCTNAME}.lnk" "$INSTDIR\$OldMainBinaryName"
+    Pop $0
+    ${If} $0 = 1
+      !insertmacro SetShortcutTarget "${TASKBAR_PINS}\${PRODUCTNAME}.lnk" "$INSTDIR\${MAINBINARYNAME}.exe"
+    ${EndIf}
+  ${EndIf}
+  ; Moves the data folders, and names the new exe in Houdini's startup
+  ; script, now: F1 then works if Houdini starts before the app does.
+  ExecWait '"$INSTDIR\${MAINBINARYNAME}.exe" --migrate'
   ReadRegStr $R0 HKCU "Software\houdinimd\${OLD_PRODUCTNAME}" ""
   ${If} $R0 != ""
   ${AndIf} ${FileExists} "$R0\uninstall.exe"

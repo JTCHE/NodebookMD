@@ -110,7 +110,7 @@ mod tests {
         static NEXT: AtomicU32 = AtomicU32::new(0);
         let n = NEXT.fetch_add(1, Ordering::Relaxed);
         let data = std::env::temp_dir()
-            .join(format!("houdinimd-library-test-{}-{n}", std::process::id()));
+            .join(format!("nodebookmd-library-test-{}-{n}", std::process::id()));
         crate::db::open(&data).unwrap()
     }
 
@@ -156,7 +156,7 @@ mod tests {
         static NEXT: AtomicU32 = AtomicU32::new(0);
         let n = NEXT.fetch_add(1, Ordering::Relaxed);
         let data = std::env::temp_dir()
-            .join(format!("houdinimd-library-shared-test-{}-{n}", std::process::id()));
+            .join(format!("nodebookmd-library-shared-test-{}-{n}", std::process::id()));
 
         let window = crate::db::open(&data).unwrap();
         let pane = crate::db::open(&data).unwrap();

@@ -90,8 +90,8 @@ function manyEntries(count: number) {
 async function seed(page: Page, recents: unknown[], bookmarks: unknown[]) {
   await page.evaluate(
     ([r, b]) => {
-      localStorage.setItem("houdinimd.recents", JSON.stringify(r));
-      localStorage.setItem("houdinimd.bookmarks", JSON.stringify(b));
+      localStorage.setItem("nodebookmd.recents", JSON.stringify(r));
+      localStorage.setItem("nodebookmd.bookmarks", JSON.stringify(b));
     },
     [recents, bookmarks] as const,
   );
@@ -239,7 +239,7 @@ const SCENES: Scene[] = [
     name: "landing-light-machine-dark",
     theme: "dark",
     open: async (page) => {
-      await page.evaluate(() => localStorage.setItem("houdinimd.theme", "light"));
+      await page.evaluate(() => localStorage.setItem("nodebookmd.theme", "light"));
       await page.reload();
       await go(page, "#/");
     },
@@ -248,7 +248,7 @@ const SCENES: Scene[] = [
     name: "docs-light-machine-dark",
     theme: "dark",
     open: async (page) => {
-      await page.evaluate(() => localStorage.setItem("houdinimd.theme", "light"));
+      await page.evaluate(() => localStorage.setItem("nodebookmd.theme", "light"));
       await page.reload();
       await go(page, `#/${DOCS.node}`);
       await page.waitForSelector("article.prose h1", { timeout: 20_000 });
@@ -258,7 +258,7 @@ const SCENES: Scene[] = [
     name: "landing-dark-machine-light",
     theme: "light",
     open: async (page) => {
-      await page.evaluate(() => localStorage.setItem("houdinimd.theme", "dark"));
+      await page.evaluate(() => localStorage.setItem("nodebookmd.theme", "dark"));
       await page.reload();
       await go(page, "#/");
     },
@@ -267,7 +267,7 @@ const SCENES: Scene[] = [
     name: "docs-dark-machine-light",
     theme: "light",
     open: async (page) => {
-      await page.evaluate(() => localStorage.setItem("houdinimd.theme", "dark"));
+      await page.evaluate(() => localStorage.setItem("nodebookmd.theme", "dark"));
       await page.reload();
       await go(page, `#/${DOCS.node}`);
       await page.waitForSelector("article.prose h1", { timeout: 20_000 });
@@ -1062,7 +1062,7 @@ const AREAS: Area[] = [
     scenes: ["docs-node"],
     check: async (page) => {
       const kept = () =>
-        page.evaluate(() => JSON.parse(localStorage.getItem("houdinimd.bookmarks") ?? "[]").length as number);
+        page.evaluate(() => JSON.parse(localStorage.getItem("nodebookmd.bookmarks") ?? "[]").length as number);
       const before = await kept();
       await page.keyboard.press("Control+d");
       await page.waitForTimeout(300);
@@ -1307,7 +1307,7 @@ const AREAS: Area[] = [
          machine's scheme would repaint for the right reason. */
       await page.evaluate(() => {
         const theme = document.documentElement.dataset.theme ?? "light";
-        window.localStorage.setItem("houdinimd.theme", theme);
+        window.localStorage.setItem("nodebookmd.theme", theme);
       });
       const before = await read();
       await page.emulateMedia({ colorScheme: "dark" });

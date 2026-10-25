@@ -28,7 +28,7 @@ export const THEME_ICON = { light: Icons.themeLight, dark: Icons.themeDark, syst
   unknown
 >;
 
-const KEY = "houdinimd.theme";
+const KEY = "nodebookmd.theme";
 
 function stored(): Theme | null {
   try {

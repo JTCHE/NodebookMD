@@ -126,7 +126,7 @@ earlier.
 
 ## Build the app with `tauri build`, not `cargo build --release`
 
-`cargo build --release --bin houdinimd` alone produces a binary that still
+`cargo build --release --bin nodebookmd` alone produces a binary that still
 loads `http://localhost:1420`, the Vite dev server — not the bundled UI.
 Tauri decides dev or prod from its own `custom-protocol` Cargo feature, set
 by the `tauri` CLI, not from the release profile. The binary looks fine (it

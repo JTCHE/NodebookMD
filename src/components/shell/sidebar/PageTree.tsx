@@ -110,7 +110,7 @@ let followed: string | undefined;
 
 /** Shows the page on screen in the panel again, whatever the reader closed
     or scrolled since. The shell opens the panel on the same event. */
-export const REVEAL = "houdinimd:reveal";
+export const REVEAL = "nodebookmd:reveal";
 export function revealInSidebar() {
   followed = undefined;
   window.dispatchEvent(new Event(REVEAL));

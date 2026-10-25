@@ -1,5 +1,5 @@
 {
-  "name": "houdinimd",
+  "name": "nodebookmd",
   "version": "0.3.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "tauri": "tauri",
     "app": "tauri dev -- --",
     "app:build": "dotenv -e .env.local -- tauri build",
-    "portable": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$exe='src-tauri/target/release/houdinimd.exe'; if (!(Test-Path $exe)) { Write-Error 'build first: bun run app:build'; exit 1 }; New-Item -ItemType Directory -Force dist-portable | Out-Null; Copy-Item $exe dist-portable -Force; if (!(Test-Path 'dist-portable/.portable')) { New-Item -ItemType File 'dist-portable/.portable' | Out-Null }; Compress-Archive -Path 'dist-portable/houdinimd.exe','dist-portable/.portable' -DestinationPath 'dist-portable/HoudiniMD-portable.zip' -Force\"",
+    "portable": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$exe='src-tauri/target/release/nodebookmd.exe'; if (!(Test-Path $exe)) { Write-Error 'build first: bun run app:build'; exit 1 }; New-Item -ItemType Directory -Force dist-portable | Out-Null; Copy-Item $exe dist-portable -Force; if (!(Test-Path 'dist-portable/.portable')) { New-Item -ItemType File 'dist-portable/.portable' | Out-Null }; Compress-Archive -Path 'dist-portable/nodebookmd.exe','dist-portable/.portable' -DestinationPath 'dist-portable/NodebookMD-portable.zip' -Force\"",
     "lint": "eslint .",
     "harness": "node harness/run.mts",
     "design": "node harness/design.mts",

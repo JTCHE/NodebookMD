@@ -1624,36 +1624,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
-name = "houdinimd"
-version = "0.3.0"
-dependencies = [
- "drag",
- "engine",
- "include_dir",
- "rayon",
- "reqwest",
- "rusqlite",
- "rustls",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-deep-link",
- "tauri-plugin-dialog",
- "tauri-plugin-opener",
- "tauri-plugin-single-instance",
- "tauri-plugin-updater",
- "tiny_http",
- "webview2-com",
- "wiki",
- "windows 0.62.2",
- "windows-core 0.62.2",
- "windows-sys 0.61.2",
- "winreg 0.56.0",
- "zip 7.2.0",
-]
-
-[[package]]
 name = "html5ever"
 version = "0.39.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2375,6 +2345,37 @@ name = "new_debug_unreachable"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
+
+[[package]]
+name = "nodebookmd"
+version = "0.3.0"
+dependencies = [
+ "dirs 7.0.0",
+ "drag",
+ "engine",
+ "include_dir",
+ "rayon",
+ "reqwest",
+ "rusqlite",
+ "rustls",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-deep-link",
+ "tauri-plugin-dialog",
+ "tauri-plugin-opener",
+ "tauri-plugin-single-instance",
+ "tauri-plugin-updater",
+ "tiny_http",
+ "webview2-com",
+ "wiki",
+ "windows 0.62.2",
+ "windows-core 0.62.2",
+ "windows-sys 0.61.2",
+ "winreg 0.56.0",
+ "zip 7.2.0",
+]
 
 [[package]]
 name = "num-conv"

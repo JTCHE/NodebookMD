@@ -80,7 +80,7 @@ if (isMainThread) {
   for (;;) x = Math.sin(x) + Math.sqrt(x + 1);
 }
 `;
-  const file = join(mkdtempSync(join(tmpdir(), "houdinimd-load-")), "burn.cjs");
+  const file = join(mkdtempSync(join(tmpdir(), "nodebookmd-load-")), "burn.cjs");
   writeFileSync(file, script);
   return spawn(process.execPath, [file], { stdio: "ignore" });
 }
@@ -89,7 +89,7 @@ if (isMainThread) {
 export async function startLoad(): Promise<Load> {
   const exe = hython();
   if (exe) {
-    const file = join(mkdtempSync(join(tmpdir(), "houdinimd-cook-")), "cook.py");
+    const file = join(mkdtempSync(join(tmpdir(), "nodebookmd-cook-")), "cook.py");
     writeFileSync(file, COOK);
     const child = spawn(exe, [file], { stdio: ["ignore", "pipe", "pipe"] });
     const cooking = await new Promise<boolean>((resolve) => {

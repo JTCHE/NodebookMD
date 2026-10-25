@@ -2,7 +2,7 @@
  * HOUDINI'S HELP PANE, RECREATED, SO A BROWSER CAN CHECK IT WITHOUT HOUDINI.
  *
  *   node harness/pane.mts                    # every Houdini install found here
- *   node harness/pane.mts --no-build         # reuse target/release/houdinimd.exe
+ *   node harness/pane.mts --no-build         # reuse target/release/nodebookmd.exe
  *   node harness/pane.mts --keep             # leave harness/out/pane/ screenshots
  *
  * F1 opens Houdini's own embedded browser (QtWebEngine), not this app's
@@ -43,7 +43,7 @@ import { resolve } from "node:path";
 import { launch, recycle, type Running } from "./app.mts";
 
 const OUT = "harness/out/pane";
-const EXE = "src-tauri/target/release/houdinimd.exe";
+const EXE = "src-tauri/target/release/nodebookmd.exe";
 
 /* ─────────────────────────── installs on this machine ────────────────────────── */
 

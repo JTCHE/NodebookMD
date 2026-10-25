@@ -2,7 +2,7 @@
 
 Issues and features live as specs in an Obsidian base, not in this repo.
 
-**Vault path:** `<value of OBSIDIAN_VAULT_PATH in @.env.obsidian>/vault/side projects/Houdini/HoudiniMD/HoudiniMD — Issue Tracker.base`
+**Vault path:** `<value of OBSIDIAN_VAULT_PATH in @.env.obsidian>/vault/side projects/Houdini/NodebookMD/NodebookMD — Issue Tracker.base`
 
 The base reads the spec files in `specs/<Type>/<Status>/`. The folder and the
 frontmatter must agree: a closed issue is `Type: Issue`, `Status: Closed`.

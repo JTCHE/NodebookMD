@@ -51,7 +51,7 @@ export function TitleBarMenu({ at, port, onClose }: { at: { x: number; y: number
     if (!sure) return;
     await invoke("reset_user_data");
     for (const key of Object.keys(localStorage)) {
-      if (key.startsWith("houdinimd.")) localStorage.removeItem(key);
+      if (key.startsWith("nodebookmd.")) localStorage.removeItem(key);
     }
     window.location.reload();
   }

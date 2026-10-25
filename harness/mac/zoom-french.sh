@@ -19,15 +19,15 @@ SWIFT
 swift /tmp/layout.swift com.apple.keylayout.French
 defaults read com.apple.HIToolbox AppleSelectedInputSources | tee "$out/layout.txt"
 
-./src-tauri/target/debug/houdinimd > "$out/stdout.log" 2>&1 &
+./src-tauri/target/debug/nodebookmd > "$out/stdout.log" 2>&1 &
 app=$!
 trap 'kill $app 2>/dev/null || true' EXIT
 sleep 25
 
 events() { osascript -e "tell application \"System Events\" to $1"; }
-events 'set frontmost of process "houdinimd" to true'
+events 'set frontmost of process "nodebookmd" to true'
 sleep 1
-read -r x y w h < <(events 'tell window 1 of process "houdinimd" to get {position, size}' | tr -d ',' )
+read -r x y w h < <(events 'tell window 1 of process "nodebookmd" to get {position, size}' | tr -d ',' )
 shot() { sleep 1.5; screencapture -x -R "$x,$y,$w,$h" "$out/$1.png"; sips -s format bmp "$out/$1.png" --out "/tmp/$1.bmp" > /dev/null; }
 
 shot before

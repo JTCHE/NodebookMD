@@ -169,8 +169,10 @@ pub fn revert(data: &Path, wanted: &[String]) -> Result<Vec<String>, String> {
         let Some(previous) = record.releases.remove(&release) else {
             continue;
         };
-        // Our own file, so there is nothing of the reader's to put back.
-        let _ = std::fs::remove_file(previous.prefs.join("packages").join(PACKAGE));
+        // Our own files, so there is nothing of the reader's to put back.
+        for package in [PACKAGE, OLD_PACKAGE] {
+            let _ = std::fs::remove_file(previous.prefs.join("packages").join(package));
+        }
         let file = previous.prefs.join("houdini.pref");
         let before = read(&file).unwrap_or_default();
         let after = apply_previous(&before, &previous);
@@ -188,7 +190,10 @@ pub fn revert(data: &Path, wanted: &[String]) -> Result<Vec<String>, String> {
 /// The Houdini package that starts this app when Houdini starts. F1 points at
 /// a localhost port, and a closed app answers it with "connection refused".
 /// Houdini starts its own help server the same way: on demand, from Houdini.
-const PACKAGE: &str = "houdinimd.json";
+const PACKAGE: &str = "nodebookmd.json";
+/// The package of every release before 0.3.0. Its `hpath` names the data
+/// folder by the old identifier, which `update::move_old_folders` renames.
+const OLD_PACKAGE: &str = "houdinimd.json";
 
 /// `uiready.py` is found under `pythonX.Ylibs`, named for the Python the
 /// session runs, and it runs in interactive sessions only — never in hython.
@@ -233,15 +238,18 @@ fn write_startup_script(root: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// Names this exe in the startup script again, on each launch. The install
-/// folder follows the app's name, so a rename moves the exe, and a script that
-/// names the old one starts nothing when Houdini starts.
+/// Names this exe in the startup script, and this data folder in each hooked
+/// release's package, again on each launch. A rename moves both: the install
+/// folder and the exe follow the app's name, and the data folder its
+/// identifier. A script or package that names the old ones starts nothing
+/// when Houdini starts.
 pub fn refresh(data: &Path) {
-    if load(data).releases.is_empty() {
-        return;
-    }
-    if let Err(reason) = write_startup_script(&data.join("houdini")) {
-        crate::say!(Warn, "hook", "startup script not written: {reason}");
+    // A release removed since has no preferences folder to write into.
+    for previous in load(data).releases.values().filter(|previous| previous.prefs.is_dir()) {
+        let _ = std::fs::remove_file(previous.prefs.join("packages").join(OLD_PACKAGE));
+        if let Err(reason) = start_with_houdini(data, &previous.prefs) {
+            crate::say!(Warn, "hook", "startup script not written: {reason}");
+        }
     }
 }
 
@@ -368,8 +376,9 @@ fn quoted(value: &str) -> String {
 /// One copy of the reader's own file, made before this app first writes it.
 /// A later apply must not overwrite it, or the original is lost.
 fn backup(file: &Path) -> Result<(), String> {
-    let kept = file.with_extension("pref.houdinimd-backup");
-    if kept.exists() || !file.exists() {
+    let kept = file.with_extension("pref.nodebookmd-backup");
+    // A release before 0.3.0 kept it under its own name.
+    if kept.exists() || file.with_extension("pref.houdinimd-backup").exists() || !file.exists() {
         return Ok(());
     }
     std::fs::copy(file, &kept)
@@ -451,7 +460,7 @@ fn running(_release: &str) -> bool {
 }
 
 /// Each edition has its own executable inside its `.app`. The match is on the
-/// whole name, so this app's own `houdinimd` does not count.
+/// whole name, so this app's own `nodebookmd` does not count.
 #[cfg(target_os = "macos")]
 fn running(_release: &str) -> bool {
     const NAMES: [&str; 6] = ["houdini", "houdinifx", "houdinicore", "hindie", "happrentice", "hescape"];
@@ -549,6 +558,28 @@ mod tests {
         };
         let hooked = set(&set(SAMPLE, USE_EXTERNAL, "1"), EXTERNAL_URL, "\"http://localhost:48800\"");
         assert_eq!(apply_previous(&hooked, &previous), SAMPLE);
+    }
+
+    #[test]
+    fn a_package_from_before_the_rename_is_replaced() {
+        let root = std::env::temp_dir().join(format!("nodebookmd-hook-test-{}", std::process::id()));
+        let (data, prefs) = (root.join("data"), root.join("houdini21.0"));
+        write(&prefs.join("packages").join(OLD_PACKAGE), r#"{"hpath": "C:/old/com.houdinimd.app/houdini"}"#).unwrap();
+        let mut record = Record::default();
+        record.releases.insert("21.0".into(), Previous { prefs: prefs.clone(), use_external: None, url: None });
+        // A release Houdini no longer has: no folder may come back for it.
+        let gone = root.join("houdini20.0");
+        record.releases.insert("20.0".into(), Previous { prefs: gone.clone(), use_external: None, url: None });
+        save(&data, &record).unwrap();
+
+        refresh(&data);
+
+        assert!(!prefs.join("packages").join(OLD_PACKAGE).exists());
+        let package = read(&prefs.join("packages").join(PACKAGE)).unwrap();
+        let hpath = data.join("houdini").to_string_lossy().replace('\\', "/");
+        assert!(package.contains(&hpath), "{package}");
+        assert!(!gone.exists());
+        let _ = std::fs::remove_dir_all(&root);
     }
 
     #[test]

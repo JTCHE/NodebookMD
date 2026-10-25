@@ -4,7 +4,7 @@
 # state; F1 into a real Houdini still needs a real Mac.
 #
 # A dispatch can run a check instead of the screenshot, with the built app at
-# ./src-tauri/target/debug/houdinimd and `out/` kept as the artifact:
+# ./src-tauri/target/debug/nodebookmd and `out/` kept as the artifact:
 #   gh workflow run macos-check.yml -f run="bash harness/mac/zoom-french.sh"
 #   gh run download <id> -n macos-check
 name: macos-check
@@ -61,7 +61,7 @@ jobs:
         if: inputs.run == ''
         run: |
           mkdir out
-          ./src-tauri/target/debug/houdinimd > out/stdout.log 2>&1 &
+          ./src-tauri/target/debug/nodebookmd > out/stdout.log 2>&1 &
           sleep 30
           screencapture -x out/screen.png
           kill $! || true

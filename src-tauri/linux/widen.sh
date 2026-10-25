@@ -39,7 +39,7 @@ for f in libstdc++.so.6 libgcc_s.so.1; do
   cp -Lf "$L/$f" "$APPDIR/usr/optional/$f"
 done
 
-cat > "$APPDIR/apprun-hooks/houdinimd-runtime.sh" <<'HOOK'
+cat > "$APPDIR/apprun-hooks/nodebookmd-runtime.sh" <<'HOOK'
 # Use the libstdc++ in this bundle only where the host's is older than the one
 # WebKit was built against. On a current distro the host's is newer, and the
 # graphics drivers need that newer one.
@@ -53,8 +53,8 @@ HOOK
 
 # The AppRun sources one hook per line, and linuxdeploy wrote it before this
 # hook existed.
-grep -q 'houdinimd-runtime.sh' "$APPDIR/AppRun" || sed -i \
-  's|^exec "$this_dir"/AppRun.wrapped|source "$this_dir"/apprun-hooks/"houdinimd-runtime.sh"\n\nexec "$this_dir"/AppRun.wrapped|' \
+grep -q 'nodebookmd-runtime.sh' "$APPDIR/AppRun" || sed -i \
+  's|^exec "$this_dir"/AppRun.wrapped|source "$this_dir"/apprun-hooks/"nodebookmd-runtime.sh"\n\nexec "$this_dir"/AppRun.wrapped|' \
   "$APPDIR/AppRun"
 
 for f in libcairo.so.2 libwebkit2gtk-4.1.so.0 libjavascriptcoregtk-4.1.so.0; do

@@ -34,7 +34,7 @@ export function ToastNotification({ message, type, visible }: { message: string;
 
 // Fire from anywhere — no React tree constraints.
 export function showToast(message: string, type: ToastType = "info") {
-  window.dispatchEvent(new CustomEvent("houdinimd:toast", { detail: { message, type } }));
+  window.dispatchEvent(new CustomEvent("nodebookmd:toast", { detail: { message, type } }));
 }
 
 // Mount once at root — listens for showToast() calls and renders the toast.
@@ -69,9 +69,9 @@ export function ToastListener() {
       timers.current.push(setTimeout(() => setVisible(false), 4000));
       timers.current.push(setTimeout(() => setToast(null), 4220));
     }
-    window.addEventListener("houdinimd:toast", onToast);
+    window.addEventListener("nodebookmd:toast", onToast);
     return () => {
-      window.removeEventListener("houdinimd:toast", onToast);
+      window.removeEventListener("nodebookmd:toast", onToast);
       for (const timer of timers.current) clearTimeout(timer);
     };
   }, []);

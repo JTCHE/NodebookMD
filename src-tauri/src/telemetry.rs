@@ -202,11 +202,11 @@ fn payload(app: &AppHandle, kind: &str, fields: Value) -> Option<Value> {
     Some(event)
 }
 
-/// `HOUDINIMD_TELEMETRY_URL` points any build at a local receiver: `wrangler
+/// `NODEBOOKMD_TELEMETRY_URL` points any build at a local receiver: `wrangler
 /// dev`, or the sink `harness/app.mts` runs so a measured launch sends nothing
 /// out. Without it, a development build writes the log and sends nothing.
 fn endpoint() -> Option<String> {
-    std::env::var("HOUDINIMD_TELEMETRY_URL")
+    std::env::var("NODEBOOKMD_TELEMETRY_URL")
         .ok()
         .or_else(|| (!cfg!(debug_assertions)).then(|| ENDPOINT.to_string()))
 }

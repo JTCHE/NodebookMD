@@ -28,8 +28,8 @@ export interface TabsState {
 
 /** Only the first window keeps its tabs: a window opened later is a side trip. */
 const KEEPS_TABS = appWindow()?.label === "main";
-const SAVED = "houdinimd.tabs";
-const RESTORE = "houdinimd.restore-tabs";
+const SAVED = "nodebookmd.tabs";
+const RESTORE = "nodebookmd.restore-tabs";
 /** How much of each trail a restart keeps. */
 const KEPT_ENTRIES = 30;
 

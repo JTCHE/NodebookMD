@@ -350,7 +350,7 @@ mod tests {
     #[test]
     fn the_build_comes_from_the_header_and_not_the_folder_name() {
         let root = std::env::temp_dir()
-            .join(format!("houdinimd-header-test-{}", std::process::id()))
+            .join(format!("nodebookmd-header-test-{}", std::process::id()))
             .join("Houdini24");
         let sys = root.join("toolkit").join("include").join("SYS");
         std::fs::create_dir_all(&sys).unwrap();

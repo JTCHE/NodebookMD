@@ -21,7 +21,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use houdinimd_lib::{all_titles, db, find, help, index, install, library, read_meta, read_page};
+use nodebookmd_lib::{all_titles, db, find, help, index, install, library, read_meta, read_page};
 use rusqlite::Connection;
 
 /// What `invoke` becomes in the browser. `page` and the rest keep their names,
@@ -183,7 +183,7 @@ fn answer(state: &Serve, mut stream: TcpStream) -> Result<(), String> {
     let (status, kind, mut body) = route(state, &path, query);
     let whole = body.len();
     let mut part = String::new();
-    let status = match (status, houdinimd_lib::range(asked.as_deref(), whole)) {
+    let status = match (status, nodebookmd_lib::range(asked.as_deref(), whole)) {
         (200, Some((first, last))) => {
             body = body[first..=last].to_vec();
             part = format!("Content-Range: bytes {first}-{last}/{whole}\r\n");
@@ -294,10 +294,10 @@ fn command_response(state: &Serve, command: &str, query: &str) -> (u16, &'static
         "icon_svg" => help::icon_layered(&install.root, &install.packages, &param(query, "name").unwrap_or_default())
             .and_then(|bytes| String::from_utf8(bytes).map_err(|e| e.to_string()))
             .and_then(|svg| serde_json::to_string(&svg).map_err(|e| e.to_string())),
-        "has_example" => Ok(houdinimd_lib::example_file(&install, &param(query, "path").unwrap_or_default())
+        "has_example" => Ok(nodebookmd_lib::example_file(&install, &param(query, "path").unwrap_or_default())
             .is_some()
             .to_string()),
-        "link_preview" => tauri::async_runtime::block_on(houdinimd_lib::preview::fetch(
+        "link_preview" => tauri::async_runtime::block_on(nodebookmd_lib::preview::fetch(
             &param(query, "url").unwrap_or_default(),
         ))
         .and_then(|preview| serde_json::to_string(&preview).map_err(|e| e.to_string())),
@@ -386,8 +386,8 @@ fn command_response(state: &Serve, command: &str, query: &str) -> (u16, &'static
         }
         // Read-only, so the Settings screen draws. Nothing here hooks F1 or
         // installs the MCP: that would change the reader's real Houdini.
-        "mcp_agents" => serde_json::to_string(&houdinimd_lib::mcp::agents()).map_err(|e| e.to_string()),
-        "houdini_releases" => serde_json::to_string(&houdinimd_lib::hook::releases(0, &[install.version.clone()])).map_err(|e| e.to_string()),
+        "mcp_agents" => serde_json::to_string(&nodebookmd_lib::mcp::agents()).map_err(|e| e.to_string()),
+        "houdini_releases" => serde_json::to_string(&nodebookmd_lib::hook::releases(0, &[install.version.clone()])).map_err(|e| e.to_string()),
         other => Err(format!("no command {other}")),
     };
     match value {

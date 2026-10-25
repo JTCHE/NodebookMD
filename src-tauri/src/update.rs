@@ -35,35 +35,80 @@ pub fn data_dir<R: Runtime>(app: &impl Manager<R>) -> io::Result<PathBuf> {
     }
     app.path()
         .app_data_dir()
+        .map(still_old)
         .map_err(|e| io::Error::other(e.to_string()))
 }
 
+/// The identifier of every release before 0.3.0, from when the app was
+/// HoudiniMD. The system names folders after it, so an update moves them.
+const OLD_IDENTIFIER: &str = "com.houdinimd.app";
+
+/// The folders the system names after the identifier: the app data and the
+/// webview's data, resolved as Tauri resolves them (`dirs`), and on macOS
+/// WebKit's, which holds the local storage. On Linux and macOS the first two
+/// are one folder.
+fn identifier_bases() -> Vec<PathBuf> {
+    let mut bases: Vec<PathBuf> = [dirs::data_dir(), dirs::data_local_dir()].into_iter().flatten().collect();
+    #[cfg(target_os = "macos")]
+    bases.extend(dirs::home_dir().map(|home| home.join("Library/WebKit")));
+    bases.dedup();
+    bases
+}
+
+/// Moves each folder named for `OLD_IDENTIFIER` to the current identifier's
+/// name, once: the reader keeps the index, bookmarks, settings, open tabs and
+/// F1 hook across the rename. Runs before anything opens a file in them.
+/// Windows refuses to move a folder with a file open in it; that folder then
+/// stays where it is, the app reads it there (`still_old`), and the next
+/// launch tries again. Returns what happened, for the log.
+pub fn move_old_folders(identifier: &str) -> Vec<String> {
+    if !matches!(portable_dir(), Ok(None)) {
+        return Vec::new();
+    }
+    let mut said = Vec::new();
+    for base in identifier_bases() {
+        let (old, new) = (base.join(OLD_IDENTIFIER), base.join(identifier));
+        // An empty folder under the new name is one a launch made before
+        // this ran; the old folder still holds the reader's data.
+        let new_is_empty = std::fs::read_dir(&new).is_ok_and(|mut entries| entries.next().is_none());
+        if !old.is_dir() || (new.exists() && !new_is_empty) {
+            continue;
+        }
+        if new_is_empty {
+            let _ = std::fs::remove_dir(&new);
+        }
+        let mut result = std::fs::rename(&old, &new);
+        for _ in 0..10 {
+            if result.is_ok() {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(300));
+            result = std::fs::rename(&old, &new);
+        }
+        said.push(match result {
+            Ok(()) => format!("moved {} to {}", old.display(), new.display()),
+            Err(e) => format!("could not move {} ({e}); read in place", old.display()),
+        });
+    }
+    said
+}
+
+/// `dir`, or the folder under the old identifier while that one could not
+/// be moved yet (`move_old_folders`).
+pub fn still_old(dir: PathBuf) -> PathBuf {
+    let old = dir.with_file_name(OLD_IDENTIFIER);
+    if !dir.exists() && old.is_dir() { old } else { dir }
+}
+
 /// `data_dir` for a process that exits before Tauri starts: the uninstaller's
-/// `--unhook`. It must find the same record the app wrote.
+/// `--unhook` and the installer's `--migrate`. It must find the same record
+/// the app wrote, so it resolves the folder as Tauri's `app_data_dir()` does.
 pub fn data_dir_before_launch(identifier: &str) -> io::Result<PathBuf> {
     if let Some(dir) = portable_dir()? {
         return Ok(dir);
     }
-    #[cfg(windows)]
-    {
-        let roaming = std::env::var_os("APPDATA").ok_or_else(|| io::Error::other("APPDATA is not set"))?;
-        Ok(PathBuf::from(roaming).join(identifier))
-    }
-    #[cfg(target_os = "macos")]
-    {
-        let home = std::env::var_os("HOME").ok_or_else(|| io::Error::other("HOME is not set"))?;
-        Ok(PathBuf::from(home).join("Library/Application Support").join(identifier))
-    }
-    // What Tauri resolves `app_data_dir()` to here: `$XDG_DATA_HOME`, or the
-    // documented default when the variable is not set.
-    #[cfg(all(unix, not(target_os = "macos")))]
-    {
-        let data = std::env::var_os("XDG_DATA_HOME")
-            .map(PathBuf::from)
-            .or_else(|| std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".local/share")))
-            .ok_or_else(|| io::Error::other("HOME is not set"))?;
-        Ok(data.join(identifier))
-    }
+    let data = dirs::data_dir().ok_or_else(|| io::Error::other("no data folder"))?;
+    Ok(still_old(data.join(identifier)))
 }
 
 fn portable_dir() -> io::Result<Option<PathBuf>> {
