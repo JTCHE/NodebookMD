@@ -313,6 +313,14 @@ else:
 }
 
 fn apply_previous(text: &str, previous: &Previous) -> String {
+    // F1 on another port of this app, from a launch that found the first
+    // port taken, is this app's writing, not the reader's: put back, it
+    // points F1 at a server that is gone.
+    if previous.url.as_deref().is_some_and(|url| {
+        (crate::server::FIRST_PORT..crate::server::FIRST_PORT + crate::server::TRIES).any(|port| is_ours(url, port))
+    }) {
+        return remove(&remove(text, USE_EXTERNAL), EXTERNAL_URL);
+    }
     let text = match &previous.use_external {
         Some(value) => set(text, USE_EXTERNAL, value),
         None => remove(text, USE_EXTERNAL),
@@ -606,5 +614,18 @@ mod tests {
         assert!(is_ours("\"http://localhost:48800\"", 48800));
         assert!(is_ours("http://127.0.0.1:48800/", 48800));
         assert!(!is_ours("\"https://houdinimd.com\"", 48800));
+    }
+
+    #[test]
+    fn a_recorded_url_of_this_app_is_not_put_back() {
+        let hooked = set(&set(SAMPLE, USE_EXTERNAL, "1"), EXTERNAL_URL, "\"http://localhost:48800/\"");
+        let previous = Previous {
+            prefs: PathBuf::new(),
+            use_external: Some("1".into()),
+            url: Some("\"http://localhost:48801/\"".into()),
+        };
+        let after = apply_previous(&hooked, &previous);
+        assert!(!after.contains(USE_EXTERNAL));
+        assert!(!after.contains(EXTERNAL_URL));
     }
 }

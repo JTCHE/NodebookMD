@@ -33,7 +33,7 @@ static APP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/../dist");
 pub const FIRST_PORT: u16 = 48800;
 
 /// How many ports to try before giving up.
-const TRIES: u16 = 20;
+pub const TRIES: u16 = 20;
 
 /// Starts the server on the first free port and answers on a thread of its own.
 /// Returns the port it took, which is the port the hook writes into
