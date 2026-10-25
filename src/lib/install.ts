@@ -118,12 +118,15 @@ function rereadTitles(status?: Promise<IndexStatus | null>, version?: Promise<st
   void Promise.all([titles(), status, version]).then(([all, read, installed]) => {
     if (mine !== reading) return;
     reading = 0;
-    const next = held ?? read ?? null;
+    const version = installed ?? index.build.version;
+    // A report of the build the reader just left (its pass stops a moment
+    // after the switch) must not stand beside the new build.
+    const next = [held, read].find((one) => one && (!version || one.build === version)) ?? null;
     held = null;
     setIndex({
       titles: index.titles + 1,
-      build: { version: installed ?? index.build.version, pageCount: all.length },
-      ...(next && { status: next }),
+      build: { version, pageCount: all.length },
+      status: next ?? (index.status && version && index.status.build !== version ? null : index.status),
     });
   });
 }
@@ -135,6 +138,7 @@ function showStatus(status: IndexStatus) {
 
 /** One report from the pass. Rust sends `done` only after a pass that wrote. */
 function report(status: IndexStatus) {
+  if (!reading && index.build.version && status.build !== index.build.version) return;
   if (status.done) return rereadTitles(Promise.resolve(status));
   showStatus(status);
   const wait = REREAD_MS - (Date.now() - lastRead);
