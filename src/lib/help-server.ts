@@ -55,12 +55,15 @@ export function hooked(list: Release[] | null, release: string): boolean | undef
 /** Gives F1 in `release` to this app, or back to Houdini. Resolves with what
     to tell the reader; throws with the reason it could not. */
 export async function setHelpServer(release: string, on: boolean): Promise<string> {
+  let changed: string[];
   try {
-    await invoke(on ? "hook_houdini" : "unhook_houdini", { releases: [release] });
+    changed = await invoke<string[]>(on ? "hook_houdini" : "unhook_houdini", { releases: [release] });
   } finally {
     await readReleases();
   }
-  return on ? `F1 in Houdini ${release} now opens ${APP_NAME}. Restart Houdini.` : `F1 in Houdini ${release} opens its own help again.`;
+  if (on) return `F1 in Houdini ${release} now opens ${APP_NAME}. Restart Houdini.`;
+  if (!changed.length) throw `${APP_NAME} is not the help server of Houdini ${release}. Nothing changed.`;
+  return `${APP_NAME} is no longer the help server of Houdini ${release}. Restart Houdini, then F1 opens Houdini's own help.`;
 }
 
 /** `22.0.368` is `22.0`: the hook is per preferences folder, which is per

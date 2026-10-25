@@ -1169,8 +1169,8 @@ async fn install_houdini_mcp(
 /// Puts back what F1 pointed at before this app touched it, for the named
 /// releases.
 #[tauri::command]
-fn unhook_houdini(data: State<DataDir>, releases: Vec<String>) -> Result<Vec<String>, String> {
-    hook::revert(&data.0, &releases)
+fn unhook_houdini(data: State<DataDir>, port: State<Port>, releases: Vec<String>) -> Result<Vec<String>, String> {
+    hook::revert(&data.0, port.0, &releases)
 }
 
 /// `--hook` turns F1 towards this app for every release series on the
@@ -1216,7 +1216,7 @@ pub fn run() {
     if std::env::args().any(|argument| argument == "--unhook") {
         let done = update::data_dir_before_launch(&identifier)
             .map_err(|e| e.to_string())
-            .and_then(|data| hook::revert(&data, &[]));
+            .and_then(|data| hook::revert(&data, 0, &[]));
         std::process::exit(if done.is_ok() { 0 } else { 1 });
     }
     // The installer asks for this after it puts the new exe in place, so the

@@ -149,10 +149,21 @@ pub fn apply(data: &Path, port: u16, wanted: &[String]) -> Result<Vec<String>, S
 
 /// Puts back what was there before the first apply, then forgets the release.
 /// A key the reader never had is removed, not set to a default. An empty
-/// `wanted` means every release this app hooked.
-pub fn revert(data: &Path, wanted: &[String]) -> Result<Vec<String>, String> {
+/// `wanted` means every release this app hooked. `port` is the server's, to
+/// find a named release that points here but is not in the record.
+pub fn revert(data: &Path, port: u16, wanted: &[String]) -> Result<Vec<String>, String> {
     let mut record = load(data);
     let mut restored = Vec::new();
+    // A named release that points at this app with no record of what was
+    // there before: the record was reset, or the address was typed by hand.
+    // Houdini's own help is what it had, so the two keys go.
+    for release in releases(port, wanted) {
+        if release.ours && wanted.contains(&release.release) && !record.releases.contains_key(&release.release) {
+            record
+                .releases
+                .insert(release.release, Previous { prefs: release.prefs, use_external: None, url: None });
+        }
+    }
     let chosen: Vec<String> = record
         .releases
         .keys()
