@@ -100,3 +100,4 @@ harness/tmp/
 # rust / tauri
 /src-tauri/target
 /src-tauri/gen
+/src-tauri/macos/houdinimd
