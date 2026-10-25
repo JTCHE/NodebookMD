@@ -6,7 +6,8 @@ import { closeLightbox, useLightbox, type LightboxState } from "@/lib/lightbox";
 import { groundClass } from "@/lib/ground";
 import { Hint } from "@/components/ui/Hint";
 import { iconFileEntries } from "@/components/shell/ContextMenu";
-import { copyPicture } from "@/lib/pictures";
+import { inTauri } from "@/lib/backend";
+import { copyPicture, dragPicture } from "@/lib/pictures";
 import { COMMAND_KEY, isCommand, letterOf } from "@/lib/hotkeys";
 
 const MAX_SCALE = 8;
@@ -356,7 +357,13 @@ function Viewer({ open }: { open: LightboxState }) {
             ref={picture}
             src={picturedItem.src}
             alt={picturedItem.alt}
-            draggable={false}
+            // Out of the window, a picture is its file, as on the page. A
+            // zoomed picture pans instead, and an icon has its own Save.
+            draggable={inTauri && !zoomed && picturedItem.icon === undefined}
+            onDragStart={(event) => {
+              event.preventDefault();
+              void dragPicture(event.currentTarget);
+            }}
             crossOrigin="anonymous"
             data-icon={picturedItem.icon}
             width={size?.width}
