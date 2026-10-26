@@ -53,18 +53,31 @@ export function findRanges(root: HTMLElement, query: string): Range[] {
   return ranges;
 }
 
+/* One highlight per name, made once and changed in place. WebKit repaints a
+   range that leaves a highlight, but not the ranges of a highlight that is
+   replaced or removed: on macOS the marks of every earlier word stayed. */
+let marks: { all: Highlight; one: Highlight } | null = null;
+function highlights() {
+  if (marks || typeof Highlight === "undefined" || !CSS.highlights) return marks;
+  marks = { all: new Highlight(), one: new Highlight() };
+  CSS.highlights.set(ALL, marks.all);
+  CSS.highlights.set(CURRENT, marks.one);
+  return marks;
+}
+
 /** Mark the matches, and `current` apart from the rest. */
 export function paint(ranges: Range[], current: number) {
-  if (typeof Highlight === "undefined" || !CSS.highlights) return;
-  CSS.highlights.set(ALL, new Highlight(...ranges));
-  const one = ranges[current];
-  if (one) CSS.highlights.set(CURRENT, new Highlight(one));
-  else CSS.highlights.delete(CURRENT);
+  const set = highlights();
+  if (!set) return;
+  set.all.clear();
+  set.one.clear();
+  for (const range of ranges) set.all.add(range);
+  if (ranges[current]) set.one.add(ranges[current]);
 }
 
 export function clearPaint() {
-  CSS.highlights?.delete(ALL);
-  CSS.highlights?.delete(CURRENT);
+  marks?.all.clear();
+  marks?.one.clear();
 }
 
 /** Scroll the box that holds the range until the range is in the middle of it,

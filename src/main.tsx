@@ -13,6 +13,7 @@ import { startPress } from "./lib/ui/press";
 import { startBlurCheck } from "./lib/ui/blur";
 import { startIconStroke } from "./lib/ui/icon-stroke";
 import { startZoomKeys } from "./lib/ui/zoom";
+import { IS_MAC, letterOf } from "./lib/hotkeys";
 import { current, navigator as tabNavigator, openTab, useTabs } from "./lib/tabs";
 import "./styles/globals.css";
 
@@ -55,7 +56,17 @@ if (inTauri) {
   window.addEventListener("unhandledrejection", (event) => report(String(event.reason?.stack ?? event.reason)));
 }
 
-if (inTauri && !/Windows/.test(navigator.userAgent)) startZoomKeys();
+if (inTauri && !/Windows/.test(navigator.userAgent)) {
+  startZoomKeys();
+  // ⌘R (Ctrl R on Linux) and F5 reload, as WebView2 does by itself on Windows.
+  // The tabs come back from the store, as at a start.
+  document.addEventListener("keydown", (event) => {
+    const command = IS_MAC ? event.metaKey && !event.ctrlKey : event.ctrlKey;
+    if (event.key !== "F5" && !(command && !event.altKey && !event.shiftKey && letterOf(event) === "r")) return;
+    event.preventDefault();
+    location.reload();
+  });
+}
 
 // Every control in the window acts on the press from here on — one listener,
 // no prop to remember. See lib/ui/press.
