@@ -80,11 +80,39 @@ export function clearPaint() {
   marks?.one.clear();
 }
 
+/** The box that scrolls the range, or null. */
+function scroller(range: Range): HTMLElement | null {
+  let box = range.startContainer.parentElement;
+  while (box && !(box.scrollHeight > box.clientHeight && /auto|scroll/.test(getComputedStyle(box).overflowY))) box = box.parentElement;
+  return box;
+}
+
+/** True for a range in a box that does not scroll with the page: the list of
+    contents and the page bar. Such a match is always on screen. */
+function pinned(range: Range): boolean {
+  for (let el = range.startContainer.parentElement; el && el.tagName !== "MAIN"; el = el.parentElement) {
+    if (/sticky|fixed/.test(getComputedStyle(el).position)) return true;
+  }
+  return false;
+}
+
+/** The match nearest the view: the first in view or under it going down (1),
+    the last in view or over it going up (-1). A pinned match counts only when
+    the page has no other. */
+export function nearest(ranges: Range[], direction: 1 | -1): number {
+  const free = ranges.map((range, i) => ({ range, i })).filter(({ range }) => !pinned(range));
+  const list = free.length ? free : ranges.map((range, i) => ({ range, i }));
+  if (list.length === 0) return -1;
+  const box = scroller(list[0].range);
+  const view = box?.getBoundingClientRect() ?? { top: 0, bottom: window.innerHeight };
+  if (direction === 1) return (list.find(({ range }) => range.getBoundingClientRect().bottom > view.top) ?? list[0]).i;
+  return (list.findLast(({ range }) => range.getBoundingClientRect().top < view.bottom) ?? list[list.length - 1]).i;
+}
+
 /** Scroll the box that holds the range until the range is in the middle of it,
     unless it is already in clear view. */
 export function reveal(range: Range) {
-  let box = range.startContainer.parentElement;
-  while (box && !(box.scrollHeight > box.clientHeight && /auto|scroll/.test(getComputedStyle(box).overflowY))) box = box.parentElement;
+  const box = scroller(range);
   if (!box) return;
   const at = range.getBoundingClientRect();
   const view = box.getBoundingClientRect();

@@ -11,20 +11,23 @@ import { Icons } from "@/lib/ui/icons";
 import { BAR_BUTTON } from "@/lib/ui/button";
 import { Hint } from "@/components/ui/Hint";
 import { IS_MAC, isCommand, letterOf, useHotkey } from "@/lib/hotkeys";
-import { clearPaint, findRanges, paint, reveal } from "@/lib/ui/find";
+import { clearPaint, findRanges, nearest, paint, reveal } from "@/lib/ui/find";
 
 export function FindBar() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [ranges, setRanges] = useState<Range[]>([]);
-  const [current, setCurrent] = useState(0);
+  // -1 until the reader types or steps: opening the bar again marks the words
+  // and leaves the page where it is.
+  const [current, setCurrent] = useState(-1);
+  const typed = useRef(false);
   const input = useRef<HTMLInputElement>(null);
   const bar = useRef<HTMLDivElement>(null);
 
-  const step = (by: number) => {
+  const step = (by: 1 | -1) => {
     if (ranges.length === 0) return;
-    const next = (current + by + ranges.length) % ranges.length;
+    const next = current < 0 ? nearest(ranges, by) : (current + by + ranges.length) % ranges.length;
     setCurrent(next);
     reveal(ranges[next]);
   };
@@ -54,8 +57,9 @@ export function FindBar() {
     }
   });
 
-  // The matches, again each time the words or the page change. The first one
-  // shown is the first at or under the top of the view, as in a browser.
+  // The matches, again each time the words or the page change. Typed words go
+  // to the match nearest the view, as in a browser; a bar opened again, or a
+  // new page, picks none and does not scroll.
   useEffect(() => {
     if (!open) return;
     let frame = 0;
@@ -64,9 +68,10 @@ export function FindBar() {
       const root = document.querySelector("main");
       const found = root ? findRanges(root, query) : [];
       setRanges(found);
-      if (!first) return setCurrent((was) => Math.min(was, Math.max(0, found.length - 1)));
+      if (!first) return setCurrent((was) => Math.min(was, found.length - 1));
       first = false;
-      const at = Math.max(0, found.findIndex((range) => range.getBoundingClientRect().bottom >= 0));
+      const at = typed.current ? nearest(found, 1) : -1;
+      typed.current = false;
       setCurrent(at);
       if (found[at]) reveal(found[at]);
     };
@@ -90,7 +95,7 @@ export function FindBar() {
   useEffect(() => clearPaint, []);
 
   if (!open) return null;
-  const count = query ? `${ranges.length ? current + 1 : 0}/${ranges.length}` : "";
+  const count = query ? `${current < 0 ? (ranges.length ? "–" : 0) : current + 1}/${ranges.length}` : "";
   return (
     <div
       ref={bar}
@@ -108,7 +113,10 @@ export function FindBar() {
       <input
         ref={input}
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          typed.current = true;
+          setQuery(event.target.value);
+        }}
         onKeyDown={(event) => {
           if (event.key === "Enter") {
             event.preventDefault();
