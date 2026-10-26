@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  ChevronUp,
   Clock,
   Code2,
   FileText,
@@ -114,6 +115,9 @@ export const Icons = {
   collapsed: ChevronRight,
   stepBack: ChevronLeft,
   stepForward: ChevronRight,
+  /** The find bar: the match above, the match below. */
+  findPrevious: ChevronUp,
+  findNext: ChevronDown,
 
   /* Window */
   pin: Pin,

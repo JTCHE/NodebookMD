@@ -28,6 +28,7 @@ import { Sidebar, storedWidth } from "./Sidebar";
 import { REVEAL } from "./sidebar/PageTree";
 import { SettingsDialog } from "@/components/settings/SettingsDialog";
 import { StatusBar } from "./StatusBar";
+import { FindBar } from "./FindBar";
 
 /**
  * The first stop of the Tab key: past the title bar and the panel, straight
@@ -194,6 +195,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <div className={cn("relative flex min-w-0 flex-1 flex-col overflow-hidden print:block print:overflow-visible")}>
           {children}
+          <FindBar />
           {/* The strip lies over the bottom of the page, which runs on under
               it and fades out (see .status-scrim), so the page needs room for
               it at its own foot. Only its contents take the pointer: the

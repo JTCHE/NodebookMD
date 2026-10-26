@@ -544,6 +544,15 @@ svg[stroke="currentColor"] * {
   color: var(--brand-foreground);
 }
 
+/* The find bar's matches, and the one it stands on. See lib/ui/find.ts. */
+::highlight(find) {
+  background: color-mix(in oklch, var(--brand) 30%, transparent);
+}
+::highlight(find-current) {
+  background: var(--brand-700);
+  color: var(--brand-foreground);
+}
+
 /* Where the page runs under the chrome: under the page bar at the top and
    under the key strip at the bottom. The ground is solid for the first half,
    where the chrome's own text sits, then thins out on an eased ramp. A

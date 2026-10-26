@@ -19,17 +19,9 @@ import { TabStrip, useTabKeys } from "./TabStrip";
 import { appWindow, inTauri, invoke } from "@/lib/backend";
 import { ALT_KEY, BACK_KEYS, COMMAND_KEY, FORWARD_KEYS, IS_MAC, historyStep, letterOf, useHotkey } from "@/lib/hotkeys";
 import { Hint } from "@/components/ui/Hint";
+import { BAR_BUTTON } from "@/lib/ui/button";
 import { APP_NAME } from "@/lib/brand";
 import { version } from "../../../src-tauri/tauri.conf.json";
-
-/* A square icon button on the bar. Smaller than a caption button and rounded,
-   because it belongs to the app rather than to the window. */
-const BAR_BUTTON =
-  "grid size-[28px] shrink-0 cursor-interactive place-items-center rounded-md text-neutral-700 " +
-  "transition-colors duration-(--duration-fast) motion-reduce:transition-none " +
-  "pointer-hover:not-disabled:bg-neutral-200 active:not-disabled:bg-neutral-300 " +
-  "disabled:text-neutral-400 disabled:pointer-events-none " +
-  "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
 interface TitleBarProps {
   /** Whether the sidebar is open, and how to change that. */
