@@ -61,8 +61,9 @@ NodebookMD opens a readable page 19 times faster than Houdini's own help server.
 [**Download the AppImage**](https://nodebook.md/download/linux), then:
 
 ```sh
-chmod +x NodebookMD.AppImage
-./NodebookMD.AppImage
+cd ~/Downloads
+chmod +x NodebookMD_*.AppImage
+./NodebookMD_*.AppImage
 ```
 
 It carries its own WebKitGTK, so it needs no packages. It runs on glibc 2.34 and later: Ubuntu 22.04 and 24.04, RHEL 9, Rocky 9 and AlmaLinux 9.
