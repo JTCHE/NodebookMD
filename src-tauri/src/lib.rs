@@ -9,6 +9,7 @@ pub mod mcp;
 pub mod preview;
 pub mod server;
 pub mod telemetry;
+mod web_process;
 pub mod tray;
 pub mod update;
 
@@ -1309,7 +1310,8 @@ pub fn run() {
                 Err(reason) => crate::say!(Warn, "install", "no build to read: {reason}"),
             }
             // After the state above: the page asks for it as soon as it loads.
-            window(app, &app.config().app.windows[0])?.build()?;
+            let main_window = window(app, &app.config().app.windows[0])?.build()?;
+            web_process::watch(&main_window, app.handle().clone());
             tray::build(app)?;
             register_link_scheme(app);
             telemetry::start(app.handle());

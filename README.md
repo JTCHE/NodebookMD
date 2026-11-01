@@ -68,9 +68,6 @@ chmod +x NodebookMD_*.AppImage
 
 It carries its own WebKitGTK, so it needs no packages. It runs on glibc 2.34 and later: Ubuntu 22.04 and 24.04, RHEL 9, Rocky 9 and AlmaLinux 9.
 
-> [!WARNING]
-> On Ubuntu 26.04 the app closes at start, from a WebKit fault with the newest Mesa. This is a known issue.
-
 ### Build Instructions
 
 You need [Bun](https://bun.sh), [Rust](https://rustup.rs) and, on a Debian or Ubuntu base:

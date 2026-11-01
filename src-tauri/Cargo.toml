@@ -59,3 +59,8 @@ winreg = "0.56.0"
 webview2-com = "0.39"
 windows = { version = "0.62", features = ["Win32_System_Com"] }
 windows-core = "0.62"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# The version wry already links, for the signal Tauri does not expose: the
+# web process that died (`web_process.rs`).
+webkit2gtk = "2.0"

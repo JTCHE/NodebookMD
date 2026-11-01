@@ -2368,6 +2368,7 @@ dependencies = [
  "tauri-plugin-single-instance",
  "tauri-plugin-updater",
  "tiny_http",
+ "webkit2gtk",
  "webview2-com",
  "wiki",
  "windows 0.62.2",
