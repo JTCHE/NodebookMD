@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { bodies, match, titles, type Hit } from "@/lib/search";
+import { match } from "@/lib/ranking";
+import { bodies, titles, type Hit } from "@/lib/search";
 import { parseScope, scopeTest, type Scope } from "@/lib/scope";
 import { recents } from "@/lib/store/library";
 

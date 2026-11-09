@@ -16,7 +16,7 @@ import { detectLanguage } from "@/lib/markdown/utils";
 import { showToast } from "@/components/ui/toast-notification";
 import { recordVisit } from "@/lib/store/library";
 import { sideFxUrl } from "@/lib/sidefx";
-import { pageKind } from "@/lib/search";
+import { pageKind } from "@/lib/ranking";
 import { forgetPages, known, read, type PageError, type PageView } from "@/lib/pages";
 import { onBuildChanged } from "@/lib/install";
 import { isTyping, letterOf, useHotkey } from "@/lib/hotkeys";
