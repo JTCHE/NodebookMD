@@ -4,7 +4,7 @@
   "title": "NodebookMD",
   "description": "Search the Houdini documentation offline with NodebookMD and open pages in the app.",
   "icon": "extension-icon.png",
-  "author": "jtche",
+  "author": "john_chedeville",
   "platforms": [
     "macOS",
     "Windows"
