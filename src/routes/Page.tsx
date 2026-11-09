@@ -16,6 +16,7 @@ import { detectLanguage } from "@/lib/markdown/utils";
 import { showToast } from "@/components/ui/toast-notification";
 import { recordVisit } from "@/lib/store/library";
 import { sideFxUrl } from "@/lib/sidefx";
+import { pageKind } from "@/lib/search";
 import { forgetPages, known, read, type PageError, type PageView } from "@/lib/pages";
 import { onBuildChanged } from "@/lib/install";
 import { isTyping, letterOf, useHotkey } from "@/lib/hotkeys";
@@ -432,7 +433,7 @@ export default function Page() {
                   <PageHeader
                     entry={{ path, title: name, icon: page.icon }}
                     name={name}
-                    nodeType={page.nodeType}
+                    nodeType={pageKind(path, page.nodeType)}
                     icon={page.icon}
                     since={page.since}
                     summary={page.summary}

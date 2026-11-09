@@ -151,6 +151,16 @@ export async function bodies(query: string, limit = 6): Promise<Hit[]> {
  *  Two parts at most. The first is the shelf the page sits on, the second the
  *  kind of page it is — the same line the site drew under every result, which
  *  is what tells a SOP and a LOP of the same name apart at a glance. */
+/** Shelf pages that are guides, not tools. */
+const NOT_TOOLS = ["shelf/index", "shelf/customize", "shelf/config_file"];
+
+/** The kind shown beside a page's name: its node type, or "Shelf tool" for a
+    shelf page, which has no node type. The Raycast extension says the same. */
+export function pageKind(path: string, nodeType?: string | null): string | undefined {
+  if (nodeType) return nodeType;
+  return path.startsWith("shelf/") && !NOT_TOOLS.includes(path) ? "Shelf tool" : undefined;
+}
+
 export function category(hit: Hit): string {
   const [top, second] = hit.path.split("/");
   switch (top) {
