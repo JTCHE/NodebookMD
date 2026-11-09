@@ -13,6 +13,9 @@
 # testing & debugging
 /coverage
 *test*
+# The extension ships its tests to the Raycast store, so they stay tracked.
+!integrations/raycast/tests
+!integrations/raycast/tests/*
 *tmp*
 *temp*
 
