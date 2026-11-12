@@ -32,6 +32,7 @@ const SCOPES: { keys: string[]; label: string; paths: string[]; history?: boolea
   { keys: ["apex"], label: "APEX nodes", paths: ["nodes/apex/"] },
   { keys: ["e", "exp", "expr"], label: "Expression functions", paths: ["expressions/"] },
   { keys: ["py", "hom"], label: "Python (HOM)", paths: ["hom/"] },
+  { keys: ["hou"], label: "hou", paths: ["hom/hou/"] },
   { keys: ["hs", "hscript"], label: "HScript commands", paths: ["commands/"] },
   { keys: ["ex", "example"], label: "Examples", paths: ["examples/"] },
 ];
