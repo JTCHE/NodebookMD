@@ -22,6 +22,7 @@ Project information: @README.md
 - One source of truth, in code and in UI. A value, a rule or a control that
   shows in two places lives in one module that both import — see
   [Code](agents/code.md).
+- No single-letter variable names. `xPosition` instead of `x`. `iteration` instead of `i`.
 - Use ASD-STE100 Simplified Technical English in all writing: replies, comments,
   commits, pull requests.
 - Do not keep backward compatibility. Delete the old path. Do not add fallbacks,
