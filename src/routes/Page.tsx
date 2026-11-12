@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Breadcrumbs } from "@/components/docs/Breadcrumbs";
 import SearchOverlay, { type SearchOverlayRef } from "@/components/docs/SearchOverlay";
 import { PageHeader } from "@/components/docs/PageHeader";
-import DocLink from "@/components/docs/DocLink";
+import { Inheritance } from "@/components/docs/Inheritance";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { CodeBlock } from "@/components/docs/CodeBlock";
 import { markdownComponents } from "@/components/docs/markdown";
@@ -423,18 +423,7 @@ export default function Page() {
                     versions={page.nodeVersions}
                     tree={page.tree}
                   />
-                  {page.inheritance.length > 0 && (
-                    <div className="not-prose mb-6 flex flex-wrap gap-x-8 gap-y-2 rounded-md border border-border bg-muted p-4 text-sm">
-                      <strong>Inheritance</strong>
-                      <div className="min-w-0">
-                        {page.inheritance.map((item) => (
-                          <div key={item.path} style={{ paddingLeft: `${item.depth * 1.5}rem` }}>
-                            {item.current ? <strong>{item.name}</strong> : <DocLink href={item.path} mark={false}>{item.name}</DocLink>}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <Inheritance items={page.inheritance} />
                   {/* NOT keyed on the page. React 19 leaves a keyed child's
                       nodes in the document when the child that replaces it
                       draws nothing, so the last page's list stayed on a page
