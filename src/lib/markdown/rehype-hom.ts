@@ -64,16 +64,18 @@ export function rehypeHom({ enabled }: { enabled: boolean }) {
     const summaries = new WeakMap<Element, ElementContent[]>();
     /** Signature arguments the page documents elsewhere link there: the
         description's `See hou.ParmTemplate.name` becomes the hover target of
-        the `name` token in the signature itself. */
+        the `name` token in the signature itself. `num_components` matches the
+        link's `numComponents`, so both sides fold case and underscores. */
+    const fold = (value: string) => value.toLowerCase().replace(/[_\s]/g, "");
     const documentedArgs = (body: ElementContent[]) => {
       const found = new Map<string, string>();
       const visit = (node: ElementContent) => {
         if (node.type !== "element") return;
         if (node.tagName === "a") {
           const label = text(node).trim();
-          const parameter = label.includes(".") ? label.split(".").pop()! : "";
+          const parameter = label.includes(".") ? label.split(".").pop()! : label;
           const href = node.properties.href;
-          if (parameter && typeof href === "string") found.set(parameter, href);
+          if (parameter && typeof href === "string") found.set(fold(parameter), href);
         }
         for (const child of node.children ?? []) visit(child);
       };
@@ -118,20 +120,26 @@ export function rehypeHom({ enabled }: { enabled: boolean }) {
           body.push(next as ElementContent);
           position++;
         }
-        // The signature's own arguments link to where the page documents them.
+        // The signature's own arguments link to where the page documents
+        // them. The tokens sit in the row's code element.
         const documented = documentedArgs(body.slice(1));
         if (documented.size > 0) {
           const card = (panel as Element).children[0];
           const row = card?.type === "element"
             ? card.children.find((child: ElementContent): child is Element => child.type === "element" && (child.properties.className as string[] | undefined)?.includes("vex-sig-row") === true)
             : undefined;
-          if (row?.type === "element") {
-            row.children = row.children.map((token: ElementContent) => {
+          const wrap = (element: Element) => {
+            element.children = element.children.map((token: ElementContent) => {
               if (token.type !== "element") return token;
               const classes = token.properties.className as string[] | undefined;
-              const href = classes?.includes("vex-tk-arg") ? documented.get(text(token)) : undefined;
+              const href = classes?.includes("vex-tk-arg") === true ? documented.get(fold(text(token))) : undefined;
               return href ? { type: "element", tagName: "a", properties: { href }, children: [token] } : token;
             });
+          };
+          if (row?.type === "element") {
+            for (const child of row.children) {
+              if (child.type === "element" && (child.properties.className as string[] | undefined)?.includes("language-python") === true) wrap(child);
+            }
           }
         }
         const caption = body[1];
