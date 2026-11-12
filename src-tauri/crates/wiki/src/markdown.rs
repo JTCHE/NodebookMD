@@ -944,8 +944,22 @@ pub fn inlines(inlines: &[Inline]) -> String {
             Inline::Image { src, size } => out.push_str(&format!("![]({})", image_src(src, *size))),
             Inline::Icon { src, size } => push_icon(&mut out, src, *size),
             Inline::Link { text, target } => {
-                out.push_str(&format!("[{}]({})", self::inlines(text), url(target)))
+                out.push_str(&format!("[{}]({})", self::inlines(text), markdown_url(&url(target))))
             }
+        }
+    }
+    out
+}
+
+fn markdown_url(url: &str) -> String {
+    let mut out = String::new();
+    for c in url.chars() {
+        if c.is_whitespace() || matches!(c, '(' | ')' | '<' | '>' | '\\') {
+            for byte in c.to_string().bytes() {
+                out.push_str(&format!("%{byte:02X}"));
+            }
+        } else {
+            out.push(c);
         }
     }
     out
