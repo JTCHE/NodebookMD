@@ -71,6 +71,9 @@ class ScrollSnapshot extends Component<{
  * the trail — so it takes the first heading in the body, and failing that the
  * last part of the path, which is what the reader typed to get here.
  */
+/** How long a page stays on screen before it enters Recents. */
+const RECENT_AFTER_MS = 2000;
+
 function nameOf(view: PageView, path: string): string {
   if (view.name.trim()) return view.name;
   const heading = /^#{1,3}\s+(.+)$/m.exec(view.markdown)?.[1]?.trim();
@@ -216,10 +219,12 @@ export default function Page() {
   }, [page, path, location.hash, location.key, navigationType]);
 
   // What fills the Recents list. It is written when the page is on screen, so
-  // a path that fails to read never enters the list.
+  // a path that fails to read never enters the list, and only after the page
+  // stays a moment, so pages passed through on the way to another do not.
   useEffect(() => {
     if (page?.path !== path) return;
-    recordVisit({ path, title: nameOf(page, path), icon: page.icon });
+    const timer = setTimeout(() => recordVisit({ path, title: nameOf(page, path), icon: page.icon }), RECENT_AFTER_MS);
+    return () => clearTimeout(timer);
   }, [page, path]);
 
   // A search hit names a section, and F1 names a parameter, so the reader
@@ -368,11 +373,12 @@ export default function Page() {
 
   // Read once and shared: the gutter reserved for the sticky list (below) and
   // the list itself (TableOfContents) have to agree on whether there is one —
-  // TableOfContents draws nothing under two headings, and a gutter held open
-  // for a list that never draws is a page pushed left off centre for no list
-  // at all.
+  // a gutter held open for a list that never draws is a page pushed left off
+  // centre for no list at all. One heading draws one row: a class that
+  // documents its own methods holds one heading where a class that inherits
+  // them holds two, and the family's pages must keep one column.
   const headings = useMemo(() => (page ? extractHeadings(page.markdown) : []), [page]);
-  const hasToc = headings.length >= 2;
+  const hasToc = headings.length > 0;
   const name = useMemo(() => (page ? nameOf(page, path) : ""), [page, path]);
 
   // The tree comes parsed from `read` (a worker). The components are made once

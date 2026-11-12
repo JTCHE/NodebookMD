@@ -102,7 +102,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
     watch.current.observe(el);
   }, []);
 
-  if (headings.length < 2) return null;
+  if (!headings.length) return null;
 
   // Depth is relative to the shallowest heading on the page: a page whose
   // sections are all h3 must not render as one long indent.
