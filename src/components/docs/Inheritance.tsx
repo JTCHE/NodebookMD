@@ -109,8 +109,24 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
     return (
       <div className={cn("relative", nested ? "mt-4" : "mt-6")}>
         <div data-parent={parent.name} data-nested={nested || undefined} role="group" aria-label={label} className="grid gap-x-3 pl-3 pr-2" style={{ gridTemplateColumns: `repeat(${slots}, minmax(0, 1fr))` }}>
-          {columns.map((column, position) => <ul key={position} className="flex min-w-0 flex-col gap-0.5">{column.map((item) => <li key={item.path} className="min-w-0"><span data-class={item.name} data-branch className="inline-flex max-w-full align-top">{node(item)}</span>{grouped && !nested && group(childrenOf(item), item, `Subclasses of ${item.name}`, true)}</li>)}</ul>)}
+          {columns.map((column, position) => <ul key={position} className="flex min-w-0 flex-col gap-0.5">{column.map((item) => {
+            const kids = childrenOf(item);
+            // In a doc group a member with more children than one row's
+            // columns hands them to the full-width block below; anything
+            // shorter nests under the member as before.
+            const hoists = familyless && kids.length > columnCount;
+            return <li key={item.path} className="min-w-0"><span data-class={item.name} data-branch className="inline-flex max-w-full align-top">{node(item)}</span>{grouped && !nested && !hoists && group(kids, item, `Subclasses of ${item.name}`, true)}</li>;
+          })}</ul>)}
         </div>
+        {/* In a doc group the members' subclasses are the same list another
+            page shows as its sibling row, so once they would tower past one
+            column's worth they take the same balanced columns across the full
+            width instead of one column under their parent. The wire still
+            finds the parent pill by name. */}
+        {grouped && !nested && familyless && shown.map((item) => {
+          const kids = childrenOf(item);
+          return kids.length > columnCount ? <div key={item.path}>{group(kids, item, `Subclasses of ${item.name}`)}</div> : null;
+        })}
       </div>
     );
   };
