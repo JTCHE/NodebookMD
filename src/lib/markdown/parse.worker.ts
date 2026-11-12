@@ -19,6 +19,7 @@ import type { Nodes } from "hast";
 import { remarkCallouts } from "./remark-callouts";
 import { remarkVex } from "./remark-vex";
 import { rehypeCards } from "./rehype-cards";
+import { rehypeSections } from "./rehype-sections";
 import { rehypeHom } from "./rehype-hom";
 
 function processor(vex: boolean, hom: boolean) {
@@ -26,7 +27,7 @@ function processor(vex: boolean, hom: boolean) {
     .use(remarkParse)
     .use([remarkGfm, remarkCallouts, [remarkVex, { enabled: vex }]] as never)
     .use(remarkRehype, { allowDangerousHtml: true })
-    .use([rehypeRaw, rehypeSlug, rehypeCards, [rehypeHom, { enabled: hom }]] as never);
+    .use([rehypeRaw, rehypeSlug, rehypeSections, rehypeCards, [rehypeHom, { enabled: hom }]] as never);
 }
 
 /** What react-markdown does to the tree before it draws it: raw HTML the

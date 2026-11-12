@@ -1007,13 +1007,40 @@ img.markdown-media {
   .group:not(:hover) .code-panel {
     scrollbar-color: transparent transparent;
   }
-  /* The same for the link beside a section heading. */
+  /* The same for the link beside a section heading, and for the toggle that
+     collapses the section under it. Both answer to the heading's hover. A
+     closed section keeps its toggle, so the reader can open it again. */
   .heading-copy {
     opacity: 0;
   }
-  :hover > .heading-copy,
+  :where(h2, h3, h4):hover .heading-copy,
   .heading-copy:focus-visible {
     opacity: 1;
+  }
+  .section-toggle {
+    opacity: 0;
+  }
+  :hover > .section-toggle,
+  .section-toggle:focus-visible {
+    opacity: 1;
+  }
+  /* A heading whose content wrapped into no group owns nothing to collapse. */
+  :where(h2, h3, h4):not(:has(+ [data-section])) > .section-toggle {
+    display: none;
+  }
+  .section-toggle svg {
+    transition: transform var(--duration-fast) var(--ease-out-quint);
+    /* Open points down, the same states the method rows use. */
+    transform: rotate(90deg);
+  }
+  [data-collapsed] > .section-toggle svg {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-toggle svg {
+    transition: none;
   }
 }
 
@@ -1618,11 +1645,35 @@ pre code.hljs {
 .hom-method > summary::-webkit-details-marker { display: none; }
 .hom-method-chevron {
   position: absolute;
-  left: 0.25rem;
-  top: 0.7rem;
+  /* Centered in the row's own gutter (the summary's left padding), so the
+     gap to the row edge equals the gap to the text. */
+  left: calc((1rem + 1px - 0.75rem) / 2);
+  top: 1.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
   color: var(--muted-foreground);
 }
+/* Block: an inline svg adds baseline space under it, and the span's box
+   stops matching the icon. */
+.hom-method-chevron svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 .hom-method[open] > summary > .hom-method-chevron { transform: rotate(90deg); }
+@media (hover: hover) {
+  /* The chevron shows with the row's hover, the way a heading's does. The
+     pin inverts here: rows are closed by default, so an OPEN row keeps its
+     chevron and a closed one shows it only under the pointer. */
+  .hom-method > summary .hom-method-chevron {
+    opacity: 0;
+  }
+  .hom-method > summary:hover .hom-method-chevron,
+  .hom-method > summary:focus-visible .hom-method-chevron,
+  .hom-method[open] > summary .hom-method-chevron {
+    opacity: 1;
+  }
+}
 .hom-method-title { font-size: 0.875rem; }
 .hom-method-name { font-family: var(--font-mono); font-weight: 500; }
 .hom-method .hom-method-caption {
