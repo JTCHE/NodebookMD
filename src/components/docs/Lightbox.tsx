@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { reducedMotion } from "@/lib/ui/motion";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
@@ -38,7 +39,6 @@ function preload(src: string): HTMLImageElement {
   return image;
 }
 
-const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const ROUND_BUTTON =
   "grid size-[36px] cursor-interactive place-items-center rounded-full bg-white/10 text-white/80 " +

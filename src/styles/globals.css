@@ -29,6 +29,11 @@
    pointed at the same attribute theme.ts writes. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* Reduce motion is an attribute too, written by motion.ts from the reader's
+   choice or the system. */
+@custom-variant motion-reduce (&:where([data-motion="reduce"], [data-motion="reduce"] *));
+@custom-variant motion-safe (&:where([data-motion="full"], [data-motion="full"] *));
+
 html {
   background: var(--background);
   color-scheme: light dark;
@@ -713,7 +718,7 @@ img.markdown-media {
     --progressive-blur-opacity var(--duration-base) var(--ease-out-quint),
     visibility 0s var(--duration-base);
 }
-@media (prefers-reduced-motion: reduce) {
+:root[data-motion="reduce"] {
   .video-controls,
   .video-blur {
     transition: none;
@@ -1043,7 +1048,7 @@ img.markdown-media {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+:root[data-motion="reduce"] {
   .section-toggle svg {
     transition: none;
   }
@@ -1184,7 +1189,7 @@ button:active kbd.kbd-button {
   animation-delay: var(--sk-delay, 0s);
 }
 
-@media (prefers-reduced-motion: reduce) {
+:root[data-motion="reduce"] {
   .sk::after {
     animation: none;
   }
@@ -1308,7 +1313,7 @@ button:active kbd.kbd-button {
 
 @utility pop-in {
   animation: pop-in 120ms cubic-bezier(0.2, 0, 0, 1);
-  @media (prefers-reduced-motion: reduce) {
+  :root[data-motion="reduce"] & {
     animation: none;
   }
 }
@@ -1333,7 +1338,7 @@ button:active kbd.kbd-button {
   animation: toc-label-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@media (prefers-reduced-motion: reduce) {
+:root[data-motion="reduce"] {
   .toc-label {
     animation: none;
   }
@@ -1716,7 +1721,7 @@ pre code.hljs {
 .flash-mark[data-fading] {
   opacity: 0;
 }
-@media (prefers-reduced-motion: reduce) {
+:root[data-motion="reduce"] {
   .flash-mark {
     transition: none;
   }

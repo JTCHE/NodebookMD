@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { reducedMotion } from "@/lib/ui/motion";
 import { createPortal } from "react-dom";
 import { ArrowUpRight } from "lucide-react";
 import { invoke } from "../../lib/backend";
@@ -235,7 +236,7 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
     for (const ghost of document.querySelectorAll("[data-tooltip-ghost]")) ghost.remove();
     return () => {
       const el = tooltipRef.current;
-      if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (!el || reducedMotion()) return;
       const ghost = el.cloneNode(true) as HTMLElement;
       ghost.classList.add("pop-out");
       ghost.setAttribute("data-tooltip-ghost", "");

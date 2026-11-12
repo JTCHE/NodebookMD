@@ -1,5 +1,6 @@
 "use client";
 
+import { reducedMotion } from "@/lib/ui/motion";
 import { useLayoutEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { buildAsciiField } from "@/lib/landing/asciiField";
@@ -73,8 +74,7 @@ export function AsciiBackground({ className, glow = true }: { className?: string
     });
     resizeObserver.observe(containerNode);
 
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reducedMotion.matches) return () => resizeObserver.disconnect();
+    if (reducedMotion()) return () => resizeObserver.disconnect();
 
     let isVisible = true;
     const intersectionObserver = new IntersectionObserver(([entry]) => {

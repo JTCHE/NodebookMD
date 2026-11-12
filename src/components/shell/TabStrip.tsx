@@ -13,6 +13,7 @@
  * of the app, it joins that window's strip; anywhere else it opens in a
  * window of its own (`drop_tab` in lib.rs).
  */
+import { reducedMotion } from "@/lib/ui/motion";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { CopyPlus } from "lucide-react";
@@ -62,7 +63,6 @@ const DRAG_START = 4;
 /** Pixels above or below the strip past which a dragged tab leaves it. */
 const TEAR = 28;
 
-const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** The keys of a browser's tabs. The desktop window only: Houdini's pane
     has one page. */
@@ -125,7 +125,7 @@ export function TabStrip() {
     const before = places.current;
     const now = measure();
     places.current = now;
-    if (!before.size || still()) return;
+    if (!before.size || reducedMotion()) return;
     for (const el of strip.current?.querySelectorAll<HTMLElement>("[data-tab]") ?? []) {
       // The dragged tab stays under the pointer, wherever its place now is.
       if (el.dataset.drag) {
@@ -316,7 +316,7 @@ function TabChip({
       el.style.opacity = "";
       delete el.dataset.drag;
       if (out) return void tear();
-      if (settle && !still()) el.animate([{ transform: settle }, { transform: "none" }], SLIDE);
+      if (settle && !reducedMotion()) el.animate([{ transform: settle }, { transform: "none" }], SLIDE);
     };
     // The new window puts the tab where the first tab of a strip sits, with
     // the pointer on it where it held this one.

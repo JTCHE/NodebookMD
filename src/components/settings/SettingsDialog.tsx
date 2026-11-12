@@ -22,6 +22,7 @@ import { TELEMETRY } from "@/components/onboarding/Onboarding";
 import { VaultPicker } from "@/components/obsidian/ObsidianDialog";
 import { APP_NAME } from "@/lib/brand";
 import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
+import { MOTION_CHOICES, MOTION_LABEL, setMotion, useMotionChoice } from "@/lib/ui/motion";
 import { LINK_FORMATS, linkFormat, setLinkFormat, type LinkFormat } from "@/lib/link";
 import { restoresTabs, setRestoresTabs } from "@/lib/tabs";
 import { setHelpServer, useReleases } from "@/lib/help-server";
@@ -287,6 +288,7 @@ const CLOSE_TO_TRAY = "close_to_tray";
     too, so they work in Houdini's help pane. */
 function GeneralSection() {
   const theme = useThemeChoice();
+  const motion = useMotionChoice();
   const [format, setFormat] = useState<LinkFormat | null>(null);
   const [tray, setTray] = useState<boolean | null>(null);
   const [restore, setRestore] = useState(restoresTabs);
@@ -315,6 +317,14 @@ function GeneralSection() {
           value={theme}
           options={THEME_CHOICES.map((choice) => ({ value: choice, label: THEME_LABEL[choice] }))}
           onChange={setTheme}
+        />
+      </Row>
+      <Row label="Reduce motion">
+        <Segmented
+          label="Reduce motion"
+          value={motion}
+          options={MOTION_CHOICES.map((choice) => ({ value: choice, label: MOTION_LABEL[choice] }))}
+          onChange={setMotion}
         />
       </Row>
       <Row label="Copied links">

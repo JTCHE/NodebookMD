@@ -9,6 +9,7 @@ import { AppShell } from "./components/shell/AppShell";
 import { ToastListener } from "./components/ui/toast-notification";
 import { DeepLinks } from "./components/shell/DeepLinks";
 import { startTheme } from "./lib/ui/theme";
+import { startMotion } from "./lib/ui/motion";
 import { startPress } from "./lib/ui/press";
 import { startBlurCheck } from "./lib/ui/blur";
 import { startIconStroke } from "./lib/ui/icon-stroke";
@@ -29,6 +30,7 @@ if (await invoke<boolean>("clean_start").catch(() => false)) {
 // Light or dark before the first paint, so the window never flashes the
 // other theme on the way in.
 startTheme();
+startMotion();
 startBlurCheck();
 startIconStroke();
 
