@@ -126,5 +126,5 @@ export function useSearch(query: string): Found {
     };
   }, [query]);
 
-  return found;
+  return found.query === query.trim() ? found : NONE;
 }

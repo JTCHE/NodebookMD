@@ -21,7 +21,7 @@ import { Icons } from "@/lib/ui/icons";
 import { THEME_CHOICES, THEME_ICON, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
 import { pastedAnchor, pastedHit, pastedPath, recentSearches, rememberSearch, resolve, type Hit } from "@/lib/search";
 import { useSearch } from "@/lib/use-search";
-import { scopedInput } from "@/lib/scope";
+import { scopedInput, searchQuotes } from "@/lib/scope";
 import { ScopeChip } from "@/components/search/ScopeChip";
 import { useSearchReport, used } from "@/lib/telemetry";
 import { openTab, tabFor } from "@/lib/tabs";
@@ -126,7 +126,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
     setWasOpen(open);
     if (open) {
       used("search");
-      setQuery(seed.current);
+      setQuery(searchQuotes(seed.current));
       seed.current = "";
       const here = location.pathname.replace(/^\/+/, "");
       setRecent(recentSearches().filter((hit) => hit.path !== here));

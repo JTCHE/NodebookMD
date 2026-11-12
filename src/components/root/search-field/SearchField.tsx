@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
 import { pastedAnchor, pastedPath, rememberSearch, resolve } from "@/lib/search";
 import { useSearch } from "@/lib/use-search";
-import { scopedInput } from "@/lib/scope";
+import { scopedInput, searchQuotes } from "@/lib/scope";
 import { ScopeChip } from "@/components/search/ScopeChip";
 import { isCommand, isTyping, useHotkey, usePagePaste } from "@/lib/hotkeys";
 import {
@@ -156,7 +156,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
   }
 
   function changeQuery(value: string) {
-    setQuery(value);
+    setQuery(searchQuotes(value));
     setError("");
   }
 

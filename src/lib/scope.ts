@@ -69,7 +69,7 @@ export function scopedInput(query: string, setQuery: (next: string) => void) {
   return {
     scope,
     text: scope ? rest : query,
-    change: (value: string) => setQuery(scope ? `${scope.key}:${value}` : value),
+    change: (value: string) => setQuery(scope ? `${scope.key}:${searchQuotes(value)}` : searchQuotes(value)),
     /** True when it used the key. */
     key: (event: React.KeyboardEvent<HTMLInputElement>) => {
       const input = event.currentTarget;
@@ -79,4 +79,9 @@ export function scopedInput(query: string, setQuery: (next: string) => void) {
       return true;
     },
   };
+}
+
+/** Treat typographic double quotes as phrase delimiters. */
+export function searchQuotes(value: string): string {
+  return value.replace(/[“”„‟«»‹›]/g, '"');
 }
