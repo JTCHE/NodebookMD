@@ -321,6 +321,9 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
           data-pinned=""
         >
           {pinned.map((line) => folderRow(line, true))}
+          {/* A row going under the pinned headers fades out, as at the
+              list's bottom edge. */}
+          <div aria-hidden className="absolute inset-x-0 top-full h-lg bg-gradient-to-b from-neutral-100 to-transparent" />
         </div>
       )}
 
