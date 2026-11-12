@@ -10,7 +10,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 zip = { version = "7.2.0", default-features = false, features = ["deflate"] }
 wiki = { version = "0.1.0", path = "../wiki" }
-rusqlite = { version = "0.40.2", features = ["bundled"] }
+rusqlite = { version = "0.40.2", features = ["bundled", "functions"] }
 rayon = "1.12.0"
 
 [target."cfg(windows)".dependencies]

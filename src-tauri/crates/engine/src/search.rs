@@ -57,13 +57,19 @@ pub struct Meta {
 const SECTIONS_PER_PAGE: usize = 3;
 
 /// A matching section row, with its page. `row_hit` reads it.
-const SECTION_ROWS: &str = "SELECT pages_fts.path, p.title, p.node_type, p.icon, p.summary,
+fn section_rows(indexed: bool) -> String {
+    let (excerpt, rank, condition) = if indexed {
+        ("snippet(pages_fts, 5, '', '', '…', 14)", "bm25(pages_fts, 0.0, 0.0, 0.0, 4.0, 10.0, 1.0)", "pages_fts MATCH ?1 AND ")
+    } else {
+        ("substr(pages_fts.body, max(1, instr(search_lower(pages_fts.body), ?4) - 60), 160)", "0.0", "")
+    };
+    format!("SELECT pages_fts.path, p.title, p.node_type, p.icon, p.summary,
                     pages_fts.heading, pages_fts.slug,
-                    snippet(pages_fts, 5, '', '', '…', 14),
-                    bm25(pages_fts, 0.0, 0.0, 0.0, 4.0, 10.0, 1.0) AS rank
+                    {excerpt}, {rank} AS rank
              FROM pages_fts
              JOIN pages p ON p.build = pages_fts.build AND p.path = pages_fts.path
-             WHERE pages_fts MATCH ?1 AND pages_fts.build = ?2";
+             WHERE {condition}pages_fts.build = ?2")
+}
 
 /// Full-text search over the page bodies, ranked with `bm25()`.
 ///
@@ -81,28 +87,38 @@ pub fn find(
     query: &str,
     limit: u32,
 ) -> Result<Vec<Hit>, String> {
-    let Some(match_query) = db::match_query(query) else {
-        return Ok(Vec::new());
-    };
-    // A quoted phrase must be in the section as typed, symbols and all.
+    let match_query = db::match_query(query);
     let phrases = db::quoted(query);
+    if match_query.is_none() && phrases.is_empty() {
+        return Ok(Vec::new());
+    }
+    // A quoted phrase must be in the section as typed, symbols and all.
+    if !phrases.is_empty() {
+        db.create_scalar_function(
+            "search_lower", 1,
+            rusqlite::functions::FunctionFlags::SQLITE_UTF8 | rusqlite::functions::FunctionFlags::SQLITE_DETERMINISTIC,
+            |context| Ok(context.get::<String>(0)?.to_lowercase()),
+        ).map_err(|e| e.to_string())?;
+    }
     let exact: String = (0..phrases.len())
         .map(|i| {
             format!(
-                " AND instr(lower(pages_fts.heading || ' ' || pages_fts.title || ' ' || pages_fts.body), ?{})",
+                " AND instr(search_lower(pages_fts.heading || ' ' || pages_fts.title || ' ' || pages_fts.body), ?{})",
                 i + 4
             )
         })
         .collect();
+    let sections = section_rows(match_query.is_some());
+    let order = if match_query.is_some() { "ORDER BY rank" } else { "" };
     let mut statement = db
         .prepare(
-            &format!("{SECTION_ROWS}{exact} ORDER BY rank LIMIT ?3"),
+            &format!("{sections}{exact} {order} LIMIT ?3"),
         )
         .map_err(|e| e.to_string())?;
 
     let wanted = limit as usize;
     let mut values: Vec<rusqlite::types::Value> =
-        vec![match_query.into(), build.to_string().into(), ((wanted * SECTIONS_PER_PAGE * 4) as i64).into()];
+        vec![match_query.unwrap_or_default().into(), build.to_string().into(), ((wanted * SECTIONS_PER_PAGE * 4) as i64).into()];
     values.extend(phrases.iter().cloned().map(Into::into));
     let rows = statement
         .query_map(rusqlite::params_from_iter(values), row_hit)
@@ -157,7 +173,7 @@ fn named(db: &rusqlite::Connection, build: &str, query: &str) -> Result<Vec<Hit>
     }
     let mut sections = db
         .prepare(
-            &format!("{SECTION_ROWS} AND pages_fts.path = ?3 ORDER BY rank LIMIT ?4"),
+            &format!("{} AND pages_fts.path = ?3 ORDER BY rank LIMIT ?4", section_rows(true)),
         )
         .map_err(|e| e.to_string())?;
     for k in (1..n).rev() {

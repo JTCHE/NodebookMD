@@ -96,7 +96,7 @@ export function useSearch(query: string): Found {
         if (live) setFound({ query: answer, hits: pick(all) });
       });
 
-    if (wanted.length < MIN_BODY_QUERY) return () => { live = false; };
+    if (!exact && wanted.length < MIN_BODY_QUERY) return () => { live = false; };
 
     const timer = window.setTimeout(async () => {
       // A scope throws most of the ranking away, so it asks for more of it.
