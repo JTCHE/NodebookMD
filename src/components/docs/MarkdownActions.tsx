@@ -9,7 +9,7 @@ import { pageLink } from "@/lib/link";
 import { invoke, inTauri } from "@/lib/backend";
 import { pageHtml } from "@/lib/markdown/html";
 import { showToast } from "@/components/ui/toast-notification";
-import { COMMAND_KEY, isCommand, isTyping, useHotkey } from "@/lib/hotkeys";
+import { COMMAND_KEY, isCommand, isTyping, letterOf, useHotkey } from "@/lib/hotkeys";
 import { Hint } from "@/components/ui/Hint";
 import { used } from "@/lib/telemetry";
 import { openWeb } from "@/lib/web";
@@ -124,13 +124,15 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
     void save().catch((reason) => showToast(String(reason), "error"));
   });
 
-  // Ctrl/Cmd+L copies the page's link, in the form Settings names.
+  // Both shortcuts copy the page's link in the form Settings names.
   const copyLink = useCallback(async () => {
     await navigator.clipboard.writeText(await pageLink(path));
     showToast("Link copied");
   }, [path]);
   useHotkey((event) => {
-    if (event.key.toLowerCase() !== "l" || !isCommand(event) || event.shiftKey || event.altKey) return;
+    const linkKey = isCommand(event) && letterOf(event) === "l";
+    const alternateKey = (event.ctrlKey || event.metaKey) && event.altKey && letterOf(event) === "c";
+    if ((!linkKey && !alternateKey) || event.shiftKey) return;
     if (isTyping(event.target)) return;
     event.preventDefault();
     void copyLink().catch(() => showToast("Couldn't copy", "error"));
