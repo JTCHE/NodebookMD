@@ -164,7 +164,7 @@ export default function DocLink({
   ) : samePage() && anchor ? (
     <SectionTooltip id={decodeURIComponent(anchor)} {...anchored} />
   ) : (
-    slug && <DocTooltip slug={slug} {...anchored} />
+    slug && <DocTooltip slug={slug} anchor={anchor ? decodeURIComponent(anchor) : null} {...anchored} />
   );
 
   if (external) {

@@ -4,6 +4,8 @@ import { ArrowUpRight } from "lucide-react";
 import { invoke } from "../../lib/backend";
 import { cn } from "@/lib/utils";
 import { hitOf } from "@/lib/search";
+import { methodSignature } from "@/lib/method-signature";
+import type { PageView } from "@/lib/pages";
 
 interface MetaEntry {
   title: string;
@@ -16,6 +18,11 @@ interface MetaEntry {
 // `null` marks a page that is not in the build, so a second hover does not
 // ask again.
 const metaCache = new Map<string, MetaEntry | null>();
+
+// The signature a link's anchor lands on, keyed `slug#anchor`. `null` marks a
+// page or an anchor without one, so a second hover does not read the page
+// again.
+const signatureCache = new Map<string, string | null>();
 
 /** What a batch settles a slug to: the page, `null` for no such page, or
     `undefined` when the call failed and nothing is known. */
@@ -263,11 +270,14 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
 }
 
 /** What a page in the help is called and what it is about. */
-export function DocTooltip({ slug, summaryOnly = false, ...anchored }: Anchored & { slug: string; summaryOnly?: boolean }) {
+export function DocTooltip({ slug, summaryOnly = false, anchor, ...anchored }: Anchored & { slug: string; summaryOnly?: boolean; anchor?: string | null }) {
   // undefined while the answer is on its way; null for a page the build does
   // not have.
   const [meta, setMeta] = useState<MetaEntry | null | undefined>(() => known(slug));
   const [failed, setFailed] = useState(false);
+  // The signature the anchor lands on, read from the page itself: hovering
+  // `name` in a signature says what that argument is — `name() → string`.
+  const [signature, setSignature] = useState<string | null>(() => (anchor ? signatureCache.get(`${slug}#${anchor}`) ?? null : null));
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -289,6 +299,28 @@ export function DocTooltip({ slug, summaryOnly = false, ...anchored }: Anchored 
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (!anchor) return;
+    const cacheKey = `${slug}#${anchor}`;
+    if (signatureCache.has(cacheKey)) {
+      setSignature(signatureCache.get(cacheKey) ?? null);
+      return;
+    }
+    let alive = true;
+    invoke<PageView>("page", { path: slug })
+      .then((page) => {
+        const found = methodSignature(page.markdown, anchor);
+        signatureCache.set(cacheKey, found);
+        if (alive) setSignature(found);
+      })
+      .catch(() => {
+        signatureCache.set(cacheKey, null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [slug, anchor]);
+
   if (failed) return null;
 
   const summary = meta?.summary;
@@ -299,6 +331,7 @@ export function DocTooltip({ slug, summaryOnly = false, ...anchored }: Anchored 
       {meta ? (
         <>
           <span className="block font-semibold text-foreground">{meta.title}</span>
+          {signature && <span className="mt-0.5 block font-mono text-[0.78rem] leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">{signature}</span>}
           {summary && <span className="text-muted-foreground mt-0.5 line-clamp-2">{summary}</span>}
         </>
       ) : meta === null ? (

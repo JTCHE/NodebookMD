@@ -94,7 +94,17 @@ export function rehypeHom({ enabled }: { enabled: boolean }) {
           if (first?.type === "element" && first.tagName === "code" && /^[\w.]+\s*\(/.test(text(first)) && leading.every((node) => !text(node).trim())) {
             const raw = text(first).replace(/\(\s*(?:self|cls)\s*(?:,\s*)?/, "(");
             const compact = raw.length > 88 ? `${raw.slice(0, raw.indexOf("("))}(…)` : raw;
-            const returns: ElementContent[] = JSON.parse(JSON.stringify((strong as Element).children.slice(1)));
+            // The return type reads as plain text in the summary: the prose's
+            // inline-code chip would shout inside a row that is already
+            // monospace. Links keep working; only the chip comes off.
+            const plain = (node: ElementContent): ElementContent => {
+              if (node.type !== "element") return node;
+              const children = node.children.map((child) => plain(child));
+              return node.tagName === "code"
+                ? { type: "element", tagName: "span", properties: {}, children }
+                : { ...node, children };
+            };
+            const returns: ElementContent[] = (JSON.parse(JSON.stringify((strong as Element).children.slice(1))) as ElementContent[]).map(plain);
             for (const node of (strong as Element).children) if (node.type === "element" && node.tagName === "code") highlight(node);
             const panel = div("vex-sig hom-signature", [div("vex-sig-card code-panel", [div("vex-sig-row", (strong as Element).children)])]);
             summaries.set(panel, [...leading, { type: "element", tagName: "span", properties: { className: ["hom-method-name"] }, children: [{ type: "text", value: compact }] }, ...returns]);
@@ -133,7 +143,9 @@ export function rehypeHom({ enabled }: { enabled: boolean }) {
               if (token.type !== "element") return token;
               const classes = token.properties.className as string[] | undefined;
               const href = classes?.includes("vex-tk-arg") === true ? documented.get(fold(text(token))) : undefined;
-              return href ? { type: "element", tagName: "a", properties: { href }, children: [token] } : token;
+              // The class tells the renderer this link carries no page mark:
+              // a page icon in front of every argument is noise.
+              return href ? { type: "element", tagName: "a", properties: { href, className: ["vex-sig-arg"] }, children: [token] } : token;
             });
           };
           if (row?.type === "element") {

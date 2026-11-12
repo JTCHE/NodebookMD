@@ -1624,6 +1624,13 @@ pre code.hljs {
   text-underline-offset: 0.2em;
 }
 
+/* The signature reads as one text. The tokens keep their kinds — the
+   argument links are found through them — but drop the syntax colours, so
+   the row reads calm and the link's underline is the only emphasis. */
+.vex-sig-row code span {
+  color: inherit;
+}
+
 .hom-signature .vex-sig-row {
   width: auto;
   min-width: 0;

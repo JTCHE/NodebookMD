@@ -54,15 +54,21 @@ export const markdownComponents: Components = {
   video: Video,
   li: Card,
   figcaption: ({ children }) => <figcaption className="mt-2 px-4 text-left text-sm text-muted-foreground">{children}</figcaption>,
-  a: ({ href, children, ...props }) =>
-    href ? (
+  a: ({ href, className, children, ...props }) => {
+    const classes = Array.isArray(className) ? className : typeof className === "string" ? className.split(" ") : [];
+    return href ? (
       <DocLink
         href={href}
+        className={classes.length ? classes.join(" ") : undefined}
+        // A signature argument link is part of the code around it: it wears
+        // no page mark, only its token.
+        mark={!classes.includes("vex-sig-arg")}
         {...props}
       >
         {children}
       </DocLink>
     ) : (
       <span {...(props as React.HTMLAttributes<HTMLSpanElement>)}>{children}</span>
-    ),
+    );
+  },
 };
