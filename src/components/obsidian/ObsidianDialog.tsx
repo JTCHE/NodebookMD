@@ -46,7 +46,7 @@ export function VaultPicker({ value, onChange }: { value: string | null; onChang
   );
 }
 
-export function ObsidianDialog({ title, markdown, onClose }: { title: string; markdown: string; onClose: () => void }) {
+export function ObsidianDialog({ path, title, markdown, onClose }: { path: string; title: string; markdown: string; onClose: () => void }) {
   const [bring, setBring] = useState(true);
   const [vault, setVault] = useState<string | null>(null);
   const [keep, setKeep] = useState(false);
@@ -72,8 +72,8 @@ export function ObsidianDialog({ title, markdown, onClose }: { title: string; ma
     setBusy(true);
     try {
       if (keep) await invoke("set_setting", { key: OBSIDIAN_PICTURES, value: bring ? "bring" : "text" });
-      if (bring && vault) await sendWithPictures(vault, title, markdown);
-      else await sendText(title, markdown);
+      if (bring && vault) await sendWithPictures(vault, path, title, markdown);
+      else await sendText(path, title, markdown);
       showToast("Sent to Obsidian");
       onClose();
     } catch (reason) {

@@ -431,20 +431,25 @@ fn obsidian_vaults() -> Vec<Vault> {
     vaults.into_iter().map(|(_, vault)| vault).collect()
 }
 
-/// Writes the page into the vault at `vault`, in a folder named for the
-/// app, its pictures beside it in `attachments/`. The reader picks the
+/// Writes the page into the vault at `vault`, as `name`, its pictures beside
+/// it in `attachments/`. The reader picks the
 /// vault in the app (see `ObsidianDialog`); this only writes, and returns the
 /// note's path for the app to open it.
 ///
 /// Pictures come out of the zip the app already reads pages from, not off the
 /// screen, so nothing has to leave the app just to come back as bytes.
 #[tauri::command]
-async fn send_to_obsidian(app: tauri::AppHandle, vault: String, title: String, markdown: String) -> Result<String, String> {
+async fn send_to_obsidian(app: tauri::AppHandle, vault: String, name: String, markdown: String) -> Result<String, String> {
     let vault = std::path::PathBuf::from(vault);
     if !vault.is_dir() {
         return Err(format!("{} is not a folder", vault.display()));
     }
-    let folder = vault.join(APP_NAME);
+    // `name` is `NodebookMD/<page folders>/<title>`, made in `lib/obsidian.ts`.
+    if name.split('/').any(|part| part.is_empty() || part == "..") {
+        return Err(format!("{name} is not a note name"));
+    }
+    let path = vault.join(format!("{name}.md"));
+    let folder = path.parent().unwrap_or(&vault).to_path_buf();
     let attachments = folder.join("attachments");
     std::fs::create_dir_all(&attachments).map_err(|e| e.to_string())?;
 
@@ -464,9 +469,6 @@ async fn send_to_obsidian(app: tauri::AppHandle, vault: String, title: String, m
         }
     }
 
-    let safe: String = title.chars().map(|c| if "\\/:*?\"<>|".contains(c) { ' ' } else { c }).collect();
-    let safe = safe.trim();
-    let path = folder.join(format!("{}.md", if safe.is_empty() { "page" } else { safe }));
     std::fs::write(&path, note).map_err(|e| e.to_string())?;
     Ok(path.to_string_lossy().into_owned())
 }

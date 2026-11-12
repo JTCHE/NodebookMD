@@ -49,21 +49,31 @@ export async function pickFolder(): Promise<string | null> {
   return typeof picked === "string" ? picked : null;
 }
 
-function fileName(title: string): string {
-  return `${APP_NAME}/${title.replace(/[\\/:*?"<>|]/g, " ").trim() || "page"}`;
+/** Where the note goes in the vault, without `.md`: a folder that follows the
+    page path, named by the title. `nodes/sop/lattice` → `NodebookMD/nodes/sop/<title>`. */
+function noteName(path: string, title: string): string {
+  const folders = path.split("/").slice(0, -1);
+  const name = title.replace(/[\\/:*?"<>|]/g, " ").trim() || "page";
+  return [APP_NAME, ...folders, name].join("/");
+}
+
+/** Obsidian shows the file name as the title, so the note drops the H1 that
+    follows the frontmatter. */
+function noteBody(markdown: string): string {
+  return markdown.replace(/^(---\r?\n[\s\S]*?\r?\n---\r?\n+)?# [^\n]*\n+/, "$1");
 }
 
 /** The text alone, into the vault Obsidian last had open. */
-export async function sendText(title: string, markdown: string) {
-  await navigator.clipboard.writeText(markdown);
-  await openWeb(`obsidian://new?file=${encodeURIComponent(fileName(title))}&clipboard=true`);
+export async function sendText(path: string, title: string, markdown: string) {
+  await navigator.clipboard.writeText(noteBody(markdown));
+  await openWeb(`obsidian://new?file=${encodeURIComponent(noteName(path, title))}&clipboard=true`);
 }
 
 /** The note and its pictures, written into `vault`, which is then remembered.
     Obsidian then opens the note, as it does for the text alone: `path` finds
     the vault that holds the file. */
-export async function sendWithPictures(vault: string, title: string, markdown: string) {
-  const note = await invoke<string>("send_to_obsidian", { vault, title, markdown });
+export async function sendWithPictures(vault: string, path: string, title: string, markdown: string) {
+  const note = await invoke<string>("send_to_obsidian", { vault, name: noteName(path, title), markdown: noteBody(markdown) });
   await invoke("set_setting", { key: OBSIDIAN_VAULT, value: vault });
   await openWeb(`obsidian://open?path=${encodeURIComponent(note)}`);
 }

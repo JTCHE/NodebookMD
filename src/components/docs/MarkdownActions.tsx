@@ -108,10 +108,10 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
     const choice = hasMedia(markdown) ? await picturesChoice() : "text";
     const vault = choice === "bring" ? await rememberedVault() : null;
     if (choice === "ask" || (choice === "bring" && !vault)) return setAsking(true);
-    if (vault) await sendWithPictures(vault, title, markdown);
-    else await sendText(title, markdown);
+    if (vault) await sendWithPictures(vault, path, title, markdown);
+    else await sendText(path, title, markdown);
     showToast("Sent to Obsidian");
-  }, [markdown, title]);
+  }, [markdown, path, title]);
 
   // Ctrl/Cmd+S. The webview binds it to its own "save page", which writes the
   // app's HTML shell, so the press is taken here whether or not it is used.
@@ -239,7 +239,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
           ]}
         />
       )}
-      {asking && <ObsidianDialog title={title} markdown={markdown} onClose={() => setAsking(false)} />}
+      {asking && <ObsidianDialog path={path} title={title} markdown={markdown} onClose={() => setAsking(false)} />}
     </div>
   );
 }
