@@ -22,6 +22,7 @@ pub struct PageView {
     /// The Houdini version the node arrived in.
     pub since: Option<String>,
     pub summary: Option<String>,
+    pub inheritance: Vec<inherit::Class>,
     pub markdown: String,
     /// The page as one plain Markdown file, for every reader outside the app:
     /// copy, save, Obsidian, the `.md` address. See `document`.
@@ -84,6 +85,7 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
     assets::rewrite(&path, &mut parsed.blocks, &links);
     let prop = |name: &str| wiki::model::prop(&parsed.props, name).map(str::to_string);
     let markdown = wiki::markdown::blocks(&parsed.blocks, 1);
+    let inheritance = inherit::hierarchy(&install.help, &path, &parsed.props);
     let mut view = PageView {
         name: name(&path, &parsed),
         path,
@@ -93,6 +95,7 @@ pub fn read(install: &install::Install, path: &str) -> Result<PageView, PageErro
         // The declared summary only: the fallback repeats the body's first
         // paragraph right above it. Search and listings use `summary()`.
         summary: parsed.summary.as_ref().map(|text| wiki::inline::plain(text)),
+        inheritance,
         markdown,
         portable: String::new(),
         version: install.version.clone(),
@@ -126,9 +129,12 @@ impl PageView {
     }
 }
 
-/// The kind of page, for the header. Only a node page has one.
+/// The kind of page, for the header.
 pub fn node_type(props: &wiki::Props) -> Option<String> {
     let kind = wiki::model::prop(props, "type")?;
+    if kind == "homclass" {
+        return Some("Class".to_string());
+    }
     let context = wiki::model::prop(props, "context")?;
     if kind != "node" {
         return None;

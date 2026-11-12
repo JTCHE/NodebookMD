@@ -28,6 +28,7 @@ export interface PageView {
   icon?: string;
   since?: string;
   summary?: string;
+  inheritance: { name: string; path: string; depth: number; current: boolean }[];
   markdown: string;
   /** The body as plain Markdown, for copy, save and Obsidian. See
       `portable` in the wiki crate's markdown.rs. */
