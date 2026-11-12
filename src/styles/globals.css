@@ -1022,7 +1022,7 @@ img.markdown-media {
   }
   :hover > .section-toggle,
   .section-toggle:focus-visible,
-  /* A closed section keeps its chevron, pointing down: that is the state
+  /* A closed section keeps its chevron, pointing right: that is the state
      the reader has to be able to leave. This one leaves the hover block's
      siblings: it also holds without a pointer, so a touch screen sees it. */
   [data-collapsed] > .section-toggle {
@@ -1034,11 +1034,12 @@ img.markdown-media {
   }
   .section-toggle svg {
     transition: transform var(--duration-fast) var(--ease-out-quint);
-    /* Open points right, the action the hover offers. */
-    transform: none;
+    /* Expanded aims down; a closed section's chevron aims right, at the
+       content it would open. */
+    transform: rotate(90deg);
   }
   [data-collapsed] > .section-toggle svg {
-    transform: rotate(90deg);
+    transform: none;
   }
 }
 
