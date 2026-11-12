@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Component, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import { LucideArrowUpRight } from "lucide-react";
 import { useLocation, useNavigationType } from "react-router";
 import type { Components } from "react-markdown";
@@ -31,6 +31,36 @@ import { findAnchor, jumpTo } from "@/components/docs/toc/measure";
  * visited twice is two entries, each with its own place.
  */
 const offsets = new Map<string, number>();
+
+// Save before React changes the body: a shorter page would clamp scrollTop.
+class ScrollSnapshot extends Component<{
+  entryKey: string;
+  path: string;
+  pagePath?: string;
+  scroller: RefObject<HTMLDivElement | null>;
+  children: ReactNode;
+}> {
+  save(props = this.props) {
+    if (props.pagePath === props.path && props.scroller.current) {
+      offsets.set(props.entryKey, props.scroller.current.scrollTop);
+    }
+  }
+
+  getSnapshotBeforeUpdate(previous: Readonly<typeof this.props>) {
+    if (previous.entryKey !== this.props.entryKey || previous.path !== this.props.path) this.save(previous);
+    return null;
+  }
+
+  componentDidUpdate() {}
+
+  componentWillUnmount() {
+    this.save();
+  }
+
+  render() {
+    return this.props.children;
+  }
+}
 
 /**
  * What to call a page whose help file gives no title.
@@ -74,6 +104,15 @@ export default function Page() {
   // A page already read draws on the first render, not one render later.
   const [page, setPage] = useState<PageView | null>(() => known(path) ?? null);
   const [error, setError] = useState<PageError | null>(null);
+  const [shownPath, setShownPath] = useState(path);
+  if (shownPath !== path) {
+    setShownPath(path);
+    const held = known(path);
+    if (held) {
+      setPage(held);
+      setError(null);
+    }
+  }
 
   // The page on screen is NOT cleared while the next one is read. Clearing it
   // put a blank frame in the middle of every navigation — measured at 27ms,
@@ -131,17 +170,14 @@ export default function Page() {
 
   // Where the reader is in the page, kept against the entry they are on, so
   // the back arrow can put them there again.
-  useEffect(() => {
+  useLayoutEffect(() => {
     const box = scroller.current;
-    if (!box) return;
+    if (!box || page?.path !== path) return;
     const key = location.key;
     const save = () => offsets.set(key, box.scrollTop);
     box.addEventListener("scroll", save, { passive: true });
-    return () => {
-      save();
-      box.removeEventListener("scroll", save);
-    };
-  }, [location.key]);
+    return () => box.removeEventListener("scroll", save);
+  }, [location.key, page?.path, path]);
 
   // A page kept on screen keeps its scroll offset with it, so a new page that
   // names no section has to be put back at the top by hand. The window itself
@@ -149,10 +185,9 @@ export default function Page() {
   //
   // Back, forward and a switch of tab are the exception: the reader is
   // returning to a page they already read, and the top of it is not where
-  // they left — nor the section the address names. The body draws a
-  // slice at a time, so the length that offset needs is not there on the first
-  // frame — the aim is held while the page grows, and the reader ends it.
-  useEffect(() => {
+  // they left — nor the section the address names. The body draws whole on
+  // return, so the saved place exists before the page is painted.
+  useLayoutEffect(() => {
     const box = scroller.current;
     if (!box || page?.path !== path) return;
     const want = navigationType === "POP" ? offsets.get(location.key) : undefined;
@@ -161,7 +196,7 @@ export default function Page() {
       box.scrollTo(0, 0);
       return;
     }
-    const aimAtIt = () => box.scrollTo({ top: want });
+    const aimAtIt = () => box.scrollTo({ top: want, behavior: "instant" });
     aimAtIt();
     const watch = new ResizeObserver(aimAtIt);
     const article = box.querySelector("article");
@@ -251,6 +286,7 @@ export default function Page() {
   useEffect(() => {
     const find = (location.state as { find?: string } | null)?.find;
     if (!find || page?.path !== path || flashed.current === location.key) return;
+    if (navigationType === "POP" && offsets.has(location.key)) return;
     flashed.current = location.key;
     const frame = requestAnimationFrame(() => {
       const shell = scroller.current;
@@ -262,7 +298,7 @@ export default function Page() {
       if (!flashText(article, main, shell, find, section) && section) jumpTo(section);
     });
     return () => cancelAnimationFrame(frame);
-  }, [location.key, location.state, location.hash, page, path]);
+  }, [location.key, location.state, location.hash, navigationType, page, path]);
 
   // The overlay owns ⌘K itself.
   const search = useRef<SearchOverlayRef>(null);
@@ -351,10 +387,14 @@ export default function Page() {
   // for the page the address names: the old page stays on screen while the
   // next one is read, and it must not draw its whole length for an address
   // that is not its own.
-  const whole = page?.path === path && Boolean(location.hash || (location.state as { find?: string } | null)?.find);
+  const whole = page?.path === path && Boolean(
+    location.hash || (location.state as { find?: string } | null)?.find ||
+    (navigationType === "POP" && offsets.get(location.key)),
+  );
   const body = page?.tree && <Body key={page.path} tree={page.tree} components={components} whole={whole} />;
 
   return (
+    <ScrollSnapshot entryKey={location.key} path={path} pagePath={page?.path} scroller={scroller}>
     <div
       ref={scroller}
       // The bar's width is held on a short page too, so the column does not
@@ -439,5 +479,6 @@ export default function Page() {
         </div>
       </div>
     </div>
+    </ScrollSnapshot>
   );
 }
