@@ -7,6 +7,8 @@
  * Highlight API: no element goes into the page, so React's tree is not touched.
  */
 
+import { revealDetails } from "./disclosure";
+
 const ALL = "find";
 const CURRENT = "find-current";
 
@@ -23,7 +25,8 @@ export function findRanges(root: HTMLElement, query: string): Range[] {
     const owner = node.parentElement;
     // Text the reader cannot see: a closed section, a hidden copy for the
     // screen reader. `checkVisibility` is missing on older webviews.
-    if (!owner || owner.checkVisibility?.() === false) continue;
+    if (!owner || owner.closest("[hidden], [aria-hidden=true], .sr-only")) continue;
+    if (owner.checkVisibility?.() === false && !owner.closest("details.hom-method:not([open])")) continue;
     nodes.push(node as Text);
     starts.push(text.length);
     text += node.nodeValue ?? "";
@@ -112,6 +115,8 @@ export function nearest(ranges: Range[], direction: 1 | -1): number {
 /** Scroll the box that holds the range until the range is in the middle of it,
     unless it is already in clear view. */
 export function reveal(range: Range) {
+  revealDetails(range.startContainer.parentElement);
+  revealDetails(range.endContainer.parentElement);
   const box = scroller(range);
   if (!box) return;
   const at = range.getBoundingClientRect();

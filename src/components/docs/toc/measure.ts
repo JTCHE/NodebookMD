@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Heading } from "@/lib/markdown/headings";
+import { revealDetails } from "@/lib/ui/disclosure";
 
 /**
  * The element that actually scrolls. AppShell pins the window at h-dvh with
@@ -65,6 +66,7 @@ export function findAnchor(id: string) {
  * travel only delays it.
  */
 export function jumpTo(el: HTMLElement) {
+  revealDetails(el);
   const box = scroller();
   if (box) box.scrollTo({ top: scrollTopFor(el, box) - readingLine() });
 }

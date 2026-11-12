@@ -8,6 +8,7 @@
  * named, wins over an earlier one.
  */
 import { excerptText } from "@/lib/search";
+import { revealDetails } from "./disclosure";
 
 // No `_`: the excerpt keeps Markdown's `_emphasis_`, and the page does not.
 const WORD = /[\p{L}\p{N}]+/gu;
@@ -107,6 +108,8 @@ export function flashText(
   const range = document.createRange();
   range.setStart(start.node, start.offset);
   range.setEnd(end.node, end.offset);
+  revealDetails(start.node.parentElement);
+  revealDetails(end.node.parentElement);
 
   // The page keeps growing after it opens: pictures load, tables settle. The
   // words move with it, so the marks are placed again on each change, and the

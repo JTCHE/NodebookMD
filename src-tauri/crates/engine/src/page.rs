@@ -132,8 +132,14 @@ impl PageView {
 /// The kind of page, for the header.
 pub fn node_type(props: &wiki::Props) -> Option<String> {
     let kind = wiki::model::prop(props, "type")?;
-    if kind == "homclass" {
-        return Some("Class".to_string());
+    let kind_label = match kind {
+        "homclass" => Some("Class"),
+        "homfunction" => Some("Function"),
+        "hommodule" | "hompackage" | "pypackage" => Some("Module"),
+        _ => None,
+    };
+    if let Some(label) = kind_label {
+        return Some(label.to_string());
     }
     let context = wiki::model::prop(props, "context")?;
     if kind != "node" {

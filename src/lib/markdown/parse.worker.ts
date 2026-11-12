@@ -19,13 +19,14 @@ import type { Nodes } from "hast";
 import { remarkCallouts } from "./remark-callouts";
 import { remarkVex } from "./remark-vex";
 import { rehypeCards } from "./rehype-cards";
+import { rehypeHom } from "./rehype-hom";
 
-function processor(vex: boolean) {
+function processor(vex: boolean, hom: boolean) {
   return unified()
     .use(remarkParse)
     .use([remarkGfm, remarkCallouts, [remarkVex, { enabled: vex }]] as never)
     .use(remarkRehype, { allowDangerousHtml: true })
-    .use([rehypeRaw, rehypeSlug, rehypeCards] as never);
+    .use([rehypeRaw, rehypeSlug, rehypeCards, [rehypeHom, { enabled: hom }]] as never);
 }
 
 /** What react-markdown does to the tree before it draws it: raw HTML the
@@ -47,9 +48,9 @@ function clean(node: Nodes) {
   }
 }
 
-self.onmessage = ({ data }: MessageEvent<{ id: number; vex: boolean; markdown: string }>) => {
+self.onmessage = ({ data }: MessageEvent<{ id: number; vex: boolean; hom: boolean; markdown: string }>) => {
   try {
-    const run = processor(data.vex);
+    const run = processor(data.vex, data.hom);
     const tree = run.runSync(run.parse(data.markdown));
     clean(tree);
     self.postMessage({ id: data.id, tree });

@@ -7,6 +7,7 @@ import { Breadcrumbs } from "@/components/docs/Breadcrumbs";
 import SearchOverlay, { type SearchOverlayRef } from "@/components/docs/SearchOverlay";
 import { PageHeader } from "@/components/docs/PageHeader";
 import { Inheritance } from "@/components/docs/Inheritance";
+import { usePageOrigin } from "@/lib/page-origin";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { CodeBlock } from "@/components/docs/CodeBlock";
 import { markdownComponents } from "@/components/docs/markdown";
@@ -101,6 +102,7 @@ export default function Page() {
   const location = useLocation();
   const navigationType = useNavigationType();
   const path = location.pathname.replace(/^\/+/, "");
+  const fromPath = usePageOrigin(path);
   // A page already read draws on the first render, not one render later.
   const [page, setPage] = useState<PageView | null>(() => known(path) ?? null);
   const [error, setError] = useState<PageError | null>(null);
@@ -463,7 +465,7 @@ export default function Page() {
                     versions={page.nodeVersions}
                     tree={page.tree}
                   />
-                  <Inheritance items={page.inheritance} />
+                  <Inheritance items={page.inheritance} fromPath={fromPath} />
                   {/* NOT keyed on the page. React 19 leaves a keyed child's
                       nodes in the document when the child that replaces it
                       draws nothing, so the last page's list stayed on a page

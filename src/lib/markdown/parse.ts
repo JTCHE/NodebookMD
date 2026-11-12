@@ -20,6 +20,6 @@ export function parse(path: string, markdown: string): Promise<Root> {
   const id = next++;
   return new Promise((done, fail) => {
     asked.set(id, { done, fail });
-    worker!.postMessage({ id, vex: /(^|\/)vex\//.test(`/${path}`), markdown });
+    worker!.postMessage({ id, vex: /(^|\/)vex\//.test(`/${path}`), hom: /^\/?hom\/hou\//.test(path), markdown });
   });
 }

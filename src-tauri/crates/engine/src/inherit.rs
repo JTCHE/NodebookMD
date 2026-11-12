@@ -22,9 +22,22 @@ pub struct Class {
     pub path: String,
     pub depth: usize,
     pub current: bool,
+    pub parent: Option<String>,
+    /// A doc-group name, not a class: the anchor a family-less page's
+    /// siblings hang from. It renders as muted text, never as a link.
+    pub label: bool,
+    /// The class the sibling group hangs from: the chain's last class. The
+    /// renderer keys the wires on it.
+    pub anchor: bool,
 }
 
-static CLASSES: LazyLock<Mutex<HashMap<PathBuf, Arc<HashMap<String, Option<String>>>>>> =
+#[derive(Clone)]
+struct ClassInfo {
+    superclass: Option<String>,
+    groups: Vec<String>,
+}
+
+static CLASSES: LazyLock<Mutex<HashMap<PathBuf, Arc<HashMap<String, ClassInfo>>>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// The class tree is built from the installed help, independently of the index.
@@ -47,7 +60,12 @@ pub fn hierarchy(help: &Path, path: &str, props: &wiki::Props) -> Vec<Class> {
                 }).collect::<Vec<_>>().join("\n");
                 let (props, _) = wiki::blocks::parse_source(&head);
                 if wiki::model::prop(&props, "type") == Some("homclass") {
-                    found.insert(format!("hou.{name}"), wiki::model::prop(&props, "superclass").map(str::to_string));
+                    let groups = wiki::model::prop(&props, "group").unwrap_or_default()
+                        .split_whitespace().map(str::to_string).collect();
+                    found.insert(format!("hou.{name}"), ClassInfo {
+                        superclass: wiki::model::prop(&props, "superclass").map(str::to_string),
+                        groups,
+                    });
                 }
             }
             Arc::new(found)
@@ -59,23 +77,90 @@ pub fn hierarchy(help: &Path, path: &str, props: &wiki::Props) -> Vec<Class> {
     while let Some(name) = next {
         if name == own || ancestors.contains(&name) { break; }
         ancestors.push(name);
-        next = classes.get(name).and_then(|parent| parent.as_deref());
+        next = classes.get(name).and_then(|info| info.superclass.as_deref());
     }
     ancestors.reverse();
-    let mut children: Vec<&str> = classes.iter().filter_map(|(name, parent)|
-        (parent.as_deref() == Some(own.as_str())).then_some(name.as_str())
-    ).collect();
-    children.sort_unstable();
-    if ancestors.is_empty() && children.is_empty() { return Vec::new(); }
-    let depth = ancestors.len();
-    ancestors.into_iter().enumerate().map(|(depth, name)| class(name, depth, false))
-        .chain(std::iter::once(class(&own, depth, true)))
-        .chain(children.into_iter().map(|name| class(name, depth + 1, false)))
-        .collect()
+    let parent = wiki::model::prop(props, "superclass");
+    let parent_of = |name: &str| classes.get(name).and_then(|info| info.superclass.as_deref());
+    let children_of = |parent_name: &str| {
+        let mut found: Vec<&str> = classes.iter().filter_map(|(name, info)|
+            (info.superclass.as_deref() == Some(parent_name)).then_some(name.as_str())
+        ).collect();
+        found.sort_unstable();
+        found
+    };
+    let mut chain_len = ancestors.len();
+    let mut label: Option<&str> = None;
+    let (siblings, descendants) = if parent.is_some() {
+        // The page's own level can hold it alone. A family's pages share one
+        // diagram, so the tree widens to the nearest level above that holds
+        // siblings, with the page nested inside it.
+        let mut level = ancestors.len() - 1;
+        let mut siblings = children_of(ancestors[level]);
+        while siblings.len() <= 1 && level > 0 {
+            level -= 1;
+            siblings = children_of(ancestors[level]);
+        }
+        let mut descendants: Vec<&str> = classes.iter().filter_map(|(name, info)| {
+            let base = info.superclass.as_deref()?;
+            (siblings.contains(&base) && !siblings.contains(&name.as_str()) && !ancestors.contains(&name.as_str())).then_some(name.as_str())
+        }).collect();
+        descendants.sort_unstable();
+        if siblings.len() > 1 && (siblings.contains(&own.as_str()) || descendants.contains(&own.as_str())) {
+            chain_len = level + 1;
+            (siblings, descendants)
+        } else {
+            // Every level holds the page alone: the chain with its own
+            // children is all the family there is.
+            chain_len = ancestors.len();
+            (Vec::new(), children_of(&own))
+        }
+    } else {
+        // Family-less: no superclass. The doc group's classes stand in as
+        // the siblings, and the group's name anchors them the way a parent
+        // class anchors real siblings.
+        let Some(own_info) = classes.get(&own) else { return Vec::new(); };
+        let own_groups = &own_info.groups;
+        let mut siblings: Vec<&str> = classes.iter().filter_map(|(name, info)|
+            (name != &own && info.groups.iter().any(|group| own_groups.contains(group))).then_some(name.as_str())
+        ).collect();
+        siblings.push(&own);
+        siblings.sort_unstable();
+        let mut descendants: Vec<&str> = classes.iter().filter_map(|(name, info)| {
+            let base = info.superclass.as_deref()?;
+            (siblings.contains(&base) && !siblings.contains(&name.as_str()) && !ancestors.contains(&name.as_str())).then_some(name.as_str())
+        }).collect();
+        descendants.sort_unstable();
+        if siblings.len() > 1 { label = own_info.groups.first().map(String::as_str); }
+        (siblings, descendants)
+    };
+    if label.is_none() && siblings.len() <= 1 && ancestors.is_empty() && descendants.is_empty() { return Vec::new(); }
+    let depth = chain_len;
+    let mut items: Vec<Class> = ancestors.iter().enumerate()
+        .take_while(|(index, _)| *index < depth)
+        .map(|(index, name)| class(name, index, false, parent_of(name), false))
+        .collect();
+    if parent.is_some() && siblings.len() > 1 {
+        items.last_mut().expect("the group's parent sits at the chain's end").anchor = true;
+    }
+    if let Some(name) = label {
+        let mut anchor_item = class(name, depth, false, None, true);
+        anchor_item.anchor = true;
+        items.push(anchor_item);
+    }
+    if siblings.len() > 1 {
+        items.extend(siblings.into_iter().map(|name| class(name, depth, name == own, parent_of(name), false)));
+        items.extend(descendants.into_iter().map(|name| class(name, depth + 1, name == own, parent_of(name), false)));
+    } else {
+        items.push(class(&own, depth, true, parent_of(&own), false));
+        items.extend(descendants.into_iter().map(|name| class(name, depth + 1, false, parent_of(name), false)));
+    }
+    items
 }
 
-fn class(name: &str, depth: usize, current: bool) -> Class {
-    Class { name: name.to_string(), path: format!("/hom/{}", name.replace('.', "/")), depth, current }
+fn class(name: &str, depth: usize, current: bool, parent: Option<&str>, label: bool) -> Class {
+    let path = if label { String::new() } else { format!("/hom/{}", name.replace('.', "/")) };
+    Class { name: name.to_string(), path, depth, current, parent: parent.map(str::to_string), label, anchor: false }
 }
 
 /// How far up the chain to walk. A `hou` class is three or four deep. The cap
