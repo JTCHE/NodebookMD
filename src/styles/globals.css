@@ -1651,9 +1651,10 @@ pre code.hljs {
   border-bottom: 1px solid var(--border);
 }
 .hom-method:last-child { border-bottom: 0; }
-.hom-method > summary {
+.hom-method > summary,
+.hom-method-row {
   position: relative;
-  padding: 0.75rem calc(1rem + 1px);
+  padding: 0.5rem calc(1rem + 1px);
   list-style: none;
 }
 .hom-method:first-child > summary { border-radius: var(--radius-md) var(--radius-md) 0 0; }
@@ -1665,7 +1666,7 @@ pre code.hljs {
   /* Centered in the row's own gutter (the summary's left padding), so the
      gap to the row edge equals the gap to the text. */
   left: calc((1rem + 1px - 0.75rem) / 2);
-  top: 1.125rem;
+  top: 0.875rem;
   width: 0.75rem;
   height: 0.75rem;
   color: var(--muted-foreground);
@@ -1678,28 +1679,19 @@ pre code.hljs {
   height: 100%;
 }
 .hom-method[open] > summary > .hom-method-chevron { transform: rotate(90deg); }
-@media (hover: hover) {
-  /* The chevron shows with the row's hover, the way a heading's does. The
-     pin inverts here: rows are closed by default, so an OPEN row keeps its
-     chevron and a closed one shows it only under the pointer. */
-  .hom-method > summary .hom-method-chevron {
-    opacity: 0;
-  }
-  .hom-method > summary:hover .hom-method-chevron,
-  .hom-method > summary:focus-visible .hom-method-chevron,
-  .hom-method[open] > summary .hom-method-chevron {
-    opacity: 1;
-  }
-}
+/* The chevron always shows: it is what tells a row that opens from a
+   plain row. */
 .hom-method-title { font-size: 0.875rem; }
 .hom-method-name { font-family: var(--font-mono); font-weight: 500; }
 .hom-method .hom-method-caption {
-  margin: 0.3rem 0 0;
+  margin: 0.125rem 0 0;
   color: var(--muted-foreground);
   font-size: 0.8125rem;
   line-height: 1.6;
 }
-.hom-method:not([open]) .hom-method-caption {
+/* Only a row that opens may cut its caption: a plain row has nowhere
+   else to show the rest. */
+details.hom-method:not([open]) .hom-method-caption {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

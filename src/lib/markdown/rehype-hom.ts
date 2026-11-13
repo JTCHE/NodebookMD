@@ -99,6 +99,10 @@ export function rehypeHom({ name }: { name: string | null }) {
   return (tree: Root) => {
     if (!name) return;
     const summaries = new WeakMap<Element, ElementContent[]>();
+    // Each panel's method name, for the filter, and the panels whose row
+    // cuts the signature to `name(…)`, which keep the full one to open.
+    const methodNames = new WeakMap<Element, string>();
+    const shortened = new WeakSet<Element>();
     /** Signature arguments the page documents elsewhere link there: the
         description's `See hou.ParmTemplate.name` becomes the hover target of
         the `name` token in the signature itself. `num_components` matches the
@@ -144,6 +148,8 @@ export function rehypeHom({ name }: { name: string | null }) {
             const returns: ElementContent[] = (JSON.parse(JSON.stringify((strong as Element).children.slice(1))) as ElementContent[]).map(plain);
             for (const node of (strong as Element).children) if (node.type === "element" && node.tagName === "code") highlight(node);
             const panel = div("vex-sig hom-signature", [div("vex-sig-card code-panel", [div("vex-sig-row", (strong as Element).children)])]);
+            methodNames.set(panel, raw.slice(0, raw.indexOf("(")).trim());
+            if (compact !== raw) shortened.add(panel);
             summaries.set(panel, [...leading, { type: "element", tagName: "span", properties: { className: ["hom-method-name"] }, children: [{ type: "text", value: compact }] }, ...returns]);
             out.push(panel);
             const rest = child.children.slice(at + 1);
@@ -153,6 +159,8 @@ export function rehypeHom({ name }: { name: string | null }) {
           }
         }
         if (child.properties.dataSection === "values") markValues(child, name);
+        // The filter sits at the top of the class's own Methods.
+        if (child.properties.dataSection === "methods") child.children.unshift(div("hom-method-filter", []));
         visit(child);
         out.push(child);
       }
@@ -202,7 +210,15 @@ export function rehypeHom({ name }: { name: string | null }) {
           summary.push(caption);
           body.splice(1, 1);
         }
-        grouped.push({ type: "element", tagName: "details", properties: { className: ["hom-method"] }, children: [
+        const methodName = methodNames.get(panel as Element) ?? "";
+        // A row opens only when it holds more than it shows: a description,
+        // or the full signature it cut. A row with nothing more is a plain
+        // row, with no chevron and no hover, so the two never look alike.
+        if (body.length === 1 && !shortened.has(panel as Element)) {
+          grouped.push({ type: "element", tagName: "div", properties: { className: ["hom-method", "hom-method-static"], dataName: methodName }, children: [div("hom-method-row", summary.slice(1))] });
+          continue;
+        }
+        grouped.push({ type: "element", tagName: "details", properties: { className: ["hom-method"], dataName: methodName }, children: [
           { type: "element", tagName: "summary", properties: { className: DISCLOSURE_INTERACTION.split(" ") }, children: summary },
           div("hom-method-body", [body[0], div("hom-method-description", body.slice(1))]),
         ] });
