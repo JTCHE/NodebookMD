@@ -512,10 +512,18 @@ const HEADING = /^H([1-6])$/;
 /** The words of the section an anchor lands on, read off the page on screen.
     A heading owns what follows it down to the next heading of its rank or
     above; a parameter row owns its own cells. */
-function section(id: string): { title: string; text: string } | null {
+function section(id: string): { title: string; text: string; signature?: boolean } | null {
   const target = document.getElementById(id);
   if (!target) return null;
   const words = (el: Element) => (el.textContent ?? "").replace(/\s+/g, " ").trim();
+  // A hom method's anchor is an empty span in its summary row. The row holds
+  // the signature, `menuItems() → tuple of str`, and the caption under it.
+  const method = target.closest("details.hom-method");
+  if (method) {
+    const title = method.querySelector(".hom-method-title");
+    const caption = method.querySelector(".hom-method-caption");
+    return { title: title ? words(title) : "", text: caption ? words(caption) : "", signature: true };
+  }
   const block = target.closest<HTMLElement>("h1,h2,h3,h4,h5,h6,dt,tr,li,p") ?? target;
   if (block.tagName === "TR") {
     const [head, ...rest] = [...block.children];
@@ -542,7 +550,7 @@ export function SectionTooltip({ id, ...anchored }: Anchored & { id: string }) {
   if (!found) return null;
   return (
     <TooltipBox {...anchored} className="w-max max-w-[20rem]">
-      {found.title && <span className="font-semibold text-foreground line-clamp-2">{found.title}</span>}
+      {found.title && <span className={cn("font-semibold text-foreground line-clamp-2", found.signature && "font-mono text-[0.78rem] [overflow-wrap:anywhere]")}>{found.title}</span>}
       {found.text && <span className="text-muted-foreground mt-0.5 line-clamp-4">{found.text}</span>}
     </TooltipBox>
   );
