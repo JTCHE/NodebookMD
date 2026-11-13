@@ -37,9 +37,13 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
         const entries = endpoints.map((node) => node.getBoundingClientRect());
         if (!entries.length) continue;
         const bus = Math.min(...entries.map((node) => node.top)) - bounds.top - 10;
+        // Members that all sit in one row take their wire from the top, into
+        // the middle of each pill. A column of members hangs off one wire
+        // down its left side instead.
+        const row = !group.dataset.nested && new Set(entries.map((node) => node.left)).size === entries.length;
         const columns = new Map<number, DOMRect[]>();
         for (const node of entries) {
-          const horizontalPosition = node.left - bounds.left - 8;
+          const horizontalPosition = row ? node.left + node.width / 2 - bounds.left : node.left - bounds.left - 8;
           columns.set(horizontalPosition, [...(columns.get(horizontalPosition) ?? []), node]);
         }
         const start = drop - bounds.left;
@@ -61,6 +65,10 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
           }
         }
         for (const [horizontalPosition, nodes] of columns) {
+          if (row) {
+            paths.push(`M${horizontalPosition},${bus + radius(horizontalPosition)} V${nodes[0].top - bounds.top}`);
+            continue;
+          }
           const bottom = Math.max(...nodes.map((node) => node.top + node.height / 2 - bounds.top));
           paths.push(`M${horizontalPosition},${bus + radius(horizontalPosition)} V${bottom - 3} Q${horizontalPosition},${bottom} ${horizontalPosition + 3},${bottom} H${horizontalPosition + 8}`);
           for (const node of nodes.slice(0, -1)) {
