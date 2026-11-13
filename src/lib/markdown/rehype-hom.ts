@@ -99,8 +99,6 @@ export function rehypeHom({ name }: { name: string | null }) {
   return (tree: Root) => {
     if (!name) return;
     const summaries = new WeakMap<Element, ElementContent[]>();
-    // Panels whose row title cuts the signature to `name(…)`.
-    const shortened = new WeakSet<Element>();
     /** Signature arguments the page documents elsewhere link there: the
         description's `See hou.ParmTemplate.name` becomes the hover target of
         the `name` token in the signature itself. `num_components` matches the
@@ -146,7 +144,6 @@ export function rehypeHom({ name }: { name: string | null }) {
             const returns: ElementContent[] = (JSON.parse(JSON.stringify((strong as Element).children.slice(1))) as ElementContent[]).map(plain);
             for (const node of (strong as Element).children) if (node.type === "element" && node.tagName === "code") highlight(node);
             const panel = div("vex-sig hom-signature", [div("vex-sig-card code-panel", [div("vex-sig-row", (strong as Element).children)])]);
-            if (compact !== raw) shortened.add(panel);
             summaries.set(panel, [...leading, { type: "element", tagName: "span", properties: { className: ["hom-method-name"] }, children: [{ type: "text", value: compact }] }, ...returns]);
             out.push(panel);
             const rest = child.children.slice(at + 1);
@@ -204,12 +201,6 @@ export function rehypeHom({ name }: { name: string | null }) {
           caption.properties.className = ["hom-method-caption"];
           summary.push(caption);
           body.splice(1, 1);
-        }
-        // Nothing to open: the row already shows the whole signature and
-        // the caption, so it stays a plain row.
-        if (body.length === 1 && !shortened.has(panel as Element)) {
-          grouped.push(div("hom-method hom-method-static", [div("hom-method-row", summary.slice(1))]));
-          continue;
         }
         grouped.push({ type: "element", tagName: "details", properties: { className: ["hom-method"] }, children: [
           { type: "element", tagName: "summary", properties: { className: DISCLOSURE_INTERACTION.split(" ") }, children: summary },
