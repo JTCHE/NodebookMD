@@ -37,6 +37,9 @@ export const Image: Components["img"] = function MarkdownImage({ src, alt, ...pr
   // One seen before also has its ground, so it draws final at once. A new
   // one stays clear until it has loaded and been read, then fades in.
   const [known, setKnown] = useState<Seen | null>(() => seen.get(url) ?? null);
+  // A picture the install does not hold (the help names some it never
+  // shipped) leaves no empty room behind.
+  const [missing, setMissing] = useState(false);
   const ground = known?.ground ?? null;
   const natural = known?.natural ?? size?.natural ?? 0;
   const ratio = known?.ratio ?? size?.ratio;
@@ -50,7 +53,7 @@ export const Image: Components["img"] = function MarkdownImage({ src, alt, ...pr
       />
     );
   }
-  if (!src || typeof src !== "string") return null;
+  if (!src || typeof src !== "string" || missing) return null;
   // A drawing small enough to be a glyph stays a glyph.
   const vector = /\.svg$/i.test(path) && (natural === 0 || natural >= 120);
   const width = vector ? "100vw" : natural ? `${natural}px` : "";
@@ -88,6 +91,7 @@ export const Image: Components["img"] = function MarkdownImage({ src, alt, ...pr
       // the honest choice, not a stopgap: a doc page carries at most a few
       // dozen pictures, nothing like an endless feed.
       decoding="async"
+      onError={() => setMissing(true)}
       onLoad={(event) => {
         const image = event.currentTarget;
         const next = {
