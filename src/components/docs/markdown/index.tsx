@@ -10,7 +10,6 @@ import { Card } from "./Card";
 import { ImageGroup } from "./ImageGroup";
 import { Vimeo } from "./MarkdownVimeo";
 import { LaunchExample } from "@/components/docs/LaunchExample";
-import { MethodFilter } from "@/components/docs/MethodFilter";
 import { H2, H3, H4 } from "./MarkdownHeading";
 
 /** The parser writes a `.code-panel` that carries the copy button and the
@@ -23,9 +22,6 @@ const Div: Components["div"] = function MarkdownDiv({ className, children, ...pr
   }
   if (kinds.includes("load-example")) {
     return <LaunchExample path={String((props as Record<string, unknown>)["data-path"] ?? "")} />;
-  }
-  if (kinds.includes("hom-method-filter")) {
-    return <MethodFilter />;
   }
   if (kinds.includes("vimeo")) {
     return <Vimeo id={String((props as Record<string, unknown>)["data-id"] ?? "")} title={props.title} />;

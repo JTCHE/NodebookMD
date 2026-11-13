@@ -32,6 +32,7 @@ import {
   FileText,
   Folder,
   Library,
+  ListFilter,
   Workflow,
   PanelLeft,
   Pin,
@@ -131,6 +132,8 @@ export const Icons = {
   /** The find bar: the match above, the match below. */
   findPrevious: ChevronUp,
   findNext: ChevronDown,
+  /** The find bar on a class page: show only the methods that match. */
+  filterMethods: ListFilter,
   /** Open or close every method on a class page. */
   expandAll: ChevronsUpDown,
   collapseAll: ChevronsDownUp,

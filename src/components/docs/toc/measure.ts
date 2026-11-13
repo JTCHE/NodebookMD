@@ -68,19 +68,7 @@ export function findAnchor(id: string) {
 export function jumpTo(el: HTMLElement) {
   revealDetails(el);
   const box = scroller();
-  if (box) box.scrollTo({ top: scrollTopFor(el, box) - readingLine() - stickyAbove(el) });
-}
-
-/**
- * The height of a bar that stays at the top of a box `el` sits in (the
- * methods filter), so a jump lands under it too.
- */
-function stickyAbove(el: HTMLElement) {
-  for (let box = el.parentElement; box; box = box.parentElement) {
-    const bar = box.querySelector<HTMLElement>(":scope > .sticky");
-    if (bar && bar !== el && !bar.contains(el)) return bar.offsetHeight;
-  }
-  return 0;
+  if (box) box.scrollTo({ top: scrollTopFor(el, box) - readingLine() });
 }
 
 /**

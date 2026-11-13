@@ -2,7 +2,8 @@
  * The find bar: ⌘F or Ctrl F, a field, the count, the arrows to step.
  *
  * It searches what is being read, the `main` of the route, and marks the
- * matches without an element in the page. See lib/ui/find.
+ * matches without an element in the page. See lib/ui/find. On a class page
+ * it also filters the methods, see lib/ui/method-filter.
  */
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
@@ -12,6 +13,11 @@ import { BAR_BUTTON } from "@/lib/ui/button";
 import { Hint } from "@/components/ui/Hint";
 import { IS_MAC, isCommand, letterOf, useHotkey } from "@/lib/hotkeys";
 import { clearPaint, findRanges, nearest, paint, reveal } from "@/lib/ui/find";
+import { filterMethods, methodsBox } from "@/lib/ui/method-filter";
+
+/** Whether the bar filters the methods of a class page. The reader's last
+    choice holds for the session. */
+let filteringChoice = true;
 
 export function FindBar() {
   const location = useLocation();
@@ -21,6 +27,9 @@ export function FindBar() {
   // -1 until the reader types or steps: opening the bar again marks the words
   // and leaves the page where it is.
   const [current, setCurrent] = useState(-1);
+  const [filtering, setFiltering] = useState(filteringChoice);
+  // Whether the page has methods to filter: the switch shows only then.
+  const [hasMethods, setHasMethods] = useState(false);
   const typed = useRef(false);
   const input = useRef<HTMLInputElement>(null);
   const bar = useRef<HTMLDivElement>(null);
@@ -35,6 +44,14 @@ export function FindBar() {
   const close = () => {
     setOpen(false);
     clearPaint();
+    const box = methodsBox();
+    if (box) filterMethods(box, "");
+  };
+
+  const toggleFiltering = () => {
+    filteringChoice = !filtering;
+    setFiltering(filteringChoice);
+    input.current?.focus();
   };
 
   useHotkey((event) => {
@@ -66,6 +83,10 @@ export function FindBar() {
     let first = true;
     const run = () => {
       const root = document.querySelector("main");
+      // The filter first, so the matches count only the rows it leaves.
+      const box = root ? methodsBox(root) : null;
+      setHasMethods(!!box);
+      if (box) filterMethods(box, filtering ? query : "");
       const found = root ? findRanges(root, query) : [];
       setRanges(found);
       if (!first) return setCurrent((was) => Math.min(was, found.length - 1));
@@ -87,7 +108,7 @@ export function FindBar() {
       watch.disconnect();
       cancelAnimationFrame(frame);
     };
-  }, [open, query, location.key]);
+  }, [open, query, filtering, location.key]);
 
   useEffect(() => {
     if (open) paint(ranges, current);
@@ -127,7 +148,7 @@ export function FindBar() {
             close();
           }
         }}
-        placeholder="Find in page"
+        placeholder={hasMethods && filtering ? "Find, and filter methods" : "Find in page"}
         aria-label="Find in page"
         spellCheck={false}
         className="h-8 min-w-0 flex-1 bg-transparent px-xs text-sm text-foreground outline-none placeholder:text-muted-foreground"
@@ -135,6 +156,21 @@ export function FindBar() {
       <span aria-live="polite" className="shrink-0 px-xs text-xs text-muted-foreground tabular-nums">
         {count}
       </span>
+      {hasMethods && (
+        <Hint label={filtering ? "Show all methods" : "Show only the methods that match"}>
+          <button
+            type="button"
+            aria-label="Filter methods"
+            aria-pressed={filtering}
+            // The caret stays in the field: the reader goes on typing.
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={toggleFiltering}
+            className={cn(BAR_BUTTON, "aria-pressed:bg-neutral-200 aria-pressed:text-foreground")}
+          >
+            <Icons.filterMethods className="size-4" />
+          </button>
+        </Hint>
+      )}
       <span className="mx-2xs h-4 w-px shrink-0 bg-hairline" aria-hidden="true" />
       <Hint label="Previous match" keys={IS_MAC ? "⇧+⌘+G" : "Shift+F3"}>
         <button type="button" aria-label="Previous match" disabled={ranges.length === 0} onClick={() => step(-1)} className={BAR_BUTTON}>

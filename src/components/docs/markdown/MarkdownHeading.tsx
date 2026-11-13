@@ -7,6 +7,8 @@ import { showToast } from "@/components/ui/toast-notification";
 import { pageLink } from "@/lib/link";
 import { cn } from "@/lib/utils";
 import { isCollapsed, sectionKey, sectionOf, setCollapsed } from "@/lib/ui/sections";
+import { Icons } from "@/lib/ui/icons";
+import { BAR_BUTTON } from "@/lib/ui/button";
 
 type Tag = "h2" | "h3" | "h4";
 
@@ -20,9 +22,15 @@ function heading(Tag: Tag): NonNullable<Components[Tag]> {
     // Whether the heading owns content to collapse: a heading that runs
     // straight into the next one owns nothing, and is not a control.
     const [collapsible, setCollapsible] = useState(false);
+    // The first heading of a class's methods carries the switch that opens
+    // or closes every method, own and inherited.
+    const [methodsBox, setMethodsBox] = useState<HTMLElement | null>(null);
+    const [allOpen, setAllOpen] = useState(false);
     useLayoutEffect(() => {
       const owner = props.id ? document.getElementById(props.id) : null;
       setCollapsible(!!owner && !!sectionOf(owner));
+      const box = owner?.parentElement;
+      setMethodsBox(box?.matches(".hom-methods") && box.firstElementChild === owner ? box : null);
       if (owner && closed) setCollapsed(owner, ownKey, true);
     }, [ownKey]);
     const apply = (owner: HTMLElement, next: boolean) => {
@@ -39,6 +47,13 @@ function heading(Tag: Tag): NonNullable<Components[Tag]> {
       const owner = event.currentTarget.parentElement;
       if (owner) apply(owner, !isCollapsed(ownKey));
     };
+    const toggleAll = (event: MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+      if (!methodsBox) return;
+      for (const row of methodsBox.querySelectorAll<HTMLDetailsElement>("details.hom-method")) row.open = !allOpen;
+      setAllOpen(!allOpen);
+    };
+    const AllIcon = allOpen ? Icons.collapseAll : Icons.expandAll;
     const copy = (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
       const path = location.pathname.replace(/^\/+/, "");
@@ -80,6 +95,19 @@ function heading(Tag: Tag): NonNullable<Components[Tag]> {
           >
             <Link2 className="size-[0.75em]" aria-hidden="true" />
           </button>
+          </Hint>
+        )}
+        {methodsBox && (
+          // The box ends on the method rows' right edge.
+          <Hint label={allOpen ? "Collapse all methods" : "Expand all methods"} className="absolute top-1/2 -right-[calc(1rem+1px)] -translate-y-1/2">
+            <button
+              type="button"
+              aria-label={allOpen ? "Collapse all methods" : "Expand all methods"}
+              onClick={toggleAll}
+              className={BAR_BUTTON}
+            >
+              <AllIcon className="size-4" aria-hidden="true" />
+            </button>
           </Hint>
         )}
       </Tag>
