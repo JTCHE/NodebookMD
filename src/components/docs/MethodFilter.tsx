@@ -20,6 +20,9 @@ export function MethodFilter() {
   const [query, setQuery] = useState("");
   const [count, setCount] = useState<{ shown: number; total: number } | null>(null);
   const [expanded, setExpanded] = useState(false);
+  // The row the filter opened because it was the only match. The filter
+  // closes it again when the query changes; a row the reader opened stays.
+  const opened = useRef<HTMLDetailsElement | null>(null);
 
   const page = () => bar.current?.closest(".hom-methods") ?? document;
 
@@ -28,12 +31,16 @@ export function MethodFilter() {
     const wanted = fold(next);
     const rows = [...page().querySelectorAll<HTMLElement>(".hom-method[data-name]")];
     let shown = 0;
+    let last: HTMLElement | null = null;
     for (const row of rows) {
       // The name first; the caption too, so "label" finds what returns one.
       const caption = row.querySelector(".hom-method-caption")?.textContent ?? "";
       const match = !wanted || fold(row.dataset.name ?? "").includes(wanted) || fold(caption).includes(wanted);
       row.hidden = !match;
-      if (match) shown += 1;
+      if (match) {
+        shown += 1;
+        last = row;
+      }
       // A match in a section the reader closed is still a match: show it.
       if (match && wanted) revealSections(row);
     }
@@ -47,6 +54,14 @@ export function MethodFilter() {
       const heading = group.previousElementSibling as HTMLElement | null;
       if (heading && /^H[2-6]$/.test(heading.tagName)) heading.toggleAttribute("data-no-match", empty);
     }
+    // One match is the method the reader looked for: open it.
+    const only = wanted && shown === 1 && last instanceof HTMLDetailsElement ? last : null;
+    if (opened.current && opened.current !== only) opened.current.open = false;
+    opened.current = null;
+    if (only && !only.open) {
+      only.open = true;
+      opened.current = only;
+    }
     setCount(wanted ? { shown, total: rows.length } : null);
   }
 
@@ -59,14 +74,13 @@ export function MethodFilter() {
   const toggleLabel = expanded ? "Collapse all" : "Expand all";
   const ToggleIcon = expanded ? Icons.collapseAll : Icons.expandAll;
   return (
-    <div ref={bar} className="not-prose sticky top-(--page-bar-h) z-10 -mx-[calc(1rem+1px)] mb-md flex items-center gap-xs bg-background px-[calc(1rem+1px)] py-xs">
-      {/* The whole field is the label, so a press anywhere on it, padding
-          included, puts the cursor in the input. The negative margin puts
-          the search glyph on the text's axis. */}
-      <label className="-ml-2.5 flex min-w-0 flex-1 cursor-text items-center rounded-[10px] border border-transparent bg-muted/40 p-1 transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-muted/70 focus-within:border-input focus-within:bg-muted/70">
-        <span className="grid size-7 shrink-0 place-items-center text-muted-foreground" aria-hidden="true">
-          <Icons.search className="size-4" />
-        </span>
+    <div ref={bar} className="not-prose sticky top-(--page-bar-h) z-10 -mx-[calc(1rem+1px)] mb-md flex items-center gap-xs bg-background py-xs">
+      {/* Two axes, the same as the method rows: the field's edge on the
+          rows' edge, and the search glyph on the text (1px border + 1rem).
+          The whole field is the label, so a press on its padding puts the
+          cursor in the input. */}
+      <label className="flex min-w-0 flex-1 cursor-text items-center rounded-[10px] border border-transparent bg-muted/40 py-1 pr-1 pl-4 transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-muted/70 focus-within:border-input focus-within:bg-muted/70">
+        <Icons.search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <input
           type="search"
           value={query}
@@ -80,7 +94,7 @@ export function MethodFilter() {
           placeholder="Filter methods"
           aria-label="Filter methods"
           spellCheck={false}
-          className="h-7 min-w-0 flex-1 bg-transparent px-xs text-sm text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
+          className="h-7 min-w-0 flex-1 bg-transparent pr-xs pl-sm text-sm text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
         />
         {count && (
           <span aria-live="polite" className="shrink-0 px-xs text-xs text-muted-foreground tabular-nums">
@@ -89,9 +103,9 @@ export function MethodFilter() {
         )}
       </label>
       {/* Opening the rows is not part of the filter: it sits outside the
-          field, with the glyph on the rows' right edge. */}
+          field, its box on the rows' right edge. */}
       <Hint label={toggleLabel}>
-        <button type="button" aria-label={toggleLabel} onClick={toggleAll} className={`${BAR_BUTTON} -mr-1.5`}>
+        <button type="button" aria-label={toggleLabel} onClick={toggleAll} className={BAR_BUTTON}>
           <ToggleIcon className="size-4" />
         </button>
       </Hint>
