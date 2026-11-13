@@ -66,15 +66,49 @@ const parameters = (signature: string): Set<string> => {
 
 /** A description paragraph that opens with one of the method's parameters,
     `expression: A string…`, shows the name as code, as the signature does. */
-const markParameter = (node: ElementContent, names: Set<string>) => {
-  if (node.type !== "element" || node.tagName !== "p") return;
-  const first = node.children[0];
-  if (first?.type !== "text") return;
-  const match = /^([A-Za-z_]\w*):(\s)/.exec(first.value);
-  if (!match || !names.has(match[1])) return;
-  node.children.splice(0, 1,
-    { type: "element", tagName: "code", properties: {}, children: [{ type: "text", value: match[1] }] },
-    { type: "text", value: first.value.slice(match[1].length) });
+/** A paragraph that documents one of the method's arguments, in either form
+    SideFX writes: `**`name`**` then a line break, or `name: text`. Gives the
+    name and the description, or nothing. */
+const parameterOf = (node: ElementContent, names: Set<string>): { name: string; description: ElementContent[] } | null => {
+  if (node.type !== "element" || node.tagName !== "p") return null;
+  const [first, second] = node.children;
+  if (first?.type === "element" && first.tagName === "strong" && second?.type === "element" && second.tagName === "br" && names.has(text(first).trim())) {
+    const description = node.children.slice(2);
+    if (description[0]?.type === "text") description[0] = { ...description[0], value: description[0].value.replace(/^\s+/, "") };
+    return { name: text(first).trim(), description };
+  }
+  if (first?.type !== "text") return null;
+  const match = /^([A-Za-z_]\w*):\s/.exec(first.value);
+  if (!match || !names.has(match[1])) return null;
+  return { name: match[1], description: [{ type: "text", value: first.value.slice(match[0].length) }, ...node.children.slice(1)] };
+};
+
+/** The argument paragraphs become one list: the name, then what it does.
+    One list reads down a column of names, not a stack of chips. A block
+    between two arguments is more about the one above it, so it goes in that
+    one's description; a block after the last argument stays outside. */
+const listParameters = (nodes: ElementContent[], names: Set<string>): ElementContent[] => {
+  const parameters = nodes.map((node) => parameterOf(node, names));
+  const last = parameters.findLastIndex(Boolean);
+  const out: ElementContent[] = [];
+  let list: Element | null = null;
+  let description: Element | null = null;
+  nodes.forEach((node, index) => {
+    const parameter = parameters[index];
+    if (parameter) {
+      if (!list) {
+        list = { type: "element", tagName: "dl", properties: { className: ["hom-params"] }, children: [] };
+        out.push(list);
+      }
+      description = { type: "element", tagName: "dd", properties: {}, children: [{ type: "element", tagName: "p", properties: {}, children: parameter.description }] };
+      list.children.push({ type: "element", tagName: "dt", properties: {}, children: [{ type: "text", value: parameter.name }] }, description);
+    } else if (description && index < last) {
+      description.children.push(node);
+    } else {
+      out.push(node);
+    }
+  });
+  return out;
 };
 
 /** An enum's value, `**Python**` under Values, reads as the name a script
@@ -200,7 +234,6 @@ export function rehypeHom({ name }: { name: string | null }) {
         }
         const signature = text(((panel as Element).children[0] as Element));
         const names = parameters(signature);
-        for (const node of body.slice(1)) markParameter(node, names);
         const caption = body[1];
         const summary: ElementContent[] = [{ type: "element", tagName: "span", properties: { className: ["hom-method-chevron", "transition-opacity", "duration-(--duration-fast)", "motion-reduce:transition-none"], ariaHidden: "true" }, children: [chevronIcon("")] }, div("hom-method-title", title)];
         if (caption?.type === "element" && caption.tagName === "p") {
@@ -216,9 +249,12 @@ export function rehypeHom({ name }: { name: string | null }) {
           grouped.push({ type: "element", tagName: "div", properties: { className: ["hom-method", "hom-method-static"], dataName: methodName }, children: [div("hom-method-row", summary.slice(1))] });
           continue;
         }
+        // The row already shows the whole signature unless it cut it, so the
+        // code panel comes in only to show what the row left out.
+        const panelShown = shortened.has(panel as Element) ? [body[0]] : [];
         grouped.push({ type: "element", tagName: "details", properties: { className: ["hom-method"], dataName: methodName }, children: [
           { type: "element", tagName: "summary", properties: { className: DISCLOSURE_INTERACTION.split(" ") }, children: summary },
-          div("hom-method-body", [body[0], div("hom-method-description", body.slice(1))]),
+          div("hom-method-body", [...panelShown, div("hom-method-description", listParameters(body.slice(1), names))]),
         ] });
       }
       const lists: RootContent[] = [];
