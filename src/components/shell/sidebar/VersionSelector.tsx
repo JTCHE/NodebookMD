@@ -11,6 +11,7 @@
  * spec: Local — Multiple Houdini Versions, Local — What the help pane shows.
  */
 import { useEffect, useRef, useState } from "react";
+import { useHoverTip } from "@/lib/ui/hover-tip";
 import { useLocation } from "react-router";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
@@ -139,7 +140,7 @@ function F1Chip({
   onToggle: () => Promise<void>;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
-  const [hint, setHint] = useState(false);
+  const { shown: hint, open, openNow, hide } = useHoverTip();
   const [busy, setBusy] = useState(false);
   const known = hooked !== undefined;
 
@@ -169,10 +170,10 @@ function F1Chip({
             setBusy(false);
           }
         }}
-        onMouseEnter={() => setHint(true)}
-        onMouseLeave={() => setHint(false)}
-        onFocus={(e) => e.currentTarget.matches(":focus-visible") && setHint(true)}
-        onBlur={() => setHint(false)}
+        onMouseEnter={open}
+        onMouseLeave={hide}
+        onFocus={(e) => e.currentTarget.matches(":focus-visible") && openNow()}
+        onBlur={hide}
         className={cn(
           CHIP,
           !known

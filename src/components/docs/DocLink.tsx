@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useHoverTip } from "@/lib/ui/hover-tip";
 import { Link } from "react-router";
 import { cn } from "@/lib/utils";
 import { warm } from "@/lib/pages";
@@ -65,14 +66,14 @@ export default function DocLink({
   mark?: boolean;
 }) {
   const classes = cn(underline && LINK, fullWidth && "w-full", className);
-  const [visible, setVisible] = useState(false);
+  const { shown: visible, open, openNow, hide } = useHoverTip();
   // The next page can reuse this link for another href at the same place in
   // the tree. The pointer never left it, so the old tooltip stayed up and
   // named the new link's page.
   const [shownHref, setShownHref] = useState(href);
   if (shownHref !== href) {
     setShownHref(href);
-    setVisible(false);
+    hide();
   }
   const linkRef = useRef<HTMLAnchorElement>(null);
   // Which visual line the pointer entered on, for wrapped multi-line links —
@@ -142,9 +143,9 @@ export default function DocLink({
   const hover = {
     onMouseEnter: (e: React.MouseEvent) => {
       hoverPosRef.current = { x: e.clientX, y: e.clientY };
-      setVisible(true);
+      open();
     },
-    onMouseLeave: () => setVisible(false),
+    onMouseLeave: hide,
     // Keyboard focus only. A click focuses the link too, and the window
     // focuses it again when the reader comes back from the browser an
     // external link opened, with the pointer elsewhere: no leave would put
@@ -152,9 +153,9 @@ export default function DocLink({
     onFocus: (e: React.FocusEvent) => {
       if (!e.currentTarget.matches(":focus-visible")) return;
       hoverPosRef.current = null;
-      setVisible(true);
+      openNow();
     },
-    onBlur: () => setVisible(false),
+    onBlur: hide,
   };
   const anchored = { anchorRef: linkRef, hoverPosRef };
   // An address off the machine gets its share card, an anchor on this page
@@ -179,7 +180,7 @@ export default function DocLink({
           {...hover}
           // The browser opens over the window, and the pointer leaves the
           // link with no leave event.
-          onClick={() => setVisible(false)}
+          onClick={hide}
         >
           {children}
         </a>
@@ -197,7 +198,7 @@ export default function DocLink({
         onClick={(e) => {
           // The pointer does not leave a link that the next page draws in
           // the same place, so the tooltip is put away here.
-          setVisible(false);
+          hide();
           // A link to the page already open is not a navigation. The anchor
           // cases settle here, and the click never reaches the router.
           if (!samePage()) return;

@@ -10,7 +10,8 @@
  * first time a reader keeps a page moves everything under it, and the row
  * below is the tree — the part of the panel the reader is looking at.
  */
-import { useRef, useState } from "react";
+import { useRef } from "react";
+import { useHoverTip } from "@/lib/ui/hover-tip";
 import { Link } from "react-router";
 import { warm } from "@/lib/pages";
 import { COMMAND_KEY } from "@/lib/hotkeys";
@@ -64,18 +65,18 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
     tooltip a link in the page shows, so the two never read differently. */
 function BookmarkTile({ entry }: { entry: LibraryEntry }) {
   const tile = useRef<HTMLAnchorElement>(null);
-  const [hovered, setHovered] = useState(false);
+  const { shown: hovered, open, openNow, hide } = useHoverTip();
   return (
     <>
       <Link
         to={`/${entry.path}`}
         ref={tile}
         onPointerEnter={() => warm(entry.path)}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        onFocus={(e) => e.currentTarget.matches(":focus-visible") && setHovered(true)}
-        onBlur={() => setHovered(false)}
-        onClick={() => setHovered(false)}
+        onMouseEnter={open}
+        onMouseLeave={hide}
+        onFocus={(e) => e.currentTarget.matches(":focus-visible") && openNow()}
+        onBlur={hide}
+        onClick={hide}
         aria-label={entry.title}
         className={cn(
           // Square. A tile carries an icon and nothing else, so its

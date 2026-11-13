@@ -6,6 +6,7 @@ import { invoke } from "../../lib/backend";
 import { cn } from "@/lib/utils";
 import { hitOf } from "@/lib/search";
 import { methodSignature } from "@/lib/method-signature";
+import { useHoverTip } from "@/lib/ui/hover-tip";
 import type { PageView } from "@/lib/pages";
 
 interface MetaEntry {
@@ -351,39 +352,18 @@ export function DocTooltip({ slug, summaryOnly = false, anchor, ...anchored }: A
   );
 }
 
-/** How long the pointer rests on a row before its first tooltip opens. */
-const ROW_TIP_DELAY = 400;
-/** How long after a row tooltip closes the next one still opens at once. */
-const ROW_TIP_WARM = 800;
-/** Until when a row tooltip opens with no wait: the reader is reading them. */
-let warmUntil = 0;
-
-/** The page tooltip of a row in a list. The first one waits a moment, so a
-    pointer that only crosses the list shows nothing; once one is open, the
-    next row's opens at once, as the native tooltips of the system do. It goes
-    on a press. The row already shows the name, so a page with no summary
+/** The page tooltip of a row in a list. It opens on the app's one hover
+    rule (lib/ui/hover-tip) and goes on a press. The row already shows the name, so a page with no summary
     gets no tooltip. Spread `pointer` on the link and render
     `tip` beside it — not in it: a link sets its ref after the layout effects of
     its children, so a box inside it measures nothing. */
 export function useRowTip<T extends HTMLElement>(slug: string, side: Anchored["side"]) {
   const anchorRef = useRef<T>(null);
-  const [shown, setShown] = useState(false);
-  const wait = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useEffect(() => () => clearTimeout(wait.current), []);
-  const hide = () => {
-    clearTimeout(wait.current);
-    setShown((was) => {
-      if (was) warmUntil = Date.now() + ROW_TIP_WARM;
-      return false;
-    });
-  };
+  const { shown, open, hide } = useHoverTip();
   return {
     anchorRef,
     pointer: {
-      onPointerEnter: () => {
-        if (Date.now() < warmUntil) return setShown(true);
-        wait.current = setTimeout(() => setShown(true), ROW_TIP_DELAY);
-      },
+      onPointerEnter: open,
       onPointerLeave: hide,
       // A press is the answer to the question the tooltip was for.
       onPointerDown: hide,
