@@ -24,6 +24,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronsDownUp,
   ChevronsUpDown,
   ChevronUp,
   Clock,
@@ -130,6 +131,9 @@ export const Icons = {
   /** The find bar: the match above, the match below. */
   findPrevious: ChevronUp,
   findNext: ChevronDown,
+  /** Open or close every method on a class page. */
+  expandAll: ChevronsUpDown,
+  collapseAll: ChevronsDownUp,
 
   /* Window */
   pin: Pin,

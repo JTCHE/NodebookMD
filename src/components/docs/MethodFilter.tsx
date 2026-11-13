@@ -7,8 +7,8 @@
  */
 import { useRef, useState } from "react";
 import { Icons } from "@/lib/ui/icons";
-import { ACTION, QUIET } from "@/lib/ui/button";
-import { cn } from "@/lib/utils";
+import { BAR_BUTTON } from "@/lib/ui/button";
+import { Hint } from "@/components/ui/Hint";
 
 /** `num_components`, `numComponents` and `NumComponents` match each other. */
 const fold = (value: string) => value.toLowerCase().replace(/[_\s]/g, "");
@@ -50,10 +50,19 @@ export function MethodFilter() {
     setExpanded(next);
   }
 
+  const toggleLabel = expanded ? "Collapse all" : "Expand all";
+  const ToggleIcon = expanded ? Icons.collapseAll : Icons.expandAll;
   return (
-    <div ref={bar} className="not-prose sticky top-(--page-bar-h) z-10 -mx-[calc(1rem+1px)] mb-md flex items-center gap-sm bg-background px-[calc(1rem+1px)] py-xs">
-      <label className={cn(QUIET, "flex h-8 min-w-0 flex-1 items-center rounded-lg hover:bg-muted/50")}>
-        <Icons.search className="ml-sm size-3.5 shrink-0" aria-hidden="true" />
+    <div ref={bar} className="not-prose sticky top-(--page-bar-h) z-10 -mx-[calc(1rem+1px)] mb-md bg-background px-[calc(1rem+1px)] py-xs">
+      {/* The negative margin is the distance from the field's edge to the
+          glyphs at each end, so the search glyph sits on the text's axis. */}
+      <div
+        role="search"
+        className="-mx-2.5 flex items-center rounded-[10px] border border-transparent bg-muted/40 p-1 transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-muted/70 focus-within:border-input focus-within:bg-muted/70"
+      >
+        <span className="grid size-7 shrink-0 place-items-center text-muted-foreground" aria-hidden="true">
+          <Icons.search className="size-4" />
+        </span>
         <input
           value={query}
           onChange={(event) => filter(event.target.value)}
@@ -66,17 +75,20 @@ export function MethodFilter() {
           placeholder="Filter methods"
           aria-label="Filter methods"
           spellCheck={false}
-          className="h-full min-w-0 flex-1 bg-transparent px-xs text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          className="h-7 min-w-0 flex-1 bg-transparent px-xs text-sm text-foreground outline-none placeholder:text-muted-foreground"
         />
         {count && (
-          <span aria-live="polite" className="shrink-0 px-sm text-xs tabular-nums">
+          <span aria-live="polite" className="shrink-0 px-xs text-xs text-muted-foreground tabular-nums">
             {count.shown} of {count.total}
           </span>
         )}
-      </label>
-      <button type="button" onClick={toggleAll} className={cn(ACTION, QUIET)}>
-        {expanded ? "Collapse all" : "Expand all"}
-      </button>
+        <span className="mx-2xs h-4 w-px shrink-0 bg-hairline" aria-hidden="true" />
+        <Hint label={toggleLabel}>
+          <button type="button" aria-label={toggleLabel} onClick={toggleAll} className={BAR_BUTTON}>
+            <ToggleIcon className="size-4" />
+          </button>
+        </Hint>
+      </div>
     </div>
   );
 }
