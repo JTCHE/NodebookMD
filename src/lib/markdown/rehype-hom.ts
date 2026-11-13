@@ -61,26 +61,47 @@ function highlight(code: Element) {
     name, label and args. */
 const parameters = (signature: string): Set<string> => {
   const inside = signature.slice(signature.indexOf("(") + 1, signature.lastIndexOf(")"));
-  return new Set(inside.split(",").map((part) => part.split("=")[0].replace(/\*/g, "").trim()).filter((name) => /^[A-Za-z_]\w*$/.test(name)));
+  // The commas between arguments, not the ones in a type: `Union[int, str]`.
+  const parts: string[] = [];
+  let depth = 0;
+  let part = "";
+  for (const character of inside) {
+    if ("([{".includes(character)) depth += 1;
+    if (")]}".includes(character)) depth -= 1;
+    if (character === "," && depth === 0) {
+      parts.push(part);
+      part = "";
+    } else {
+      part += character;
+    }
+  }
+  parts.push(part);
+  // The name is the last word before a type or a default: `data: dict`,
+  // `order=4`, and the C form `bool exact_type_name=False`.
+  return new Set(parts.map((entry) => entry.split(/[:=]/)[0].replace(/\*/g, "").trim().split(/\s+/).pop() ?? "").filter((name) => /^[A-Za-z_]\w*$/.test(name)));
 };
 
-/** A description paragraph that opens with one of the method's parameters,
-    `expression: A string…`, shows the name as code, as the signature does. */
 /** A paragraph that documents one of the method's arguments, in either form
     SideFX writes: `**`name`**` then a line break, or `name: text`. Gives the
-    name and the description, or nothing. */
-const parameterOf = (node: ElementContent, names: Set<string>): { name: string; description: ElementContent[] } | null => {
+    name and the description, or nothing. `known` accepts the bold form for
+    a name the signature leaves out: some pages document an argument their
+    signature does not show (`look` on StringParmTemplate). */
+const parameterOf = (node: ElementContent, names: Set<string>, known = (name: string) => names.has(name)): { name: string; anchors: ElementContent[]; description: ElementContent[] } | null => {
   if (node.type !== "element" || node.tagName !== "p") return null;
-  const [first, second] = node.children;
-  if (first?.type === "element" && first.tagName === "strong" && second?.type === "element" && second.tagName === "br" && names.has(text(first).trim())) {
-    const description = node.children.slice(2);
+  // An anchor in front of the name, `<span id>`, goes with the name.
+  let skip = 0;
+  while (node.children[skip]?.type === "element" && (node.children[skip] as Element).tagName === "span" && (node.children[skip] as Element).properties.id && !text(node.children[skip] as Element)) skip++;
+  const anchors = node.children.slice(0, skip);
+  const [first, second] = node.children.slice(skip);
+  if (first?.type === "element" && first.tagName === "strong" && second?.type === "element" && second.tagName === "br" && known(text(first).trim())) {
+    const description = node.children.slice(skip + 2);
     if (description[0]?.type === "text") description[0] = { ...description[0], value: description[0].value.replace(/^\s+/, "") };
-    return { name: text(first).trim(), description };
+    return { name: text(first).trim(), anchors, description };
   }
   if (first?.type !== "text") return null;
   const match = /^([A-Za-z_]\w*):\s/.exec(first.value);
   if (!match || !names.has(match[1])) return null;
-  return { name: match[1], description: [{ type: "text", value: first.value.slice(match[0].length) }, ...node.children.slice(1)] };
+  return { name: match[1], anchors, description: [{ type: "text", value: first.value.slice(match[0].length) }, ...node.children.slice(skip + 1)] };
 };
 
 /** The argument paragraphs become one list: the name, then what it does.
@@ -89,6 +110,13 @@ const parameterOf = (node: ElementContent, names: Set<string>): { name: string; 
     one's description; a block after the last argument stays outside. */
 const listParameters = (nodes: ElementContent[], names: Set<string>): ElementContent[] => {
   const parameters = nodes.map((node) => parameterOf(node, names));
+  // Next to an argument, a bold name is an argument too, even when the
+  // signature calls it something else (`num_vertices` for `num_points`).
+  const loose = (index: number) => parameterOf(nodes[index], names, (name) => /^[A-Za-z_]\w*$/.test(name));
+  // Blank text between blocks is no neighbour.
+  const blocks = nodes.flatMap((node, index) => (node.type === "text" && !node.value.trim() ? [] : [index]));
+  for (let at = 1; at < blocks.length; at++) parameters[blocks[at]] ??= parameters[blocks[at - 1]] ? loose(blocks[at]) : null;
+  for (let at = blocks.length - 2; at >= 0; at--) parameters[blocks[at]] ??= parameters[blocks[at + 1]] ? loose(blocks[at]) : null;
   const last = parameters.findLastIndex(Boolean);
   const out: ElementContent[] = [];
   let list: Element | null = null;
@@ -101,7 +129,7 @@ const listParameters = (nodes: ElementContent[], names: Set<string>): ElementCon
         out.push(list);
       }
       description = { type: "element", tagName: "dd", properties: {}, children: [{ type: "element", tagName: "p", properties: {}, children: parameter.description }] };
-      list.children.push({ type: "element", tagName: "dt", properties: {}, children: [{ type: "text", value: parameter.name }] }, description);
+      list.children.push({ type: "element", tagName: "dt", properties: {}, children: [...parameter.anchors, { type: "text", value: parameter.name }] }, description);
     } else if (description && index < last) {
       description.children.push(node);
     } else {
