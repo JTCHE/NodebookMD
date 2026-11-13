@@ -26,11 +26,13 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
         if (!parent) continue;
         const own = parent.getBoundingClientRect();
         const endpoints = [...group.querySelectorAll<HTMLElement>("[data-branch]")].filter((node) => node.closest("[data-parent]") === group);
+        // A nested list hangs straight down from one point near the parent's
+        // left edge, the same on every parent. Hung from the centre it fell
+        // back to a fixed indent when the labels did not fit, and the wire
+        // then ran down, back left and down again.
+        const drop = group.dataset.nested ? own.left + Math.min(own.width / 2, 10) : own.left + own.width / 2;
         if (group.dataset.nested) {
-          const groupBounds = group.getBoundingClientRect();
-          const padding = own.left + own.width / 2 - groupBounds.left + 8;
-          const labelWidth = Math.max(...endpoints.map((node) => node.querySelector<HTMLElement>("[data-node-label]")?.scrollWidth ?? node.scrollWidth));
-          group.style.paddingLeft = groupBounds.width - padding - 8 >= labelWidth + 8 ? `${padding}px` : "calc(var(--spacing) * 4)";
+          group.style.paddingLeft = `${drop - group.getBoundingClientRect().left + 8}px`;
         }
         const entries = endpoints.map((node) => node.getBoundingClientRect());
         if (!entries.length) continue;
@@ -40,7 +42,7 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
           const horizontalPosition = node.left - bounds.left - 8;
           columns.set(horizontalPosition, [...(columns.get(horizontalPosition) ?? []), node]);
         }
-        const start = own.left + own.width / 2 - bounds.left;
+        const start = drop - bounds.left;
         const joints = [...new Set([...columns.keys(), start])].sort((firstPosition, secondPosition) => firstPosition - secondPosition);
         const radius = (horizontalPosition: number) => Math.min(6, ...joints.filter((neighborPosition) => neighborPosition !== horizontalPosition).map((neighborPosition) => Math.abs(neighborPosition - horizontalPosition) / 2));
         const split = radius(start);
@@ -111,19 +113,20 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
         <div data-parent={parent.name} data-nested={nested || undefined} role="group" aria-label={label} className="grid gap-x-3 pl-3 pr-2" style={{ gridTemplateColumns: `repeat(${slots}, minmax(0, 1fr))` }}>
           {columns.map((column, position) => <ul key={position} className="flex min-w-0 flex-col gap-0.5">{column.map((item) => {
             const kids = childrenOf(item);
-            // In a doc group a member with more children than one row's
-            // columns hands them to the full-width block below; anything
-            // shorter nests under the member as before.
-            const hoists = familyless && kids.length > columnCount;
+            // A member with more children than one row's columns hands them
+            // to the full-width block below; anything shorter nests under
+            // the member.
+            const hoists = kids.length > columnCount;
             return <li key={item.path} className="min-w-0"><span data-class={item.name} data-branch className="inline-flex max-w-full align-top">{node(item)}</span>{grouped && !nested && !hoists && group(kids, item, `Subclasses of ${item.name}`, true)}</li>;
           })}</ul>)}
         </div>
-        {/* In a doc group the members' subclasses are the same list another
-            page shows as its sibling row, so once they would tower past one
+        {/* A member's subclasses are the same list the subclass's own page
+            shows as its sibling row, so once they would tower past one
             column's worth they take the same balanced columns across the full
-            width instead of one column under their parent. The wire still
-            finds the parent pill by name. */}
-        {grouped && !nested && familyless && shown.map((item) => {
+            width instead of one column under their parent: OpNode's children
+            read the same from Node as from SopNode. The wire still finds the
+            parent pill by name. */}
+        {grouped && !nested && shown.map((item) => {
           const kids = childrenOf(item);
           return kids.length > columnCount ? <div key={item.path}>{group(kids, item, `Subclasses of ${item.name}`)}</div> : null;
         })}
