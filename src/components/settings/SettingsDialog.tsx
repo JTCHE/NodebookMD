@@ -41,7 +41,7 @@ const SECTIONS = [
   { key: "general", label: "General", icon: Icons.settings },
   { key: "houdini", label: "Houdini Integration", icon: Icons.groupNodes },
   { key: "mcp", label: "Houdini MCP", icon: Icons.newWindow },
-  { key: "obsidian", label: "Obsidian", icon: Icons.bookmark },
+  { key: "obsidian", label: "Obsidian", icon: Icons.obsidian },
   { key: "usage", label: "Usage data", icon: Icons.recent },
 ] as const;
 type SectionKey = (typeof SECTIONS)[number]["key"];

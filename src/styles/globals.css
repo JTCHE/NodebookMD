@@ -1792,6 +1792,11 @@ details.hom-method:not([open]) .hom-method-caption {
   vertical-align: top;
   color: var(--foreground);
 }
+/* A hairline on a dense screen: one device pixel, not two. */
+@media (min-resolution: 2dppx) {
+  .md-table th,
+  .md-table td { border-bottom-width: 0.5px; }
+}
 .md-table tr:last-child td {
   border-bottom: 0;
 }
