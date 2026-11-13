@@ -500,9 +500,9 @@ fn running(_release: &str) -> bool {
 #[cfg(windows)]
 fn process_named(name: &str) -> bool {
     use windows_sys::Win32::Foundation::CloseHandle;
-    use windows_sys::Win32::System::ProcessStatus::{EnumProcesses, GetModuleBaseNameA};
+    use windows_sys::Win32::System::ProcessStatus::EnumProcesses;
     use windows_sys::Win32::System::Threading::{
-        OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION,
+        OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION,
     };
 
     let mut ids = vec![0u32; 2048];
@@ -518,13 +518,16 @@ fn process_named(name: &str) -> bool {
         if handle.is_null() {
             continue;
         }
-        let mut buffer = [0u8; 260];
-        let length =
-            unsafe { GetModuleBaseNameA(handle, std::ptr::null_mut(), buffer.as_mut_ptr(), buffer.len() as u32) };
+        // The image path, not the module name: `GetModuleBaseName` needs
+        // PROCESS_VM_READ, which a limited handle does not carry, so it
+        // failed on every process and an open Houdini never showed.
+        let mut buffer = [0u16; 1024];
+        let mut length = buffer.len() as u32;
+        let read = unsafe { QueryFullProcessImageNameW(handle, PROCESS_NAME_WIN32, buffer.as_mut_ptr(), &mut length) };
         unsafe { CloseHandle(handle) };
-        if length > 0 {
-            let found = String::from_utf8_lossy(&buffer[..length as usize]).to_lowercase();
-            if found == name {
+        if read != 0 {
+            let path = String::from_utf16_lossy(&buffer[..length as usize]).to_lowercase();
+            if path.rsplit('\\').next() == Some(name) {
                 return true;
             }
         }

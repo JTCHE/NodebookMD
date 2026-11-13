@@ -11,12 +11,14 @@ export function Toggle({
   checked,
   onChange,
   label,
+  disabled = false,
   className,
 }: {
   checked: boolean;
   onChange: (next: boolean) => void;
   /** What the switch turns on, for a reader who cannot see the row beside it. */
   label: string;
+  disabled?: boolean;
   className?: string;
 }) {
   return (
@@ -25,6 +27,7 @@ export function Toggle({
       role="switch"
       aria-checked={checked}
       aria-label={label}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
       // A click flips the switch and leaves the focus where it was, so the
       // key that ends the screen keeps answering Enter.
@@ -33,6 +36,7 @@ export function Toggle({
         "relative h-[24px] w-[48px] shrink-0 cursor-interactive rounded-full",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        "disabled:cursor-not-allowed disabled:opacity-50",
         checked ? "bg-brand" : "bg-neutral-300",
         className,
       )}

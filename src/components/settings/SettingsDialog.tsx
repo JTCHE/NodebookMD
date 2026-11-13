@@ -25,7 +25,7 @@ import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/t
 import { MOTION_CHOICES, MOTION_LABEL, setMotion, useMotionChoice } from "@/lib/ui/motion";
 import { LINK_FORMATS, linkFormat, setLinkFormat, type LinkFormat } from "@/lib/link";
 import { restoresTabs, setRestoresTabs } from "@/lib/tabs";
-import { setHelpServer, useReleases } from "@/lib/help-server";
+import { setHelpServer, useHoudiniOpen, useReleases } from "@/lib/help-server";
 import { OBSIDIAN_PICTURES, OBSIDIAN_VAULT, picturesChoice, rememberedVault, type PicturesChoice } from "@/lib/obsidian";
 
 const OPEN = "nodebookmd:settings";
@@ -148,6 +148,7 @@ const SMALL_BUTTON =
 /** F1 in each Houdini release installed on the machine. */
 function HelpSection() {
   const releases = useReleases();
+  const houdiniOpen = useHoudiniOpen(true);
 
   async function flip(release: string, on: boolean) {
     await setHelpServer(release, on).then(showToast, (reason) => showToast(String(reason), "error"));
@@ -160,9 +161,9 @@ function HelpSection() {
         <Row
           key={one.release}
           label={`Houdini ${one.release}`}
-          detail={!one.external || !one.url ? "Opens Houdini's own help" : one.ours ? `Opens ${APP_NAME}` : `Opens ${one.url}`}
+          detail={houdiniOpen ? "Close Houdini to change this" : !one.external || !one.url ? "Opens Houdini's own help" : one.ours ? `Opens ${APP_NAME}` : `Opens ${one.url}`}
         >
-          <Toggle checked={one.external && one.ours} onChange={(next) => void flip(one.release, next)} label={`Houdini ${one.release}`} />
+          <Toggle checked={one.external && one.ours} disabled={houdiniOpen} onChange={(next) => void flip(one.release, next)} label={`Houdini ${one.release}`} />
         </Row>
       ))}
     </Section>

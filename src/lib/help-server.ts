@@ -3,7 +3,7 @@
  * version picker and its nudge read one list, so a switch in one shows in the
  * others at once.
  */
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { invoke } from "@/lib/backend";
 import { APP_NAME } from "@/lib/brand";
 
@@ -70,4 +70,26 @@ export async function setHelpServer(release: string, on: boolean): Promise<strin
     series. Rust's `hook::series_of` does the same. */
 export function seriesOf(version: string): string {
   return version.split(".").slice(0, 2).join(".");
+}
+
+/** Whether a Houdini is open, asked every two seconds while `active`. An open
+    Houdini writes its preferences when it exits, which undoes a change to F1,
+    so the F1 controls say to close it first. */
+export function useHoudiniOpen(active: boolean): boolean {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!active) return setOpen(false);
+    let live = true;
+    const ask = () =>
+      void invoke<boolean>("houdini_open")
+        .catch(() => false)
+        .then((answer) => live && setOpen(answer));
+    ask();
+    const timer = setInterval(ask, 2000);
+    return () => {
+      live = false;
+      clearInterval(timer);
+    };
+  }, [active]);
+  return open;
 }

@@ -23,6 +23,7 @@ import { McpStep } from "./McpStep";
 import { showToast } from "@/components/ui/toast-notification";
 import { setupDone } from "@/lib/telemetry";
 import { APP_NAME } from "@/lib/brand";
+import { useHoudiniOpen } from "@/lib/help-server";
 
 /** The `user.settings` key that says the first launch is over. */
 export const ONBOARDED = "onboarded";
@@ -49,26 +50,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const [telemetryOn, setTelemetryOn] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  /** A Houdini is open on the F1 step. It writes its preferences when it
-      exits, which would undo the hook, so the step says to close it first. */
-  const [houdiniOpen, setHoudiniOpen] = useState(false);
-
-  // Asked again every two seconds, so the step changes as soon as the reader
-  // closes Houdini.
-  useEffect(() => {
-    if (step !== 2 || !hookOn) return setHoudiniOpen(false);
-    let live = true;
-    const ask = () =>
-      void invoke<boolean>("houdini_open")
-        .catch(() => false)
-        .then((open) => live && setHoudiniOpen(open));
-    ask();
-    const timer = setInterval(ask, 2000);
-    return () => {
-      live = false;
-      clearInterval(timer);
-    };
-  }, [step, hookOn]);
+  /** A Houdini is open on the F1 step, so the step says to close it first. */
+  const houdiniOpen = useHoudiniOpen(step === 2 && hookOn);
   /** The F1 step was passed with Houdini open: F1 is left as it was. */
   const skipsHook = hookOn && houdiniOpen;
 
