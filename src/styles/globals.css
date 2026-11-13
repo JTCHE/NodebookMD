@@ -1719,7 +1719,6 @@ details.hom-method:not([open]) .hom-method-caption {
   line-height: 1.85;
   color: var(--foreground);
   overflow-wrap: anywhere;
-  place-self: start;
 }
 .hom-params dd {
   margin: 0;
@@ -1727,16 +1726,6 @@ details.hom-method:not([open]) .hom-method-caption {
 }
 .hom-params dd > p { margin: 0 0 0.5rem; }
 .hom-params dd > :last-child { margin-bottom: 0; }
-/* An argument the reader points at, in the signature and in the list
-   (lib/ui/argument-hover). */
-.hom-arg, .hom-params dt { border-radius: 3px; transition: background-color var(--duration-fast); }
-.hom-arg[data-lit], .hom-params dt[data-lit] {
-  background: color-mix(in oklch, var(--brand) 22%, transparent);
-  box-shadow: 0 0 0 2px color-mix(in oklch, var(--brand) 22%, transparent);
-}
-@media (prefers-reduced-motion: reduce) {
-  .hom-arg, .hom-params dt { transition: none; }
-}
 @media (max-width: 640px) {
   .hom-params { display: block; }
   .hom-params dd { margin-bottom: 0.75rem; }

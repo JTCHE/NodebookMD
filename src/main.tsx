@@ -14,7 +14,6 @@ import { startPress } from "./lib/ui/press";
 import { startBlurCheck } from "./lib/ui/blur";
 import { startIconStroke } from "./lib/ui/icon-stroke";
 import { startZoomKeys } from "./lib/ui/zoom";
-import { startArgumentHover } from "./lib/ui/argument-hover";
 import { IS_MAC, letterOf } from "./lib/hotkeys";
 import { current, navigator as tabNavigator, openTab, useTabs } from "./lib/tabs";
 import "./styles/globals.css";
@@ -34,7 +33,6 @@ startTheme();
 startMotion();
 startBlurCheck();
 startIconStroke();
-startArgumentHover();
 
 if (import.meta.env.PROD) {
   // Ctrl J opens the webview's downloads list, which this window has no use for.
