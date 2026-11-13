@@ -64,8 +64,6 @@ const parameters = (signature: string): Set<string> => {
   return new Set(inside.split(",").map((part) => part.split("=")[0].replace(/\*/g, "").trim()).filter((name) => /^[A-Za-z_]\w*$/.test(name)));
 };
 
-/** A description paragraph that opens with one of the method's parameters,
-    `expression: A string…`, shows the name as code, as the signature does. */
 /** A paragraph that documents one of the method's arguments, in either form
     SideFX writes: `**`name`**` then a line break, or `name: text`. Gives the
     name and the description, or nothing. */
@@ -81,6 +79,28 @@ const parameterOf = (node: ElementContent, names: Set<string>): { name: string; 
   const match = /^([A-Za-z_]\w*):\s/.exec(first.value);
   if (!match || !names.has(match[1])) return null;
   return { name: match[1], description: [{ type: "text", value: first.value.slice(match[0].length) }, ...node.children.slice(1)] };
+};
+
+/** The arguments in the row's signature, each in a span that names it, so
+    the reader can point at one and see its line in the list
+    (lib/ui/argument-hover). */
+const markArguments = (title: ElementContent[], names: Set<string>) => {
+  for (const node of title) {
+    if (node.type !== "element" || !(node.properties.className as string[] | undefined)?.includes("hom-method-name")) continue;
+    const source = text(node);
+    const children: ElementContent[] = [];
+    let at = 0;
+    for (const match of source.matchAll(/([(,]\s*)([A-Za-z_]\w*)(?=\s*[=,)])/g)) {
+      if (!names.has(match[2])) continue;
+      const start = match.index + match[1].length;
+      children.push({ type: "text", value: source.slice(at, start) });
+      children.push({ type: "element", tagName: "span", properties: { className: ["hom-arg"], dataArg: match[2] }, children: [{ type: "text", value: match[2] }] });
+      at = start + match[2].length;
+    }
+    if (at === 0) continue;
+    children.push({ type: "text", value: source.slice(at) });
+    node.children = children;
+  }
 };
 
 /** The argument paragraphs become one list: the name, then what it does.
@@ -101,7 +121,7 @@ const listParameters = (nodes: ElementContent[], names: Set<string>): ElementCon
         out.push(list);
       }
       description = { type: "element", tagName: "dd", properties: {}, children: [{ type: "element", tagName: "p", properties: {}, children: parameter.description }] };
-      list.children.push({ type: "element", tagName: "dt", properties: {}, children: [{ type: "text", value: parameter.name }] }, description);
+      list.children.push({ type: "element", tagName: "dt", properties: { dataArg: parameter.name }, children: [{ type: "text", value: parameter.name }] }, description);
     } else if (description && index < last) {
       description.children.push(node);
     } else {
@@ -234,6 +254,7 @@ export function rehypeHom({ name }: { name: string | null }) {
         }
         const signature = text(((panel as Element).children[0] as Element));
         const names = parameters(signature);
+        markArguments(title, names);
         const caption = body[1];
         const summary: ElementContent[] = [{ type: "element", tagName: "span", properties: { className: ["hom-method-chevron", "transition-opacity", "duration-(--duration-fast)", "motion-reduce:transition-none"], ariaHidden: "true" }, children: [chevronIcon("")] }, div("hom-method-title", title)];
         if (caption?.type === "element" && caption.tagName === "p") {
