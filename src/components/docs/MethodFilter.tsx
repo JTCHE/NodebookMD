@@ -3,6 +3,7 @@
  * page, its own and the inherited ones, and a switch that opens or closes
  * them all. The rows come from the parser (`rehype-hom`), so this works on
  * the page's DOM: it hides what does not match and puts nothing new in it.
+ * It stays at the top while the reader scrolls through the methods.
  */
 import { useRef, useState } from "react";
 import { Icons } from "@/lib/ui/icons";
@@ -50,7 +51,7 @@ export function MethodFilter() {
   }
 
   return (
-    <div ref={bar} className="not-prose mb-md flex items-center gap-sm">
+    <div ref={bar} className="not-prose sticky top-(--page-bar-h) z-10 -mx-[calc(1rem+1px)] mb-md flex items-center gap-sm bg-background px-[calc(1rem+1px)] py-xs">
       <label className={cn(QUIET, "flex h-8 min-w-0 flex-1 items-center rounded-lg hover:bg-muted/50")}>
         <Icons.search className="ml-sm size-3.5 shrink-0" aria-hidden="true" />
         <input

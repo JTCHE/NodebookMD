@@ -1700,6 +1700,15 @@ details.hom-method:not([open]) .hom-method-caption {
 .hom-method-body { padding: 0.75rem 0 1rem; }
 .hom-method-body > .hom-signature { margin-inline: 0; }
 .hom-method-description { padding-inline: calc(1rem + 1px); }
+/* In a row's caption a value is plain monospace: the chip would make the
+   line taller and pull the eye off the method names. The open row keeps it. */
+.hom-method-caption code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--foreground);
+  font-size: 0.95em;
+}
 /* An enum value's owner, `hou.exprLanguage.`, steps back from the value. */
 .hom-value-prefix { opacity: 0.6; font-size: 0.85em; }
 
