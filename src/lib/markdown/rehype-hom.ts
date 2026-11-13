@@ -104,8 +104,8 @@ const parameterOf = (node: ElementContent, names: Set<string>, known = (name: st
   return { name: match[1], anchors, description: [{ type: "text", value: first.value.slice(match[0].length) }, ...node.children.slice(skip + 1)] };
 };
 
-/** The argument paragraphs become one list: the name, then what it does.
-    One list reads down a column of names, not a stack of chips. A block
+/** The argument paragraphs become the Arguments table of a VEX page
+    (`.vex-args`, see remark-vex): a column of names, and what each does. A block
     between two arguments is more about the one above it, so it goes in that
     one's description; a block after the last argument stays outside. */
 const listParameters = (nodes: ElementContent[], names: Set<string>): ElementContent[] => {
@@ -125,11 +125,14 @@ const listParameters = (nodes: ElementContent[], names: Set<string>): ElementCon
     const parameter = parameters[index];
     if (parameter) {
       if (!list) {
-        list = { type: "element", tagName: "dl", properties: { className: ["hom-params"] }, children: [] };
+        list = div("vex-args vex-args-untyped", [
+          div("vex-arg-sig vex-args-head", [{ type: "element", tagName: "span", properties: {}, children: [{ type: "text", value: "Name" }] }]),
+          div("vex-arg-desc vex-args-head", [{ type: "element", tagName: "span", properties: {}, children: [{ type: "text", value: "Description" }] }]),
+        ]);
         out.push(list);
       }
-      description = { type: "element", tagName: "dd", properties: {}, children: [{ type: "element", tagName: "p", properties: {}, children: parameter.description }] };
-      list.children.push({ type: "element", tagName: "dt", properties: {}, children: [...parameter.anchors, { type: "text", value: parameter.name }] }, description);
+      description = div("vex-arg-desc", [{ type: "element", tagName: "p", properties: {}, children: parameter.description }]);
+      list.children.push(div("vex-arg-sig", [{ type: "element", tagName: "span", properties: { className: ["vex-arg-name"] }, children: [...parameter.anchors, { type: "text", value: parameter.name }] }]), description);
     } else if (description && index < last) {
       description.children.push(node);
     } else {
