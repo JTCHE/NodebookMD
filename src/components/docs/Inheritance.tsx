@@ -34,19 +34,35 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
         if (group.dataset.nested) {
           group.style.paddingLeft = `${drop - group.getBoundingClientRect().left + 8}px`;
         }
-        const entries = endpoints.map((node) => node.getBoundingClientRect());
+        let entries = endpoints.map((node) => node.getBoundingClientRect());
         if (!entries.length) continue;
-        const bus = Math.min(...entries.map((node) => node.top)) - bounds.top - 10;
         // Members that all sit in one row take their wire from the top, into
         // the middle of each pill. A column of members hangs off one wire
         // down its left side instead.
         const row = !group.dataset.nested && new Set(entries.map((node) => node.left)).size === entries.length;
+        // A row starts centred under its parent, so the parent's wire runs
+        // straight down into the first member.
+        // Only that member moves: the others stay on the grid's columns.
+        if (row) {
+          const firstIndex = entries.reduce((leftmost, node, index) => (node.left < entries[leftmost].left ? index : leftmost), 0);
+          const item = endpoints[firstIndex].closest("li")!;
+          const shift = parseFloat(item.style.marginLeft || "0");
+          const wanted = shift + drop - (entries[firstIndex].left + entries[firstIndex].width / 2);
+          if (Math.abs(wanted - shift) > 0.5) {
+            item.style.marginLeft = `${wanted}px`;
+            entries = endpoints.map((node) => node.getBoundingClientRect());
+          }
+        }
+        const bus = Math.min(...entries.map((node) => node.top)) - bounds.top - 10;
         const columns = new Map<number, DOMRect[]>();
         for (const node of entries) {
           const horizontalPosition = row ? node.left + node.width / 2 - bounds.left : node.left - bounds.left - 8;
           columns.set(horizontalPosition, [...(columns.get(horizontalPosition) ?? []), node]);
         }
-        const start = drop - bounds.left;
+        // In a row, a member whose middle is under the parent's pill takes
+        // the parent's wire straight down, with no jog to the side.
+        const under = row ? [...columns.keys()].filter((position) => position >= own.left - bounds.left && position <= own.right - bounds.left) : [];
+        const start = under.length ? under.reduce((best, position) => Math.abs(position - (drop - bounds.left)) < Math.abs(best - (drop - bounds.left)) ? position : best) : drop - bounds.left;
         const joints = [...new Set([...columns.keys(), start])].sort((firstPosition, secondPosition) => firstPosition - secondPosition);
         const radius = (horizontalPosition: number) => Math.min(6, ...joints.filter((neighborPosition) => neighborPosition !== horizontalPosition).map((neighborPosition) => Math.abs(neighborPosition - horizontalPosition) / 2));
         const split = radius(start);
@@ -58,10 +74,12 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
             if (iteration > 0) paths.push(`M${horizontalPosition},${bus - cornerRadius} Q${horizontalPosition},${bus} ${horizontalPosition - cornerRadius},${bus}`);
             if (iteration < joints.length - 1) paths.push(`M${horizontalPosition},${bus - cornerRadius} Q${horizontalPosition},${bus} ${horizontalPosition + cornerRadius},${bus}`);
           }
-          if (columns.has(horizontalPosition)) {
+          // Where the parent's wire runs on into a member, it stays one
+          // straight line, and the bus leaves it with one curve per side.
+          if (columns.has(horizontalPosition) && horizontalPosition === start) paths.push(`M${horizontalPosition},${bus - cornerRadius} V${bus + cornerRadius}`);
+          else if (columns.has(horizontalPosition)) {
             if (iteration > 0) paths.push(`M${horizontalPosition - cornerRadius},${bus} Q${horizontalPosition},${bus} ${horizontalPosition},${bus + cornerRadius}`);
             if (iteration < joints.length - 1) paths.push(`M${horizontalPosition + cornerRadius},${bus} Q${horizontalPosition},${bus} ${horizontalPosition},${bus + cornerRadius}`);
-            if (horizontalPosition === start) paths.push(`M${horizontalPosition},${bus - cornerRadius} V${bus + cornerRadius}`);
           }
         }
         for (const [horizontalPosition, nodes] of columns) {
@@ -100,16 +118,18 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
   const grouped = !!anchor && siblings.length > 1;
   const familyless = grouped && !!anchor.label;
   const childrenOf = (parent: Class) => items.filter((item) => !item.label && item !== parent && item.parent === parent.name && (item.depth > parent.depth || (familyless && item.depth === parent.depth)));
-  const link = cn(MENU_ITEM, "w-fit max-w-full px-1 py-1 text-xs font-medium");
+  const link = cn(MENU_ITEM, "w-fit max-w-full select-none px-1 py-1 text-xs font-medium");
   const node = (item: Class) => item.label
-    ? <span data-node-label className="truncate px-1 py-1 text-xs font-medium text-neutral-500">{item.name}</span>
+    ? <span data-node-label className="truncate select-none px-1 py-1 text-xs font-medium text-neutral-500">{item.name}</span>
     : item.current
-    ? <span aria-current="page" className="inline-flex max-w-full rounded-md bg-neutral-100 px-1 py-1 text-xs font-medium text-neutral-950"><span data-node-label className="truncate">{item.name.replace(/^hou\./, "")}</span></span>
+    ? <span aria-current="page" className="inline-flex max-w-full select-none rounded-md bg-neutral-100 px-1 py-1 text-xs font-medium text-neutral-950"><span data-node-label className="truncate">{item.name.replace(/^hou\./, "")}</span></span>
     : <DocLink href={item.path} mark={false} underline={false} className={cn(link, "min-w-0", item.path.replace(/^\/+/, "") === fromPath && "bg-neutral-100/60")}><span data-node-label className="truncate">{item.name.replace(/^hou\./, "")}</span></DocLink>;
   const group = (list: Class[], parent: Class, label: string, nested = false): ReactNode => {
     if (!list.length) return null;
     const shown = list;
-    const slots = nested ? 1 : Math.min(columnCount, shown.length);
+    // One grid for every row of a diagram, so a short row lines up with the
+    // columns under it.
+    const slots = nested ? 1 : columnCount;
     const size = Math.floor(shown.length / slots);
     const extra = shown.length % slots;
     const columns = Array.from({ length: slots }, (_, position) => {
