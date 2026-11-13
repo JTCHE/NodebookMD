@@ -53,17 +53,30 @@ export function TocList({
             }}
             aria-current={active === i ? "location" : undefined}
             // Indent is data, and it has to beat the horizontal padding below.
-            style={{ paddingLeft: `${(padded ? 0.625 : 0) + depth * 0.75}rem` }}
-            className={`block cursor-interactive no-underline leading-snug transition-colors ${
-              padded ? "rounded-xl pr-2.5 hover:bg-accent/70" : ""
-            } ${depth === 0 ? "text-sm" : "text-[0.8125rem]"} ${rowHit} ${startsSection ? sectionGap : ""} ${
+            style={padded ? undefined : { paddingLeft: `${depth * 0.75}rem` }}
+            className={`group block cursor-interactive no-underline leading-snug transition-colors ${
+              // In the panel, the rows touch: the link is all hit area, and
+              // the section gap is padding above the row's surface, not in it.
+              padded ? (startsSection ? "pt-2" : "") : `${rowHit} ${startsSection ? sectionGap : ""}`
+            } ${depth === 0 ? "text-sm" : "text-[0.8125rem]"} ${
               active === i ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-            } ${padded ? "truncate" : ""}`}
+            }`}
           >
             {/* The mark is the colour alone. A bolder weight is wider: a row
                 that fits on one line wraps to two when marked, so the list
                 either moves or keeps a blank line under the row for it. */}
-            {h.text}
+            {padded ? (
+              // Every surface is the same size. 10px is concentric with the
+              // panel: its 16px corner less its 6px padding.
+              <span
+                style={{ paddingLeft: `${0.625 + depth * 0.75}rem` }}
+                className="block truncate rounded-[10px] py-1.5 pr-2.5 transition-colors group-hover:bg-accent/70"
+              >
+                {h.text}
+              </span>
+            ) : (
+              h.text
+            )}
           </a>
         );
       })}
