@@ -72,12 +72,12 @@ export function jumpTo(el: HTMLElement) {
 }
 
 /**
- * The height of a bar that stays at the top of `el`'s section (the methods
- * filter), so a jump lands under it too.
+ * The height of a bar that stays at the top of a box `el` sits in (the
+ * methods filter), so a jump lands under it too.
  */
 function stickyAbove(el: HTMLElement) {
-  for (let group = el.closest(".section-group"); group; group = group.parentElement?.closest(".section-group") ?? null) {
-    const bar = group.querySelector<HTMLElement>(":scope > .sticky");
+  for (let box = el.parentElement; box; box = box.parentElement) {
+    const bar = box.querySelector<HTMLElement>(":scope > .sticky");
     if (bar && bar !== el && !bar.contains(el)) return bar.offsetHeight;
   }
   return 0;

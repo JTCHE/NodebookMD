@@ -159,8 +159,6 @@ export function rehypeHom({ name }: { name: string | null }) {
           }
         }
         if (child.properties.dataSection === "values") markValues(child, name);
-        // The filter sits at the top of the class's own Methods.
-        if (child.properties.dataSection === "methods") child.children.unshift(div("hom-method-filter", []));
         visit(child);
         out.push(child);
       }
@@ -237,5 +235,18 @@ export function rehypeHom({ name }: { name: string | null }) {
       parent.children = lists as ElementContent[];
     };
     visit(tree);
+    // The class's own Methods and the inherited ones go in one box, with the
+    // filter at its top. The filter covers all of them, stays at the top
+    // while any of them scrolls by, and is in no section it can hide.
+    const start = tree.children.findIndex((node) => node.type === "element" && node.tagName === "h2" && node.properties.id === "methods");
+    if (start >= 0) {
+      const isMethods = (node: RootContent) =>
+        node.type === "text" ? !node.value.trim()
+        : node.type === "element" && /^methods(-from-|$)/.test(String(node.properties.id ?? node.properties.dataSection ?? ""));
+      let end = start;
+      while (end < tree.children.length && isMethods(tree.children[end])) end++;
+      const box = div("hom-methods", [div("hom-method-filter", []), ...(tree.children.slice(start, end) as ElementContent[])]);
+      tree.children.splice(start, end - start, box);
+    }
   };
 }

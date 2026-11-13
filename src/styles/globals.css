@@ -1702,6 +1702,11 @@ details.hom-method:not([open]) .hom-method-caption {
 .hom-method-description { padding-inline: calc(1rem + 1px); }
 /* In a row's caption a value is plain monospace: the chip would make the
    line taller and pull the eye off the method names. The open row keeps it. */
+/* The method filter hides what does not match; see MethodFilter.tsx. */
+.hom-methods [data-no-match] {
+  display: none;
+}
+
 .hom-method-caption code {
   padding: 0;
   border: 0;
