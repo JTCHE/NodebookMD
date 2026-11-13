@@ -22,12 +22,12 @@ import { rehypeCards } from "./rehype-cards";
 import { rehypeSections } from "./rehype-sections";
 import { rehypeHom } from "./rehype-hom";
 
-function processor(vex: boolean, hom: boolean) {
+function processor(vex: boolean, hom: string | null) {
   return unified()
     .use(remarkParse)
     .use([remarkGfm, remarkCallouts, [remarkVex, { enabled: vex }]] as never)
     .use(remarkRehype, { allowDangerousHtml: true })
-    .use([rehypeRaw, rehypeSlug, rehypeSections, rehypeCards, [rehypeHom, { enabled: hom }]] as never);
+    .use([rehypeRaw, rehypeSlug, rehypeSections, rehypeCards, [rehypeHom, { name: hom }]] as never);
 }
 
 /** What react-markdown does to the tree before it draws it: raw HTML the
@@ -49,7 +49,7 @@ function clean(node: Nodes) {
   }
 }
 
-self.onmessage = ({ data }: MessageEvent<{ id: number; vex: boolean; hom: boolean; markdown: string }>) => {
+self.onmessage = ({ data }: MessageEvent<{ id: number; vex: boolean; hom: string | null; markdown: string }>) => {
   try {
     const run = processor(data.vex, data.hom);
     const tree = run.runSync(run.parse(data.markdown));

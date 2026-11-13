@@ -20,6 +20,8 @@ export function parse(path: string, markdown: string): Promise<Root> {
   const id = next++;
   return new Promise((done, fail) => {
     asked.set(id, { done, fail });
-    worker!.postMessage({ id, vex: /(^|\/)vex\//.test(`/${path}`), hom: /^\/?hom\/hou\//.test(path), markdown });
+    // A hou page passes its dotted name, `hou.exprLanguage`; other pages pass null.
+    const hom = /^\/?hom\/hou\//.test(path) ? path.replace(/^\/?hom\//, "").replaceAll("/", ".") : null;
+    worker!.postMessage({ id, vex: /(^|\/)vex\//.test(`/${path}`), hom, markdown });
   });
 }

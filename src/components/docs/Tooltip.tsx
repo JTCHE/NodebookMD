@@ -518,7 +518,7 @@ function section(id: string): { title: string; text: string; signature?: boolean
   const words = (el: Element) => (el.textContent ?? "").replace(/\s+/g, " ").trim();
   // A hom method's anchor is an empty span in its summary row. The row holds
   // the signature, `menuItems() → tuple of str`, and the caption under it.
-  const method = target.closest("details.hom-method");
+  const method = target.closest(".hom-method");
   if (method) {
     const title = method.querySelector(".hom-method-title");
     const caption = method.querySelector(".hom-method-caption");

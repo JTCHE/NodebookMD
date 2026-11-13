@@ -57,11 +57,50 @@ function highlight(code: Element) {
   });
 }
 
-/** Keep method anchors and return links while moving signatures into the shared panel. */
-export function rehypeHom({ enabled }: { enabled: boolean }) {
+/** The names a signature takes: `f(self, name, label=None, *args)` gives
+    name, label and args. */
+const parameters = (signature: string): Set<string> => {
+  const inside = signature.slice(signature.indexOf("(") + 1, signature.lastIndexOf(")"));
+  return new Set(inside.split(",").map((part) => part.split("=")[0].replace(/\*/g, "").trim()).filter((name) => /^[A-Za-z_]\w*$/.test(name)));
+};
+
+/** A description paragraph that opens with one of the method's parameters,
+    `expression: A string…`, shows the name as code, as the signature does. */
+const markParameter = (node: ElementContent, names: Set<string>) => {
+  if (node.type !== "element" || node.tagName !== "p") return;
+  const first = node.children[0];
+  if (first?.type !== "text") return;
+  const match = /^([A-Za-z_]\w*):(\s)/.exec(first.value);
+  if (!match || !names.has(match[1])) return;
+  node.children.splice(0, 1,
+    { type: "element", tagName: "code", properties: {}, children: [{ type: "text", value: match[1] }] },
+    { type: "text", value: first.value.slice(match[1].length) });
+};
+
+/** An enum's value, `**Python**` under Values, reads as the name a script
+    writes: `hou.exprLanguage.Python`. */
+const markValues = (group: Element, name: string) => {
+  for (const node of group.children) {
+    if (node.type !== "element" || node.tagName !== "p") continue;
+    const strong = node.children[0];
+    if (strong?.type !== "element" || strong.tagName !== "strong") continue;
+    const value = text(strong);
+    if (!/^[A-Za-z_]\w*$/.test(value)) continue;
+    node.children[0] = { type: "element", tagName: "code", properties: {}, children: [
+      { type: "element", tagName: "span", properties: { className: ["hom-value-prefix"] }, children: [{ type: "text", value: `${name}.` }] },
+      { type: "text", value },
+    ] };
+  }
+};
+
+/** Keep method anchors and return links while moving signatures into the shared panel.
+    `name` is the page's dotted name, `hou.Parm`; null turns the plugin off. */
+export function rehypeHom({ name }: { name: string | null }) {
   return (tree: Root) => {
-    if (!enabled) return;
+    if (!name) return;
     const summaries = new WeakMap<Element, ElementContent[]>();
+    // Panels whose row title cuts the signature to `name(…)`.
+    const shortened = new WeakSet<Element>();
     /** Signature arguments the page documents elsewhere link there: the
         description's `See hou.ParmTemplate.name` becomes the hover target of
         the `name` token in the signature itself. `num_components` matches the
@@ -107,6 +146,7 @@ export function rehypeHom({ enabled }: { enabled: boolean }) {
             const returns: ElementContent[] = (JSON.parse(JSON.stringify((strong as Element).children.slice(1))) as ElementContent[]).map(plain);
             for (const node of (strong as Element).children) if (node.type === "element" && node.tagName === "code") highlight(node);
             const panel = div("vex-sig hom-signature", [div("vex-sig-card code-panel", [div("vex-sig-row", (strong as Element).children)])]);
+            if (compact !== raw) shortened.add(panel);
             summaries.set(panel, [...leading, { type: "element", tagName: "span", properties: { className: ["hom-method-name"] }, children: [{ type: "text", value: compact }] }, ...returns]);
             out.push(panel);
             const rest = child.children.slice(at + 1);
@@ -115,6 +155,7 @@ export function rehypeHom({ enabled }: { enabled: boolean }) {
             continue;
           }
         }
+        if (child.properties.dataSection === "values") markValues(child, name);
         visit(child);
         out.push(child);
       }
@@ -154,12 +195,21 @@ export function rehypeHom({ enabled }: { enabled: boolean }) {
             }
           }
         }
+        const signature = text(((panel as Element).children[0] as Element));
+        const names = parameters(signature);
+        for (const node of body.slice(1)) markParameter(node, names);
         const caption = body[1];
         const summary: ElementContent[] = [{ type: "element", tagName: "span", properties: { className: ["hom-method-chevron", "transition-opacity", "duration-(--duration-fast)", "motion-reduce:transition-none"], ariaHidden: "true" }, children: [chevronIcon("")] }, div("hom-method-title", title)];
         if (caption?.type === "element" && caption.tagName === "p") {
           caption.properties.className = ["hom-method-caption"];
           summary.push(caption);
           body.splice(1, 1);
+        }
+        // Nothing to open: the row already shows the whole signature and
+        // the caption, so it stays a plain row.
+        if (body.length === 1 && !shortened.has(panel as Element)) {
+          grouped.push(div("hom-method hom-method-static", [div("hom-method-row", summary.slice(1))]));
+          continue;
         }
         grouped.push({ type: "element", tagName: "details", properties: { className: ["hom-method"] }, children: [
           { type: "element", tagName: "summary", properties: { className: DISCLOSURE_INTERACTION.split(" ") }, children: summary },
@@ -173,7 +223,7 @@ export function rehypeHom({ enabled }: { enabled: boolean }) {
         methods = [];
       };
       for (const node of grouped) {
-        if (node.type === "element" && node.tagName === "details" && (node.properties.className as string[] | undefined)?.includes("hom-method")) methods.push(node);
+        if (node.type === "element" && (node.properties.className as string[] | undefined)?.includes("hom-method")) methods.push(node);
         else { flush(); lists.push(node); }
       }
       flush();

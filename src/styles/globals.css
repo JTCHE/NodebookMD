@@ -1651,7 +1651,8 @@ pre code.hljs {
   border-bottom: 1px solid var(--border);
 }
 .hom-method:last-child { border-bottom: 0; }
-.hom-method > summary {
+.hom-method > summary,
+.hom-method-row {
   position: relative;
   padding: 0.75rem calc(1rem + 1px);
   list-style: none;
@@ -1699,7 +1700,7 @@ pre code.hljs {
   font-size: 0.8125rem;
   line-height: 1.6;
 }
-.hom-method:not([open]) .hom-method-caption {
+details.hom-method:not([open]) .hom-method-caption {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1708,6 +1709,8 @@ pre code.hljs {
 .hom-method-body { padding: 0.75rem 0 1rem; }
 .hom-method-body > .hom-signature { margin-inline: 0; }
 .hom-method-description { padding-inline: calc(1rem + 1px); }
+/* An enum value's owner, `hou.exprLanguage.`, steps back from the value. */
+.hom-value-prefix { opacity: 0.6; font-size: 0.85em; }
 
 /* The words a search excerpt named, marked for a moment on the page it
    opened. See lib/ui/flash-text.ts. */
