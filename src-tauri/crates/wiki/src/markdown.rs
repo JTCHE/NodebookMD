@@ -97,6 +97,24 @@ fn flush_tasks(run: &mut Vec<&Block>, out: &mut String) {
     out.push('\n');
 }
 
+/// The blocks of a section, each heading one level down, its own body too.
+fn deeper(blocks: &[Block]) -> Vec<Block> {
+    blocks
+        .iter()
+        .map(|block| match block {
+            Block::Heading { level, children, .. } => {
+                let mut moved = block.clone();
+                if let Block::Heading { level: new_level, children: new_children, .. } = &mut moved {
+                    *new_level = level + 1;
+                    *new_children = deeper(children);
+                }
+                moved
+            }
+            other => other.clone(),
+        })
+        .collect()
+}
+
 fn one(block: &Block, depth: u8) -> String {
     match block {
         Block::Heading {
@@ -124,6 +142,17 @@ fn one(block: &Block, depth: u8) -> String {
             let heading = match label {
                 Some(label) => inlines(label),
                 None => capitalise(name),
+            };
+            // `@methods` is the `##`, so a `== Group ==` inside it is one
+            // level under it. Kept at its own level, it printed an empty
+            // Methods heading with its groups beside it, not in it. Only
+            // methods: index pages draw their `@subtopics` groups as peers.
+            let moved;
+            let children = if name == "methods" && children.iter().any(|block| matches!(block, Block::Heading { level, .. } if *level <= 2)) {
+                moved = deeper(children);
+                &moved
+            } else {
+                children
             };
             let body = match name.as_str() {
                 // `@globals` is a plain type/name/description list, the same
