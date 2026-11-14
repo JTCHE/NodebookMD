@@ -40,7 +40,7 @@ const ROW = 30;
 /** Each level sits one step in from the one above: the step that puts a
     row's mark under the name of its parent. Every row holds the arrow slot
     and the mark slot, so all names at one depth stand on one axis. */
-const STEP = 23;
+const STEP = 16;
 
 function indent(depth: number): React.CSSProperties | undefined {
   if (depth === 0) return undefined;
