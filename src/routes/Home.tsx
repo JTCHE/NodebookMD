@@ -27,7 +27,7 @@ export default function Home() {
           pattern behind all of it would be one texture too many. */}
       <AsciiBackground
         glow={false}
-        className="absolute top-[-30px] right-[-60px] left-auto h-[374px] w-[660px] [mask-image:radial-gradient(ellipse_at_center,black_10%,transparent_70%)]"
+        className="absolute top-[-30px] right-[-280px] left-auto h-[374px] w-[660px] [mask-image:radial-gradient(ellipse_at_center,black_10%,transparent_70%)]"
       />
 
       <UpdatedPill />
