@@ -430,6 +430,10 @@ a {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* The wash behind a modal where the blur is off (see scrim-blur). Light
+     lifts the page's text toward the ground; dark sinks the page. */
+  --scrim-wash: oklch(0.44 0 0 / 80%);
 }
 
 /* Wide screens — only the layout-rhythm steps and the display type grow. The
@@ -477,6 +481,7 @@ a {
      `--neutral-0`, which IS the dark page, so this one is stated. */
   --surface-sunken: var(--neutral-0);
   --hairline: oklch(1 0 0 / 10%);
+  --scrim-wash: oklch(0 0 0 / 80%);
 
   --elevated-top: var(--neutral-200);
   --elevated-bottom: var(--neutral-100);
@@ -1310,13 +1315,13 @@ button:active kbd.kbd-button {
 
 /* The blur behind a modal (SCRIM in Modal.tsx). Off where the window draws in
    software, which blurs it again on every keystroke: see lib/ui/blur. Black
-   text under a black dim stays black, so without the blur the dim is a grey
-   that lifts the page's text toward the ground instead. */
+   text under a black dim stays black, so without the blur the dim is the
+   theme's --scrim-wash instead. */
 @utility scrim-blur {
   backdrop-filter: blur(8px);
   :root[data-no-blur] & {
     backdrop-filter: none;
-    background-color: color-mix(in oklab, var(--neutral-600) 80%, transparent);
+    background-color: var(--scrim-wash);
   }
 }
 
