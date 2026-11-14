@@ -48,7 +48,17 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
           const item = endpoints[firstIndex].closest("li")!;
           const shift = parseFloat(item.style.marginLeft || "0");
           const wanted = shift + drop - (entries[firstIndex].left + entries[firstIndex].width / 2);
-          if (Math.abs(wanted - shift) > 0.5) {
+          // The shift must leave the pill its full width in its column, or
+          // the label truncates to nothing. If it does not fit, the pill
+          // stays in its column and the wire jogs to it.
+          const label = endpoints[firstIndex].querySelector<HTMLElement>("[data-node-label]");
+          const fullWidth = (label?.scrollWidth ?? 0) + 8;
+          const fits = wanted + fullWidth <= item.parentElement!.clientWidth;
+          if (!fits && shift !== 0) {
+            item.style.marginLeft = "";
+            entries = endpoints.map((node) => node.getBoundingClientRect());
+          }
+          if (fits && Math.abs(wanted - shift) > 0.5) {
             item.style.marginLeft = `${wanted}px`;
             entries = endpoints.map((node) => node.getBoundingClientRect());
           }
