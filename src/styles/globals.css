@@ -151,6 +151,9 @@ a {
   /* ONE segment width for every picker: the widest label, "SideFX website",
      with its padding. */
   --spacing-segment: 120px;
+  /* A picker of three segments, with its 2px inset and gaps: the width a
+     select beside the pickers takes, so their right and left edges match. */
+  --spacing-picker: calc(3 * var(--spacing-segment) + 4 * var(--spacing-2xs));
   /* What a row draws outside its own box: the bookmark flag hangs 9px to
      the left of the mark, and the chip's shadow spreads a little past every
      edge. A list that scrolls has to hold this much slack inside its clip,

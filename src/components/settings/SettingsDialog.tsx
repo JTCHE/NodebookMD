@@ -124,10 +124,12 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-/** Rows that belong together. Between two groups, one line runs the full
-    width of the pane; between rows of one group, the line stops at the text. */
+/** Rows that belong together. Two groups are apart by one line with more
+    air on both sides of it than a line between two rows of one group. */
 function Group({ children }: { children: ReactNode }) {
-  return <div className="flex flex-col border-b border-hairline last:border-b-0 -mx-lg px-lg">{children}</div>;
+  return (
+    <div className="flex flex-col border-b border-hairline py-sm first:pt-0 last:border-b-0 last:pb-0">{children}</div>
+  );
 }
 
 /** One setting: what it is, then its state and its control on the right.
@@ -159,14 +161,6 @@ function Empty({ children }: { children: ReactNode }) {
 const BUTTON =
   "h-row shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-2xs text-label font-medium text-neutral-800 " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 active:bg-neutral-200 " +
-  "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
-
-/** A quiet action at the end of a row. It gives its padding back on both
-    sides: its text ends on the axis where the controls end, and stands from
-    the state beside it by the row's own gap. */
-const GHOST_BUTTON =
-  "-mx-ms h-row shrink-0 cursor-interactive rounded-lg px-ms pt-2xs text-label font-medium text-neutral-600 " +
-  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
 /** F1 in each Houdini release installed on the machine. A release series
@@ -245,15 +239,15 @@ function McpSection() {
         </Empty>
       )}
       {agents?.map((agent) => (
-        // A connected agent says so, and offers the quiet action of writing
-        // its config again. Any other agent offers Connect, which writes ours
-        // over whatever Houdini MCP its config holds.
+        // A connected agent says so, and offers to write its config again.
+        // Any other agent offers Connect, which writes ours over whatever
+        // Houdini MCP its config holds.
         <Row key={agent.key} label={agent.label}>
           {agent.link === "ours" && <State>Connected</State>}
           <button
             type="button"
             disabled={busy !== ""}
-            className={agent.link === "ours" ? GHOST_BUTTON : BUTTON}
+            className={BUTTON}
             onClick={() => void install(agent)}
           >
             {busy === agent.key ? "Installing…" : agent.link === "ours" ? "Update" : "Connect"}
@@ -282,7 +276,7 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
           else onChange(next);
         }}
         className={cn(
-          "h-row max-w-[220px] cursor-interactive appearance-none truncate rounded-lg bg-neutral-100 pt-2xs pr-xl pl-ms text-label font-medium text-neutral-950",
+          "h-row w-picker cursor-interactive appearance-none truncate rounded-lg bg-neutral-100 pt-2xs pr-xl pl-ms text-label font-medium text-neutral-950",
           "ring-1 ring-hairline ring-inset transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         )}
@@ -440,7 +434,7 @@ function UsageSection() {
       <Row label="What is sent">
         <button
           type="button"
-          className={GHOST_BUTTON}
+          className={BUTTON}
           onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason), "error"))}
         >
           Show
