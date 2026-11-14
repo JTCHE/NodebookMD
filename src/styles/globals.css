@@ -1697,7 +1697,9 @@ details.hom-method:not([open]) .hom-method-caption {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.hom-method-body { padding: 0.75rem 0 1rem; }
+/* The body belongs to its own row: it sits close under the summary and far
+   from the next row. */
+.hom-method-body { padding: 0.25rem 0 1.5rem; }
 .hom-method-body > .hom-signature { margin-inline: 0; }
 .hom-method-description { padding-inline: calc(1rem + 1px); }
 /* The summary above and the row line below set the gaps, not the prose margins. */
