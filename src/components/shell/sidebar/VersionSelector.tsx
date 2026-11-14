@@ -113,15 +113,18 @@ function Card({
       )}
     >
       <span className="flex min-w-0 flex-col gap-[3px]">
-        <span className="truncate text-[13px] leading-4 font-medium tracking-[-0.012em] text-neutral-950">
+        <span className="flex min-w-0 items-center gap-[3px] text-[13px] leading-4 font-medium tracking-[-0.012em] text-neutral-950">
           {/* `null` is not read yet, which is not the same as no install. */}
-          {version ? `Houdini ${version}` : version === null ? "Houdini" : "No Houdini install found"}
+          <span className="truncate">
+            {version ? `Houdini ${version}` : version === null ? "Houdini" : "No Houdini install found"}
+          </span>
+          {/* The chevron stands on the name it opens, so the name reads as the control. */}
+          <Icons.expanded className="size-[11px] shrink-0 text-neutral-400 transition-colors duration-(--duration-fast) group-hover/card:text-neutral-700 motion-reduce:transition-none" />
         </span>
         <span className="truncate text-caption leading-[14px] text-neutral-500 tabular-nums">
           {pageCount === null ? "Reading the install…" : pagesLabel(pageCount, status)}
         </span>
       </span>
-      <Icons.versionPicker className="size-ms shrink-0 text-neutral-400 transition-colors duration-(--duration-fast) group-hover/card:text-neutral-700 motion-reduce:transition-none" />
     </button>
   );
 }
@@ -306,7 +309,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
       {currentHooked !== undefined && (
         // Beside the chevron, over the card and not inside it: a button
         // cannot hold a button.
-        <div className="absolute top-1/2 right-[28px] flex -translate-y-1/2">
+        <div className="absolute top-1/2 right-sm flex -translate-y-1/2">
           <F1Chip release={currentSeries} hooked={currentHooked} onToggle={() => toggleF1(currentSeries, currentHooked)} />
         </div>
       )}
