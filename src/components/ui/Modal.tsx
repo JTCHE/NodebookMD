@@ -19,10 +19,15 @@ import { Hint } from "@/components/ui/Hint";
 export const SCRIM =
   "absolute inset-0 bg-black/50 scrim-blur transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none";
 
-/** The modal's inset. The close button stands this far from the top and the
-    right edge, so content padded by it ends on the button's right edge. */
+/** The modal's inset. Content padded by it ends where the close button's
+    cross ends: the button hangs its own padding past that line (`CLOSE`). */
 export const MODAL_TOP = "pt-lg";
 export const MODAL_LINE = "flex h-7 shrink-0 items-center";
+
+/** The close button is 28px and its cross is 8px, so the cross stands 10px
+    inside the button. The button gives those 10px back, as every ghost
+    button gives back its padding. */
+const CLOSE = "right-[calc(var(--spacing-lg)-10px)]";
 
 export function Modal({
   label,
@@ -58,7 +63,7 @@ export function Modal({
           className,
         )}
       >
-        <Hint label="Close" keys="Esc" className="absolute top-lg right-lg z-10">
+        <Hint label="Close" keys="Esc" className={cn("absolute top-lg z-10", CLOSE)}>
         <button
           type="button"
           aria-label="Close"

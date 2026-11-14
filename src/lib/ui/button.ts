@@ -21,3 +21,9 @@ export const BAR_BUTTON =
   "pointer-hover:not-disabled:bg-neutral-200 active:not-disabled:bg-neutral-300 " +
   "disabled:text-neutral-400 disabled:pointer-events-none " +
   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
+
+/** A text action that reads as a link: the brand ink, a rule under the
+    pointer, and a dim while it is pressed. Settings and the setup use it. */
+export const TEXT_LINK =
+  "cursor-interactive rounded-sm text-brand-700 underline-offset-2 transition-opacity duration-(--duration-fast) motion-reduce:transition-none " +
+  "pointer-hover:underline active:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";

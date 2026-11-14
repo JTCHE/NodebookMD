@@ -29,6 +29,11 @@
    pointed at the same attribute theme.ts writes. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* Every control acts on the press (lib/ui/press), and the click it raises
+   there takes `:active` away in Chromium. The press marks the held control
+   instead, so `active:` reads that mark as well as the real state. */
+@custom-variant active (&:is(:active, [data-pressed]));
+
 html {
   background: var(--background);
   color-scheme: light dark;

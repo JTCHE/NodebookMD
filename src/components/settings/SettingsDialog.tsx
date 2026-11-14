@@ -13,6 +13,7 @@ import { invoke, inTauri } from "@/lib/backend";
 import { COMMAND_KEY, IS_MAC, isCommand, useHotkey } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
+import { TEXT_LINK } from "@/lib/ui/button";
 import { Modal, MODAL_LINE, MODAL_TOP } from "@/components/ui/Modal";
 import { SidebarRow } from "@/components/shell/sidebar/SidebarRow";
 import { Toggle } from "@/components/ui/Toggle";
@@ -67,16 +68,18 @@ export function SettingsDialog() {
     <Modal label="Settings" onClose={() => setOpen(false)} className="h-[min(560px,100%)] w-full max-w-[760px] flex-row">
       {/* The panel's own rows, on the panel's own ground: the sections are
           places, as the sidebar's rows are. */}
-      <nav className={cn("flex w-[200px] shrink-0 flex-col border-r border-hairline bg-neutral-100 px-lg pb-lg", MODAL_TOP)}>
+      <nav className={cn("flex w-[200px] shrink-0 flex-col border-r border-hairline bg-neutral-100 px-md pb-md", MODAL_TOP)}>
         <span className={cn(MODAL_LINE, "text-caption text-neutral-500")}>Settings</span>
         {/* The rows give their padding back, so their names stand on the
-            axis of the title above them. */}
+            axis of the title above them. A row stands 8px inside the
+            dialog's 12px corner, so its corner is 4px and the two nest. */}
         <div className="-mx-sm flex flex-col gap-2xs">
           {SECTIONS.map((one) => (
             <SidebarRow
               key={one.key}
               label={one.label}
               bare
+              className="rounded-sm"
               selected={shown === one.key}
               mark={<one.icon className={cn("size-[15px]", shown === one.key ? "text-brand" : "text-neutral-500")} />}
               onClick={() => setShown(one.key)}
@@ -146,14 +149,6 @@ function Empty({ children }: { children: ReactNode }) {
   return <p className="py-ms text-meta text-neutral-500">{children}</p>;
 }
 
-/** A quiet text action. It gives its padding back as a negative margin, so
-    its text stands on the axis of the text around it. */
-const GHOST_BUTTON =
-  "-mx-xs shrink-0 cursor-interactive rounded-sm px-xs font-medium text-neutral-700 underline decoration-neutral-300 underline-offset-2 " +
-  "transition-colors duration-(--duration-fast) motion-reduce:transition-none " +
-  "pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 " +
-  "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
-
 /** The one button style of Settings: as tall as a picker, with its radius. */
 const BUTTON =
   "h-row shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms text-label font-medium text-neutral-800 shadow-chip " +
@@ -176,7 +171,9 @@ function HelpSection() {
         <Row
           key={one.release}
           label={`Houdini ${one.release}`}
-          detail={`F1 opens ${!one.external || !one.url ? "Houdini's own help" : one.ours ? APP_NAME : one.url}`}
+          // The switch says whether F1 opens this app. Only a third help
+          // server is a fact the switch cannot show: turning it on replaces it.
+          detail={one.external && one.url && !one.ours ? `F1 opens ${one.url}` : undefined}
         >
           <Toggle
             checked={one.external && one.ours}
@@ -437,7 +434,7 @@ function UsageSection() {
         detail={
           <button
             type="button"
-            className={GHOST_BUTTON}
+            className={TEXT_LINK}
             onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason), "error"))}
           >
             See what is sent

@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { invoke } from "@/lib/backend";
+import { TEXT_LINK } from "@/lib/ui/button";
 import { SettingRow } from "./SettingRow";
 import { CHOICE_HANG, ChoiceRow } from "./ChoiceRow";
 
@@ -63,7 +64,7 @@ export function McpStep({
           type="button"
           onClick={() => void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl(MCP_REPO))}
           onMouseDown={(event) => event.preventDefault()}
-          className="cursor-interactive text-brand-700 underline-offset-2 pointer-hover:underline"
+          className={TEXT_LINK}
         >
           github.com/JTCHE/houdini-mcp
         </button>
