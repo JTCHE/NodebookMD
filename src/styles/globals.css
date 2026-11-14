@@ -140,6 +140,9 @@ a {
      height; two heights is what made the panel look assembled rather than
      drawn. The chip is the raised tile in the bookmark strip. */
   --spacing-row: 30px;
+  /* ONE row height for Settings: a switch, a picker and a button row are the
+     same height on every tab, with or without a fact under the label. */
+  --spacing-setting: 52px;
   /* What a row draws outside its own box: the bookmark flag hangs 9px to
      the left of the mark, and the chip's shadow spreads a little past every
      edge. A list that scrolls has to hold this much slack inside its clip,

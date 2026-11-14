@@ -36,7 +36,9 @@ export function Segmented<T extends string>({
       role="radiogroup"
       aria-label={label}
       onKeyDown={onKeyDown}
-      className="inline-flex shrink-0 gap-[2px] rounded-lg border border-hairline bg-neutral-100 p-[2px]"
+      // The track's line is a ring, not a border, so it takes no room: the
+      // chip's radius is the track's radius minus the inset, and they nest.
+      className="inline-flex h-row shrink-0 gap-2xs rounded-lg bg-neutral-100 p-2xs ring-1 ring-hairline ring-inset"
     >
       {options.map((one) => {
         const chosen = one.value === value;
@@ -51,7 +53,7 @@ export function Segmented<T extends string>({
             onClick={() => onChange(one.value)}
             onMouseDown={(event) => event.preventDefault()}
             className={cn(
-              "h-[26px] cursor-interactive rounded-md px-sm text-[13px] font-medium whitespace-nowrap",
+              "h-full cursor-interactive rounded-md px-sm text-label font-medium whitespace-nowrap",
               "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
               "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
               chosen ? "bg-raised text-neutral-950 shadow-chip" : "text-neutral-500 pointer-hover:text-neutral-900",

@@ -21,17 +21,23 @@ import {
   type Vault,
 } from "@/lib/obsidian";
 
-/** The vaults Obsidian lists, as chips, and a chip to pick any other folder. */
-export function VaultPicker({ value, onChange }: { value: string | null; onChange: (path: string) => void }) {
+/** The vaults Obsidian lists, and the one picked by hand if it is not in that
+    list. Settings and this dialog read the same list. */
+export function useVaults(value: string | null): Vault[] {
   const [known, setKnown] = useState<Vault[] | null>(null);
   useEffect(() => {
     void vaults().then(setKnown);
   }, []);
   const listed = known ?? [];
   // A folder picked by hand is not in Obsidian's list; it still shows.
-  const all = value && !listed.some((vault) => vault.path === value)
+  return value && !listed.some((vault) => vault.path === value)
     ? [{ path: value, name: value.split(/[\\/]/).filter(Boolean).pop() ?? value }, ...listed]
     : listed;
+}
+
+/** The vaults Obsidian lists, as chips, and a chip to pick any other folder. */
+function VaultPicker({ value, onChange }: { value: string | null; onChange: (path: string) => void }) {
+  const all = useVaults(value);
   return (
     <div className={cn(CHOICE_HANG, "flex flex-wrap gap-sm")}>
       {all.map((vault) => (

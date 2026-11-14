@@ -19,7 +19,9 @@ import { Hint } from "@/components/ui/Hint";
 export const SCRIM =
   "absolute inset-0 bg-black/50 scrim-blur transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none";
 
-export const MODAL_TOP = "pt-[20px]";
+/** The modal's inset. The close button stands this far from the top and the
+    right edge, so content padded by it ends on the button's right edge. */
+export const MODAL_TOP = "pt-lg";
 export const MODAL_LINE = "flex h-7 shrink-0 items-center";
 
 export function Modal({
@@ -56,14 +58,15 @@ export function Modal({
           className,
         )}
       >
-        <Hint label="Close" keys="Esc" className="absolute top-[20px] right-[20px] z-10">
+        <Hint label="Close" keys="Esc" className="absolute top-lg right-lg z-10">
         <button
           type="button"
           aria-label="Close"
           onClick={onClose}
           className={cn(
             "grid size-7 cursor-interactive place-items-center rounded-md text-neutral-500",
-            "pointer-hover:bg-neutral-100 pointer-hover:text-neutral-800",
+            "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
+            "pointer-hover:bg-neutral-100 pointer-hover:text-neutral-800 active:bg-neutral-200",
             "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
           )}
         >
