@@ -130,53 +130,12 @@ jobs:
             src-tauri/target/release/bundle/appimage/*.AppImage
             src-tauri/target/release/bundle/appimage/*.AppImage.sig
 
-  macos:
-    # Apple Silicon only. The bundle is ad-hoc signed (`tauri.macos.conf.json`),
-    # not notarized: a reader opens it once through System Settings, Privacy &
-    # Security, Open Anyway. Without a signature at all, macOS calls a
-    # downloaded app "damaged" and offers no way past.
-    #
-    # The updater does not read the disk image. It reads the app as a tarball,
-    # which is why the release carries both.
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: install front-end dependencies
-        run: bun install
-
-      - name: build
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
-        run: bun run tauri build --bundles app
-
-      # Not Tauri's disk image: its window layout is a Finder script, which
-      # needs a logged-in desktop. The tarball takes the disk image's name, so
-      # the release page says which version and which chip each file is for.
-      - name: pack the disk image and name the updater bundle
-        run: |
-          bundle=src-tauri/target/release/bundle
-          dmg=NodebookMD_$(jq -r .version src-tauri/tauri.conf.json)_aarch64
-          mkdir out
-          sh src-tauri/dmg/build.sh "$bundle"/macos/NodebookMD.app "out/$dmg.dmg"
-          cp "$bundle"/macos/*.app.tar.gz "out/$dmg.app.tar.gz"
-          cp "$bundle"/macos/*.app.tar.gz.sig "out/$dmg.app.tar.gz.sig"
-          ls -la out
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos
-          path: out/*
-
   publish:
-    # Every platform is built now: add Linux and macOS to `latest.json`, which
-    # the Windows job created, and take the loose `.sig` files off.
-    needs: [windows, linux, macos]
+    # Windows and Linux are built now: add Linux to `latest.json`, which the
+    # Windows job created, and take the loose `.sig` files off. macOS is built
+    # on a Mac by hand and added by `macos-sign.yml`: the GitHub macOS runner
+    # costs money.
+    needs: [windows, linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -190,27 +149,18 @@ jobs:
           name: appimage
           path: appimage
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: macos
-          path: macos
+      - name: upload the AppImage
+        run: gh release upload "$TAG" appimage/*.AppImage --repo "$REPO" --clobber
 
-      - name: upload the AppImage and the macOS files
-        run: gh release upload "$TAG" appimage/*.AppImage macos/*.dmg macos/*.app.tar.gz --repo "$REPO" --clobber
-
-      - name: add the Linux and macOS platforms to latest.json
+      - name: add the Linux platform to latest.json
         run: |
           gh release download "$TAG" --repo "$REPO" --pattern latest.json --output latest.json
           version=$(jq -r .version latest.json)
           name=$(basename appimage/*.AppImage)
           url="https://github.com/$REPO/releases/latest/download/$name"
           signature=$(cat appimage/*.AppImage.sig)
-          tarball=$(basename macos/*.app.tar.gz)
-          mac_url="https://github.com/$REPO/releases/latest/download/$tarball"
-          mac_signature=$(cat macos/*.app.tar.gz.sig)
-          jq --arg url "$url" --arg sig "$signature" --arg mac_url "$mac_url" --arg mac_sig "$mac_signature" \
-            '.platforms["linux-x86_64"] = {"signature": $sig, "url": $url}
-             | .platforms["darwin-aarch64"] = {"signature": $mac_sig, "url": $mac_url}' \
+          jq --arg url "$url" --arg sig "$signature" \
+            '.platforms["linux-x86_64"] = {"signature": $sig, "url": $url}' \
             latest.json > latest.new.json
           mv latest.new.json latest.json
           jq -r '.version, (.platforms | keys | join(", "))' latest.json

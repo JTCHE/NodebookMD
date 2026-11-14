@@ -10,12 +10,19 @@ One workflow, `.github/workflows/release.yml`, on a `v*` tag.
 1. Push a tag. Nothing else starts a release.
 2. `tauri-action` builds the Windows installer, signs it with the updater
    key, writes `latest.json` and opens a **draft** release.
-3. The Linux and macOS jobs build beside it. `publish` adds their files to
-   the draft and their entries to `latest.json`.
-4. The draft now holds the files in the table below.
-5. You paste the release notes into the draft and publish it. Then set the
+3. The Linux job builds beside it. `publish` adds the AppImage to the draft
+   and its entry to `latest.json`.
+4. macOS is built on the Mac, not in CI: the GitHub macOS runner costs
+   money. On the Mac, `bun run tauri build --bundles app`, pack the `.app`
+   as `<productName>_<version>_aarch64.app.tar.gz` (`tar -czf`, the `.app`
+   at its root) and the disk image with `src-tauri/dmg/build.sh`. Upload
+   both to the draft, then run `gh workflow run macos-sign.yml -f
+   tag=v<version>`: it signs the tarball and adds `darwin-aarch64` to
+   `latest.json`.
+5. The draft now holds the files in the table below.
+6. You paste the release notes into the draft and publish it. Then set the
    note's `Status` to `Closed` and fill its `Date`.
-6. Publishing is what starts the update. Installed copies read
+7. Publishing is what starts the update. Installed copies read
    `releases/latest/download/latest.json` on their next launch.
 
 ## What reaches GitHub

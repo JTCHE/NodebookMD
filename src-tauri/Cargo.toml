@@ -3,7 +3,7 @@ members = ["crates/engine", "crates/wiki"]
 
 [package]
 name = "nodebookmd"
-version = "0.3.0"
+version = "0.3.1"
 description = "Version-exact Houdini documentation, offline and local."
 authors = ["JTCHE"]
 edition = "2024"
