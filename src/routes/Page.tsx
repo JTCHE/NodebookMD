@@ -403,7 +403,7 @@ export default function Page() {
       // step sideways between a page that scrolls and one that does not.
       // --page-bar-h is the height of the bar that stays at the top: the
       // list of contents, the pill and a heading's jump offset clear it.
-      className="docs-shell @container flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable] [--page-bar-h:3.5rem] print:block print:overflow-visible"
+      className="docs-shell @container flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable] [--page-bar-h:2.75rem] print:block print:overflow-visible"
     >
       <SearchOverlay ref={search} />
       {/* Room for the contents list in the right gutter, taken from the box
