@@ -204,12 +204,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div
           className={cn(
             "relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background",
-                        docked && "rounded-tl-[10px] border-l",
-            "print:block print:overflow-visible print:border-0",
+                                    "print:block print:overflow-visible print:border-0",
           )}
         >
           {children}
           <FindBar />
+          {/* The page fades out at its foot, so a line is never cut hard. */}
+          <div aria-hidden="true" className="page-foot-scrim print:hidden" />
         </div>
         <Lightbox />
         <ContextMenu />

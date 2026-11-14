@@ -603,6 +603,15 @@ svg[stroke="currentColor"] * {
   z-index: -1;
   pointer-events: none;
 }
+.page-foot-scrim {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 10;
+  height: 2.5rem;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--background) 0, var(--scrim-stops));
+}
 .page-bar-scrim::before {
   top: 0;
   height: calc(100% + 1rem);
