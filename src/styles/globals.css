@@ -31,8 +31,11 @@
 
 /* Every control acts on the press (lib/ui/press), and the click it raises
    there takes `:active` away in Chromium. The press marks the held control
-   instead, so `active:` reads that mark as well as the real state. */
-@custom-variant active (&:is(:active, [data-pressed]));
+   instead, so `active:` reads that mark as well as the real state.
+   `pointer-hover:` sits in a media query, which Tailwind writes after every
+   plain variant, so at one weight the hover look would cover the press.
+   `:not(:disabled)` adds that weight, and a disabled control has no press. */
+@custom-variant active (&:is(:active, [data-pressed]):not(:disabled));
 
 html {
   background: var(--background);
@@ -427,6 +430,10 @@ a {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* The wash behind a modal where the blur is off (see scrim-blur). Light
+     lifts the page's text toward the ground; dark sinks the page. */
+  --scrim-wash: oklch(0.44 0 0 / 80%);
 }
 
 /* Wide screens — only the layout-rhythm steps and the display type grow. The
@@ -476,6 +483,7 @@ a {
   --hairline: oklch(1 0 0 / 10%);
   /* The ramp has no step under the dark page, so this one is stated. */
   --chrome: oklch(0.118 0 0);
+  --scrim-wash: oklch(0 0 0 / 80%);
 
   --elevated-top: var(--neutral-200);
   --elevated-bottom: var(--neutral-100);
@@ -1330,11 +1338,14 @@ button:active kbd.kbd-button {
 }
 
 /* The blur behind a modal (SCRIM in Modal.tsx). Off where the window draws in
-   software, which blurs it again on every keystroke: see lib/ui/blur. */
+   software, which blurs it again on every keystroke: see lib/ui/blur. Black
+   text under a black dim stays black, so without the blur the dim is the
+   theme's --scrim-wash instead. */
 @utility scrim-blur {
   backdrop-filter: blur(8px);
   :root[data-no-blur] & {
     backdrop-filter: none;
+    background-color: var(--scrim-wash);
   }
 }
 

@@ -75,15 +75,22 @@ export function SettingsDialog() {
     <Modal
       label="Settings"
       onClose={() => setOpen(false)}
-      // The close button stands in the corner, in the gutter outside the
-      // content, so a section's title line is free for its own action. Its
-      // radius is the dialog's less the inset, so the corners nest.
-      closeAt="top-sm right-sm [&>button]:rounded-[calc(var(--radius-xl)-var(--spacing-sm))]"
-      className="h-[min(540px,100%)] w-full max-w-[820px] flex-row"
+      // The close button stands on the title's line (see `Section`), and
+      // gives back the 10px between its edge and its cross, so the cross ends
+      // on the content's right edge. It stands where the title's line stands,
+      // so the cross is centred on the title's capitals.
+      closeAt="top-[calc(var(--spacing-lg)-6px)] right-[calc(var(--spacing-lg)-10px)]"
+      // One height on every tab, so the dialog never jumps, and room for the
+      // six agents Houdini MCP supports, the longest list with a known end
+      // (see `Section`). Houdini Integration has no such end, so a longer
+      // list scrolls. It stands tall enough to cover the page's heading.
+      className="h-[min(520px,100%)] w-full max-w-[760px] flex-row"
     >
       {/* The sections are places, as the sidebar's rows are, on the panel's
-          own ground. The first row shares a centre with the title. */}
-      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 px-sm pt-[calc(var(--spacing-2xl)-1px)] pb-sm">
+          own ground. The inset is one value on every side: with the row's own
+          8px it puts the mark on the content's axis, and the first row,
+          30px tall, centres on the title's capitals. */}
+      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 p-[calc(var(--spacing-lg)-var(--spacing-sm))]">
         {SECTIONS.map((one) => (
           <SidebarRow
             key={one.key}
@@ -119,16 +126,20 @@ export function SettingsDialog() {
 }
 
 /** A tab of Settings: its title, an action of the tab's own at the end of
-    the title's line, then the rows, which scroll under the title. Title,
-    rows and action all stand on one pair of axes, the content's gutters. */
+    the title's line, then the rows, which scroll under the title. The
+    content's inset is one value on every side. The title's capitals start
+    6px below the top of its 28px line, so the line starts 6px higher and the
+    capitals stand as far from the top as the text from the left. The line
+    stops short of the close button: its 18px past the content edge, then one
+    gap between the close button and the action's own hover box. */
 function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <header className="mx-2xl mt-2xl mb-sm flex h-7 shrink-0 items-center justify-between gap-md">
-        <h2 className="truncate text-[20px] font-semibold tracking-[-0.02em] text-neutral-950">{title}</h2>
+      <header className="mt-[calc(var(--spacing-lg)-6px)] mr-[calc(var(--spacing-lg)+18px+var(--spacing-md)+var(--spacing-sm))] mb-xs ml-lg flex h-7 shrink-0 items-baseline justify-between gap-md">
+        <h2 className="truncate text-[20px] leading-7 font-semibold tracking-[-0.02em] text-neutral-950">{title}</h2>
         {action}
       </header>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2xl pb-xl">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-lg pb-lg">{children}</div>
     </section>
   );
 }
@@ -136,10 +147,17 @@ function Section({ title, action, children }: { title: string; action?: ReactNod
 /** One setting: what it is, a fact under it when the reader needs one, and
     its control on the right. Every row on every tab is one height, with or
     without the fact. Rows of a tab are siblings: a line between two of them
-    runs only as wide as the content, never to the dialog's edges. */
+    runs only as wide as the content, never to the dialog's edges. A fact
+    lifts the label by half its own line, so a first row with one starts
+    that much lower: the label stands as far under the title on every tab. */
 function Row({ label, fact, children }: { label: string; fact?: ReactNode; children?: ReactNode }) {
   return (
-    <div className="box-content flex h-setting shrink-0 items-center gap-md border-b border-hairline last:border-b-0">
+    <div
+      className={cn(
+        "box-content flex h-setting shrink-0 items-center gap-md border-b border-hairline last:border-b-0",
+        fact && "first:mt-[calc((var(--text-meta)*var(--text-meta--line-height)+1px)/2)]",
+      )}
+    >
       <span className="flex min-w-0 flex-1 flex-col gap-px">
         <span className="truncate text-title text-neutral-950">{label}</span>
         {fact && <span className="truncate text-meta text-neutral-500">{fact}</span>}
@@ -163,16 +181,16 @@ const BUTTON =
 /** A quiet action on a title's line. It gives its padding back, so its text
     ends on the content's right edge, where the row controls end. */
 const GHOST_BUTTON =
-  "-mr-sm h-7 shrink-0 cursor-interactive rounded-md px-sm pt-px text-label font-medium text-neutral-500 " +
-  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-900 active:bg-neutral-200 " +
+  "-mr-sm h-7 shrink-0 cursor-interactive rounded-md px-sm text-label font-medium text-neutral-700 " +
+  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:bg-transparent disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** What F1 in a release opens now. The switch shows on or off; this says
-    what off means, which is the fact a reader needs before turning it on. */
-function helpTarget(release: Release): string {
-  if (release.external && release.ours) return `F1 opens ${APP_NAME}`;
-  if (release.external && release.url) return `F1 opens ${release.url}`;
-  return "F1 opens Houdini's own help";
+/** A fact the switch cannot show: a release that never ran has no
+    preferences to write, so its switch stays off and greyed; F1 that opens
+    another server is off too, but not Houdini's own help. */
+function helpTarget(release: Release | undefined): string | undefined {
+  if (!release) return "Open this Houdini once to set it up";
+  if (release.external && !release.ours) return "F1 opens another server";
 }
 
 /** F1 in each Houdini release series installed on the machine. A series has
@@ -204,18 +222,14 @@ function HelpSection() {
       {series?.map((name) => {
         const release = releases?.find((one) => one.release === name);
         return (
-          <Row
-            key={name}
-            label={`Houdini ${name}`}
-            fact={release ? helpTarget(release) : "Start it once to set its F1 key"}
-          >
-            {release && (
-              <Toggle
-                checked={release.external && release.ours}
-                onChange={(next) => void flip(name, next)}
-                label={`F1 in Houdini ${name} opens ${APP_NAME}`}
-              />
-            )}
+          <Row key={name} label={`Houdini ${name}`} fact={helpTarget(release)}>
+            <Toggle
+              checked={!!release?.external && !!release.ours}
+              disabled={!release}
+              title={release ? undefined : helpTarget(release)}
+              onChange={(next) => void flip(name, next)}
+              label={`F1 in Houdini ${name} opens ${APP_NAME}`}
+            />
           </Row>
         );
       })}
@@ -287,26 +301,23 @@ function McpSection() {
         </Empty>
       )}
       {agents?.map((agent) => (
-        // Connect writes ours over whatever Houdini MCP the config holds;
-        // Update writes ours again.
+        // Connect writes ours; Replace writes ours over another Houdini MCP;
+        // Update writes ours again. The button says the state; only a
+        // connected agent says so in words, with its check.
         <Row
           key={agent.key}
           label={agent.label}
           fact={
-            agent.link === "ours" ? (
+            agent.link === "ours" && (
               <span className="inline-flex items-center gap-xs text-neutral-800">
                 <Icons.chosen className="size-3 text-brand" />
                 Connected
               </span>
-            ) : agent.link === "other" ? (
-              "Uses another Houdini MCP"
-            ) : (
-              "Not connected"
             )
           }
         >
           <button type="button" disabled={busy !== ""} className={BUTTON} onClick={() => void install(agent)}>
-            {busy === agent.key ? "Installing…" : agent.link === "ours" ? "Update" : "Connect"}
+            {busy === agent.key ? "Installing…" : { ours: "Update", other: "Replace", none: "Connect" }[agent.link]}
           </button>
         </Row>
       ))}
@@ -332,10 +343,11 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
           else onChange(next);
         }}
         className={cn(
-          // A choice, so it wears the picker's sunken track. The chevron
-          // stands as far in from the right as the text from the left.
+          // A choice, so it wears the picker's track, as wide as its longest
+          // vault. The chevron stands as far in from the right as the text
+          // from the left.
           TRACK,
-          "w-[220px] cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
+          "max-w-[280px] cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200/60",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         )}

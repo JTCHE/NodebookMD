@@ -10,14 +10,20 @@ import { cn } from "@/lib/utils";
  */
 export function Toggle({
   checked,
+  disabled,
   onChange,
   label,
+  title,
   className,
 }: {
   checked: boolean;
+  /** Greyed and inert, for a setting that cannot change yet. */
+  disabled?: boolean;
   onChange: (next: boolean) => void;
   /** What the switch turns on, for a reader who cannot see the row beside it. */
   label: string;
+  /** Why the switch cannot change, on hover. */
+  title?: string;
   className?: string;
 }) {
   return (
@@ -25,7 +31,9 @@ export function Toggle({
       type="button"
       role="switch"
       aria-checked={checked}
+      disabled={disabled}
       aria-label={label}
+      title={title}
       onClick={() => onChange(!checked)}
       // A click flips the switch and leaves the focus where it was, so the
       // key that ends the screen keeps answering Enter.
@@ -34,7 +42,11 @@ export function Toggle({
         "relative h-[20px] w-[34px] shrink-0 cursor-interactive rounded-full",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        checked ? "bg-neutral-950" : "bg-neutral-300",
+        // Off is a mid grey, dark enough to read as a live control; disabled
+        // fades the whole switch to half, so the two never look alike and
+        // the disabled one is still there to see.
+        checked ? "bg-neutral-950" : "bg-neutral-500",
+        "disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
     >

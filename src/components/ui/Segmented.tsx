@@ -4,8 +4,8 @@ import { Hint } from "@/components/ui/Hint";
 
 /** A sunken track: the look of every control that holds a choice, so a picker
     and a select read as one kind of thing, apart from the raised buttons that
-    act. The line is a ring, so it takes no room. */
-export const TRACK = "h-row rounded-lg bg-neutral-100 ring-1 ring-hairline ring-inset";
+    act. A pale fill and no line, so the chosen chip carries the weight. */
+export const TRACK = "h-row rounded-lg bg-neutral-100";
 
 /**
  * One choice out of a few short ones, side by side in one track: a theme, a
@@ -42,10 +42,10 @@ export function Segmented<T extends string>({
       role="radiogroup"
       aria-label={label}
       onKeyDown={onKeyDown}
-      // Every segment is as wide as the widest label of its picker, so the
-      // chip keeps its size as it slides. The chip's radius is the track's
+      // As wide as its content, cut into equal segments of the longest
+      // label, so the chip keeps its size as it slides. The chip's radius is the track's
       // radius less the 2px inset, so the two nest.
-      className={cn(TRACK, "relative grid shrink-0 auto-cols-fr grid-flow-col gap-2xs p-2xs")}
+      className={cn(TRACK, "relative inline-grid shrink-0 auto-cols-fr grid-flow-col gap-2xs p-2xs")}
     >
       {chosenIndex >= 0 && (
         <span
@@ -71,7 +71,7 @@ export function Segmented<T extends string>({
             onMouseDown={(event) => event.preventDefault()}
             className={cn(
               // Geist sits high in its line: 1px at the top centres its capitals.
-              "relative h-full w-full cursor-interactive rounded-md px-ms pt-px text-center text-label font-medium whitespace-nowrap",
+              "relative h-full w-full min-w-0 cursor-interactive rounded-md px-sm pt-px text-center text-label font-medium whitespace-nowrap",
               "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
               "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
               chosen ? "text-neutral-950" : "text-neutral-500 pointer-hover:text-neutral-900",
