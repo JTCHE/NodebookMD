@@ -136,10 +136,15 @@ function Group({ children }: { children: ReactNode }) {
     Every row on every tab is this one row, one line high, so every label
     stands at the same height. The line under it is outside that height, so
     the space above a line and the space below it are the same. */
-function Row({ label, children }: { label: string; children?: ReactNode }) {
+function Row({ label, fact, children }: { label: string; fact?: string; children?: ReactNode }) {
   return (
     <div className="box-content flex h-setting shrink-0 items-center gap-md border-b border-hairline last:border-b-0">
-      <span className="min-w-0 flex-1 truncate text-title font-medium text-neutral-950">{label}</span>
+      {/* A fact hangs under the label and takes no room, so the label stands
+          where every other label stands. */}
+      <span className="relative min-w-0 flex-1">
+        <span className="block truncate text-title font-medium text-neutral-950">{label}</span>
+        {fact && <span className="absolute top-full left-0 truncate text-caption leading-none text-neutral-500">{fact}</span>}
+      </span>
       {children}
     </div>
   );
@@ -159,7 +164,7 @@ function Empty({ children }: { children: ReactNode }) {
     and its padding. Geist sits high in its line, so the text in every
     control of Settings takes 2px at the top, which centres its capitals. */
 const BUTTON =
-  "h-row shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-2xs text-label font-medium text-neutral-800 " +
+  "h-row min-w-button shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-2xs text-center text-label font-medium text-neutral-800 " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
@@ -176,10 +181,13 @@ function HelpSection() {
     <Section title="Houdini Integration">
       {releases?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
       {releases?.map((one) => (
-        <Row key={one.release} label={`Houdini ${one.release}`}>
-          {/* The switch shows whether F1 opens this app. A third help server
-              is the one fact it cannot show: turning the switch on replaces it. */}
-          {one.external && one.url && !one.ours && <State>F1 opens another help server</State>}
+        <Row
+          key={one.release}
+          label={`Houdini ${one.release}`}
+          // The switch shows whether F1 opens this app. A third help server
+          // is the one fact it cannot show: turning the switch on replaces it.
+          fact={one.external && one.url && !one.ours ? "F1 opens another help server" : undefined}
+        >
           <Toggle
             checked={one.external && one.ours}
             onChange={(next) => void flip(one.release, next)}
@@ -276,8 +284,11 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
           else onChange(next);
         }}
         className={cn(
-          "h-row w-picker cursor-interactive appearance-none truncate rounded-lg bg-neutral-100 pt-2xs pr-xl pl-ms text-label font-medium text-neutral-950",
-          "ring-1 ring-hairline ring-inset transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200",
+          // Quieter than a picker's track: no fill until the pointer is on
+          // it. The chevron stands as far in from the right as the text from
+          // the left; the text stops a gap short of it.
+          "h-row w-picker cursor-interactive appearance-none truncate rounded-lg bg-transparent pt-2xs pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
+          "border border-hairline transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         )}
       >
@@ -295,7 +306,7 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
       </select>
       <Icons.versionPicker
         aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 right-sm size-3.5 -translate-y-1/2 text-neutral-500"
+        className="pointer-events-none absolute top-1/2 right-ms size-3.5 -translate-y-1/2 text-neutral-500"
       />
     </div>
   );

@@ -114,7 +114,9 @@ export function SidebarRow({
       // The row you are on is a chip lifted off the panel, not a tinted band:
       // the panel is already a shade of the page, so a tint would have to be
       // darker than the page to read at all.
-      raised ? "bg-raised shadow-chip" : "pointer-hover:bg-raised/70",
+      // A bare row, in Settings, sits in a panel with no other chip near
+      // it, so its fill alone says it is chosen.
+      raised ? cn("bg-raised", !bare && "shadow-chip") : "pointer-hover:bg-raised/70",
       "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
       className,
     ),

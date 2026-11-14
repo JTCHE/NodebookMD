@@ -26,8 +26,9 @@ export const MODAL_LINE = "flex h-7 shrink-0 items-center";
 
 /** The close button is 28px and its cross is 8px, so the cross stands 10px
     inside the button. The button gives those 10px back, as every ghost
-    button gives back its padding. */
-const CLOSE = "right-[calc(var(--spacing-lg)-10px)]";
+    button gives back its padding. A title's capitals sit 1px above the
+    middle of its line, so the cross moves up by as much to meet them. */
+const CLOSE = "top-[calc(var(--spacing-lg)-1px)] right-[calc(var(--spacing-lg)-10px)]";
 
 export function Modal({
   label,
@@ -63,7 +64,7 @@ export function Modal({
           className,
         )}
       >
-        <Hint label="Close" keys="Esc" className={cn("absolute top-lg z-10", CLOSE)}>
+        <Hint label="Close" keys="Esc" className={cn("absolute z-10", CLOSE)}>
         <button
           type="button"
           aria-label="Close"
