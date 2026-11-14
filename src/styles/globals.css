@@ -31,8 +31,11 @@
 
 /* Every control acts on the press (lib/ui/press), and the click it raises
    there takes `:active` away in Chromium. The press marks the held control
-   instead, so `active:` reads that mark as well as the real state. */
-@custom-variant active (&:is(:active, [data-pressed]));
+   instead, so `active:` reads that mark as well as the real state.
+   `pointer-hover:` sits in a media query, which Tailwind writes after every
+   plain variant, so at one weight the hover look would cover the press.
+   `:not(:disabled)` adds that weight, and a disabled control has no press. */
+@custom-variant active (&:is(:active, [data-pressed]):not(:disabled));
 
 html {
   background: var(--background);

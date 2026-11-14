@@ -80,7 +80,11 @@ export function SettingsDialog() {
       // on the content's right edge. It stands where the title's line stands,
       // so the cross is centred on the title's capitals.
       closeAt="top-[calc(var(--spacing-xl)-6px)] right-[calc(var(--spacing-xl)-10px)]"
-      className="h-[min(540px,100%)] w-full max-w-[820px] flex-row"
+      // One height on every tab, so the dialog never jumps: the six agents
+      // Houdini MCP supports, the longest list with a known end (see
+      // `Section`), with one inset under the last row as over the title.
+      // Houdini Integration has no such end, so a longer list scrolls.
+      className="h-[min(calc(2*var(--spacing-xl)-6px+28px+var(--spacing-xs)+6*var(--spacing-setting)+5px),100%)] w-full max-w-[820px] flex-row"
     >
       {/* The sections are places, as the sidebar's rows are, on the panel's
           own ground. The first row starts where the title's line starts,
@@ -130,7 +134,7 @@ export function SettingsDialog() {
 function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <header className="mt-[calc(var(--spacing-xl)-6px)] mr-[calc(var(--spacing-xl)+18px+var(--spacing-md)+var(--spacing-sm))] mb-2xs ml-xl flex h-7 shrink-0 items-baseline justify-between gap-md">
+      <header className="mt-[calc(var(--spacing-xl)-6px)] mr-[calc(var(--spacing-xl)+18px+var(--spacing-md)+var(--spacing-sm))] mb-xs ml-xl flex h-7 shrink-0 items-baseline justify-between gap-md">
         <h2 className="truncate text-[20px] leading-7 font-semibold tracking-[-0.02em] text-neutral-950">{title}</h2>
         {action}
       </header>
