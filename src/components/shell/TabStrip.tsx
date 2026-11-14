@@ -215,7 +215,7 @@ export function TabStrip() {
         />
       ))}
       {/* It stays at the end of the window when the tabs scroll under it. */}
-      <Hint label="New tab" keys={NEW_TAB_KEYS} className="sticky right-0 ml-[2px] rounded-md bg-chrome shadow-[0_0_0_2px_var(--color-chrome)]">
+      <Hint label="New tab" keys={NEW_TAB_KEYS} className="sticky right-0 mb-[5px] ml-[2px] rounded-md bg-chrome shadow-[0_0_0_2px_var(--color-chrome)]">
         <button type="button" tabIndex={-1} aria-label="New tab" onClick={newTab} className={BAR_BUTTON}>
           <Icons.newTab className="size-[15px]" />
         </button>
@@ -363,7 +363,7 @@ function TabChip({
     >
       {/* Narrow, a tab shows one thing, centred: its icon, or its close
           when it is the active one. */}
-      <span className="flex size-full items-center gap-[7px] pr-[4px] pl-sm @max-[72px]:justify-center @max-[72px]:px-0">
+      <span className="flex size-full items-center gap-[7px] pr-[4px] pb-[6px] pl-sm @max-[72px]:justify-center @max-[72px]:px-0">
         <span className={cn("grid shrink-0 place-items-center", active && "@max-[72px]:hidden")}>
           {icon ? (
             <DocIconClient src={icon} alt="" className="size-[14px]" fallback={<Icons.page className="size-[14px]" />} />
