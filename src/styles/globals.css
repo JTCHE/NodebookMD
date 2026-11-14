@@ -139,7 +139,6 @@ a {
      chip clears the sheet under it. Caption buttons are Windows' 46px wide.
      Taller than this, the bar reads as a web page. */
   --spacing-titlebar: 36px;
-  --spacing-statusbar: 36px;
   --spacing-caption-w: 46px;
   /* ONE row height for the panel. A group header, a context, a page and the
      recents row are the same object at different depths, so they are the same
@@ -589,8 +588,7 @@ svg[stroke="currentColor"] * {
     color-mix(in srgb, var(--background) 1.3%, transparent) 95.5%,
     transparent 100%;
 }
-.page-bar-scrim::before,
-.status-scrim::before {
+.page-bar-scrim::before {
   content: "";
   position: absolute;
   inset-inline: 0;
@@ -601,38 +599,6 @@ svg[stroke="currentColor"] * {
   top: 0;
   height: calc(100% + 1rem);
   background: linear-gradient(to bottom, var(--background) 0, var(--scrim-stops));
-}
-/* The key strip keeps its own height under the page, so the fade runs over
-   the page's last rows and is solid at the strip's top edge: the page is cut
-   there, and a row cut by it must already be gone. The ground stays solid for
-   `--lip` above the edge, so a row that is cut there ends inside the solid
-   part and never as a sliver of text; the ramp above it is the one above,
-   over `--reach`. */
-.status-scrim::before {
-  --reach: 1.75rem;
-  --lip: 0.5rem;
-  --edge: var(--spacing-statusbar);
-  bottom: 0;
-  height: calc(100% + var(--lip) + var(--reach));
-  background: linear-gradient(
-    to top,
-    var(--background) calc(var(--edge) + var(--lip)),
-    color-mix(in srgb, var(--background) 98.7%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.081),
-    color-mix(in srgb, var(--background) 95.1%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.155),
-    color-mix(in srgb, var(--background) 89.6%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.225),
-    color-mix(in srgb, var(--background) 82.5%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.29),
-    color-mix(in srgb, var(--background) 74.1%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.352),
-    color-mix(in srgb, var(--background) 64.8%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.41),
-    color-mix(in srgb, var(--background) 55%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.466),
-    color-mix(in srgb, var(--background) 45%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.521),
-    color-mix(in srgb, var(--background) 35.2%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.576),
-    color-mix(in srgb, var(--background) 25.9%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.632),
-    color-mix(in srgb, var(--background) 17.5%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.69),
-    color-mix(in srgb, var(--background) 10.4%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.753),
-    color-mix(in srgb, var(--background) 4.9%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.822),
-    color-mix(in srgb, var(--background) 1.3%, transparent) calc(var(--edge) + var(--lip) + var(--reach) * 0.91),
-    transparent 100%
-  );
 }
 
 /* The list fades. Eased, so a row going out never ends on a hard line.

@@ -27,7 +27,6 @@ import { TitleBar } from "./TitleBar";
 import { Sidebar, storedWidth } from "./Sidebar";
 import { REVEAL } from "./sidebar/PageTree";
 import { SettingsDialog } from "@/components/settings/SettingsDialog";
-import { StatusBar } from "./StatusBar";
 import { FindBar } from "./FindBar";
 
 /**
@@ -212,10 +211,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         >
           {children}
           <FindBar />
-          {/* The strip keeps its own height under the page: no text is ever
-              under the keys. The page fades out just above it (see
-              .status-scrim); the fade takes no pointer. */}
-          <StatusBar className="relative z-10 print:hidden" />
         </div>
         <Lightbox />
         <ContextMenu />
