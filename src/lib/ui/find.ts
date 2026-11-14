@@ -112,6 +112,14 @@ export function nearest(ranges: Range[], direction: 1 | -1): number {
   return (list.findLast(({ range }) => range.getBoundingClientRect().top < view.bottom) ?? list[list.length - 1]).i;
 }
 
+/** True when the range shows in the box that scrolls it. */
+export function inView(range: Range): boolean {
+  const box = scroller(range);
+  const view = box?.getBoundingClientRect() ?? { top: 0, bottom: window.innerHeight };
+  const at = range.getBoundingClientRect();
+  return at.bottom > view.top && at.top < view.bottom;
+}
+
 /** Scroll the box that holds the range until the range is in the middle of it,
     unless it is already in clear view. */
 export function reveal(range: Range) {

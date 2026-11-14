@@ -12,7 +12,7 @@ import { Icons } from "@/lib/ui/icons";
 import { BAR_BUTTON } from "@/lib/ui/button";
 import { Hint } from "@/components/ui/Hint";
 import { IS_MAC, isCommand, letterOf, useHotkey } from "@/lib/hotkeys";
-import { clearPaint, findRanges, nearest, paint, reveal } from "@/lib/ui/find";
+import { clearPaint, findRanges, inView, nearest, paint, reveal } from "@/lib/ui/find";
 import { filterMethods, methodsBox } from "@/lib/ui/method-filter";
 
 /** Whether the bar filters the methods of a class page. The reader's last
@@ -30,13 +30,14 @@ export function FindBar() {
   const [filtering, setFiltering] = useState(filteringChoice);
   // Whether the page has methods to filter: the switch shows only then.
   const [hasMethods, setHasMethods] = useState(false);
-  const typed = useRef(false);
   const input = useRef<HTMLInputElement>(null);
   const bar = useRef<HTMLDivElement>(null);
 
   const step = (by: 1 | -1) => {
     if (ranges.length === 0) return;
-    const next = current < 0 ? nearest(ranges, by) : (current + by + ranges.length) % ranges.length;
+    // After a scroll that left the current match off screen, the step
+    // starts from the view, not from that match.
+    const next = current < 0 || !inView(ranges[current]) ? nearest(ranges, by) : (current + by + ranges.length) % ranges.length;
     setCurrent(next);
     reveal(ranges[next]);
   };
@@ -74,9 +75,8 @@ export function FindBar() {
     }
   });
 
-  // The matches, again each time the words or the page change. Typed words go
-  // to the match nearest the view, as in a browser; a bar opened again, or a
-  // new page, picks none and does not scroll.
+  // The matches, again each time the words or the page change. The current
+  // match is the one nearest the view, as in a browser.
   useEffect(() => {
     if (!open) return;
     let frame = 0;
@@ -91,8 +91,8 @@ export function FindBar() {
       setRanges(found);
       if (!first) return setCurrent((was) => Math.min(was, found.length - 1));
       first = false;
-      const at = typed.current ? nearest(found, 1) : -1;
-      typed.current = false;
+      // The match nearest the view, also for a bar opened again on old words.
+      const at = nearest(found, 1);
       setCurrent(at);
       if (found[at]) reveal(found[at]);
     };
@@ -109,6 +109,14 @@ export function FindBar() {
       cancelAnimationFrame(frame);
     };
   }, [open, query, filtering, location.key]);
+
+  // A new page closes the bar. A jump inside the page (a hash) keeps it.
+  const shownPath = useRef(location.pathname);
+  useEffect(() => {
+    if (shownPath.current === location.pathname) return;
+    shownPath.current = location.pathname;
+    close();
+  }, [location.pathname]);
 
   useEffect(() => {
     if (open) paint(ranges, current);
@@ -135,7 +143,6 @@ export function FindBar() {
         ref={input}
         value={query}
         onChange={(event) => {
-          typed.current = true;
           setQuery(event.target.value);
         }}
         onKeyDown={(event) => {
