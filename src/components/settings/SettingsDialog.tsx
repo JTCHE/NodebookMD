@@ -13,7 +13,7 @@ import { invoke, inTauri } from "@/lib/backend";
 import { COMMAND_KEY, IS_MAC, isCommand, useHotkey } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
-import { TEXT_LINK } from "@/lib/ui/button";
+import { QUIET_LINK } from "@/lib/ui/button";
 import { Modal, MODAL_LINE, MODAL_TOP } from "@/components/ui/Modal";
 import { SidebarRow } from "@/components/shell/sidebar/SidebarRow";
 import { Toggle } from "@/components/ui/Toggle";
@@ -149,9 +149,11 @@ function Empty({ children }: { children: ReactNode }) {
   return <p className="py-ms text-meta text-neutral-500">{children}</p>;
 }
 
-/** The one button style of Settings: as tall as a picker, with its radius. */
+/** The one button style of Settings: as tall as a picker, with its radius
+    and its padding. Geist sits high in its line, so the text in every
+    control of Settings takes 2px at the top, which centres its capitals. */
 const BUTTON =
-  "h-row shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms text-label font-medium text-neutral-800 shadow-chip " +
+  "h-row shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-2xs text-label font-medium text-neutral-800 shadow-chip " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
@@ -167,6 +169,9 @@ function HelpSection() {
   return (
     <Section title="Houdini Integration">
       {releases?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
+      {/* Read with each row below it: F1 opens this app in Houdini 22.0. It
+          belongs to the rows, so it sits nearer to them than to the title. */}
+      {!!releases?.length && <p className="mt-sm -mb-xs text-meta text-neutral-500">F1 opens {APP_NAME} in</p>}
       {releases?.map((one) => (
         <Row
           key={one.release}
@@ -195,7 +200,7 @@ interface Agent {
 
 const LINK: Record<Agent["link"], string> = {
   ours: "Connected",
-  other: "Runs another Houdini MCP",
+  other: "Uses another MCP",
   none: "Not connected",
 };
 
@@ -277,7 +282,7 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
           else onChange(next);
         }}
         className={cn(
-          "h-row max-w-[220px] cursor-interactive appearance-none truncate rounded-lg bg-neutral-100 pr-xl pl-ms text-label font-medium text-neutral-950",
+          "h-row max-w-[220px] cursor-interactive appearance-none truncate rounded-lg bg-neutral-100 pt-2xs pr-xl pl-ms text-label font-medium text-neutral-950",
           "ring-1 ring-hairline ring-inset transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         )}
@@ -434,7 +439,7 @@ function UsageSection() {
         detail={
           <button
             type="button"
-            className={TEXT_LINK}
+            className={QUIET_LINK}
             onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason), "error"))}
           >
             See what is sent

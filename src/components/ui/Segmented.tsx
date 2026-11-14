@@ -53,7 +53,7 @@ export function Segmented<T extends string>({
             onClick={() => onChange(one.value)}
             onMouseDown={(event) => event.preventDefault()}
             className={cn(
-              "h-full cursor-interactive rounded-md px-sm text-label font-medium whitespace-nowrap",
+              "h-full cursor-interactive rounded-md px-ms pt-2xs text-label font-medium whitespace-nowrap",
               "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
               "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
               chosen ? "bg-raised text-neutral-950 shadow-chip" : "text-neutral-500 pointer-hover:text-neutral-900",
