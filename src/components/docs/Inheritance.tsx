@@ -26,39 +26,50 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
         if (!parent) continue;
         const own = parent.getBoundingClientRect();
         const endpoints = [...group.querySelectorAll<HTMLElement>("[data-branch]")].filter((node) => node.closest("[data-parent]") === group);
-        // A nested list hangs straight down from one point near the parent's
-        // left edge, the same on every parent. Hung from the centre it fell
-        // back to a fixed indent when the labels did not fit, and the wire
-        // then ran down, back left and down again.
-        const drop = group.dataset.nested ? own.left + Math.min(own.width / 2, 10) : own.left + own.width / 2;
-        if (group.dataset.nested) {
-          group.style.paddingLeft = `${drop - group.getBoundingClientRect().left + 8}px`;
-        }
+        const drop = own.left + own.width / 2;
+        // Each layout starts from the grid: a shift left from an earlier
+        // width would squash a pill and hide the row from the test below.
+        group.style.paddingLeft = "";
+        for (const node of endpoints) node.closest("li")!.style.marginLeft = "";
         let entries = endpoints.map((node) => node.getBoundingClientRect());
         if (!entries.length) continue;
         // Members that all sit in one row take their wire from the top, into
         // the middle of each pill. A column of members hangs off one wire
         // down its left side instead.
         const row = !group.dataset.nested && new Set(entries.map((node) => node.left)).size === entries.length;
+        // A column's wire continues the parent's wire in one straight line:
+        // the group moves right until its first column hangs under the
+        // parent's middle.
+        // The straight layout moves a group right. When a label then
+        // truncates or a list runs past its column, that group stays on its
+        // own columns, with a jog in the wire.
+        const cramped = () => [...group.querySelectorAll<HTMLElement>("[data-node-label], ul")].some((element) => element.scrollWidth > element.clientWidth + 1);
+        if (!row) {
+          group.style.paddingLeft = `${drop - group.getBoundingClientRect().left + 8}px`;
+          if (cramped()) group.style.paddingLeft = "";
+          entries = endpoints.map((node) => node.getBoundingClientRect());
+        }
         // A row starts centred under its parent, so the parent's wire runs
         // straight down into the first member.
         // Only that member moves: the others stay on the grid's columns.
         if (row) {
           const firstIndex = entries.reduce((leftmost, node, index) => (node.left < entries[leftmost].left ? index : leftmost), 0);
           const item = endpoints[firstIndex].closest("li")!;
-          const shift = parseFloat(item.style.marginLeft || "0");
-          const wanted = shift + drop - (entries[firstIndex].left + entries[firstIndex].width / 2);
+          const wanted = drop - (entries[firstIndex].left + entries[firstIndex].width / 2);
           // The shift must leave the pill its full width in its column, or
           // the label truncates to nothing. If it does not fit, the pill
           // stays in its column and the wire jogs to it.
           const label = endpoints[firstIndex].querySelector<HTMLElement>("[data-node-label]");
           const fullWidth = (label?.scrollWidth ?? 0) + 8;
           const fits = wanted + fullWidth <= item.parentElement!.clientWidth;
-          if (!fits && shift !== 0) {
-            item.style.marginLeft = "";
+          // When the pill does not fit in its column, the whole row moves
+          // right, so the parent's wire still drops straight into it.
+          if (!fits) {
+            group.style.paddingLeft = `${parseFloat(getComputedStyle(group).paddingLeft) + wanted}px`;
+            if (cramped()) group.style.paddingLeft = "";
             entries = endpoints.map((node) => node.getBoundingClientRect());
           }
-          if (fits && Math.abs(wanted - shift) > 0.5) {
+          if (fits && Math.abs(wanted) > 0.5) {
             item.style.marginLeft = `${wanted}px`;
             entries = endpoints.map((node) => node.getBoundingClientRect());
           }
@@ -66,13 +77,15 @@ export function Inheritance({ items, fromPath }: { items: PageView["inheritance"
         const bus = Math.min(...entries.map((node) => node.top)) - bounds.top - 10;
         const columns = new Map<number, DOMRect[]>();
         for (const node of entries) {
-          const horizontalPosition = row ? node.left + node.width / 2 - bounds.left : node.left - bounds.left - 8;
+          // Rounded, so the same axis measured twice is one joint, not two
+          // that a float error sets 0.004px apart with no room for a corner.
+          const horizontalPosition = Math.round(row ? node.left + node.width / 2 - bounds.left : node.left - bounds.left - 8);
           columns.set(horizontalPosition, [...(columns.get(horizontalPosition) ?? []), node]);
         }
         // In a row, a member whose middle is under the parent's pill takes
         // the parent's wire straight down, with no jog to the side.
         const under = row ? [...columns.keys()].filter((position) => position >= own.left - bounds.left && position <= own.right - bounds.left) : [];
-        const start = under.length ? under.reduce((best, position) => Math.abs(position - (drop - bounds.left)) < Math.abs(best - (drop - bounds.left)) ? position : best) : drop - bounds.left;
+        const start = under.length ? under.reduce((best, position) => Math.abs(position - (drop - bounds.left)) < Math.abs(best - (drop - bounds.left)) ? position : best) : Math.round(drop - bounds.left);
         const joints = [...new Set([...columns.keys(), start])].sort((firstPosition, secondPosition) => firstPosition - secondPosition);
         const radius = (horizontalPosition: number) => Math.min(6, ...joints.filter((neighborPosition) => neighborPosition !== horizontalPosition).map((neighborPosition) => Math.abs(neighborPosition - horizontalPosition) / 2));
         const split = radius(start);
