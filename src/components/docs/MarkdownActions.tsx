@@ -189,7 +189,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
   }, [actions]);
 
   return (
-    <div ref={container} onKeyDown={onMenuKey} className="relative inline-flex print:hidden">
+    <div ref={container} onKeyDown={onMenuKey} className="relative inline-flex rounded-lg transition-colors pointer-hover:bg-muted print:hidden">
       <Hint label="Copy as Markdown" keys={`${COMMAND_KEY}+C`}>
       <button
         ref={button}
@@ -201,7 +201,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
         // In a tight column the button keeps its icon and gives its words to
         // the page title. The header is the container.
         aria-label={copied ? "Copied" : "Copy as Markdown"}
-        className={cn(ACTION, QUIET, "w-8 px-0")}
+        className={cn(ACTION, QUIET, "w-7 px-0 pointer-hover:bg-transparent")}
       >
         {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
       </button>
@@ -214,7 +214,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((was) => !was)}
-        className={cn(ACTION, QUIET, "w-6 px-0")}
+        className={cn(ACTION, QUIET, "w-5 px-0 pointer-hover:bg-transparent")}
       >
         <ChevronDown
           className={cn("size-3.5 transition-transform duration-150 motion-reduce:transition-none", open && "rotate-180")}
