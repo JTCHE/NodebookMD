@@ -13,7 +13,6 @@ import { invoke, inTauri } from "@/lib/backend";
 import { COMMAND_KEY, IS_MAC, isCommand, useHotkey } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
-import { QUIET_LINK } from "@/lib/ui/button";
 import { Modal, MODAL_LINE, MODAL_TOP } from "@/components/ui/Modal";
 import { SidebarRow } from "@/components/shell/sidebar/SidebarRow";
 import { Toggle } from "@/components/ui/Toggle";
@@ -68,15 +67,13 @@ export function SettingsDialog() {
     <Modal label="Settings" onClose={() => setOpen(false)} className="h-[min(560px,100%)] w-full max-w-[760px] flex-row">
       {/* The panel's own rows, on the panel's own ground: the sections are
           places, as the sidebar's rows are. */}
-      <nav className={cn("flex w-[200px] shrink-0 flex-col border-r border-hairline bg-neutral-100 px-md pb-md", MODAL_TOP)}>
-        {/* Measured on the pixels: the icons below draw 1px inside their box,
-            and small type sits 1px low beside the title's, so the label moves
-            by that much to share both axes. */}
-        <span className={cn(MODAL_LINE, "pb-2xs pl-px text-caption text-neutral-500")}>Settings</span>
-        {/* The rows give their padding back, so their names stand on the
-            axis of the title above them. A row stands 8px inside the
-            dialog's inner corner (its radius less its 1px border), so the
-            row's corner is that radius less 8px, and the two nest. */}
+      {/* The first row is 2px taller than the title's line, so it starts
+          1px higher and the two share a centre. */}
+      <nav className="flex w-[200px] shrink-0 flex-col border-r border-hairline bg-neutral-100 px-md pt-[calc(var(--spacing-lg)-1px)] pb-md">
+        {/* The rows give their padding back, so their marks stand on the
+            nav's own inset. A row stands 8px inside the dialog's inner corner
+            (its radius less its 1px border), so the row's corner is that
+            radius less 8px, and the two nest. */}
         <div className="-mx-sm flex flex-col gap-2xs">
           {SECTIONS.map((one) => (
             <SidebarRow
@@ -133,20 +130,23 @@ function Group({ children }: { children: ReactNode }) {
   return <div className="flex flex-col border-b border-hairline last:border-b-0 -mx-lg px-lg">{children}</div>;
 }
 
-/** One setting: what it is, a fact the reader needs to act, and its control.
-    Every row on every tab is this one row, so all of them are one height.
-    The line under it is outside that height, so the space above a line and
-    the space below it are the same. */
-function Row({ label, detail, children }: { label: string; detail?: ReactNode; children?: ReactNode }) {
+/** One setting: what it is, then its state and its control on the right.
+    Every row on every tab is this one row, one line high, so every label
+    stands at the same height. The line under it is outside that height, so
+    the space above a line and the space below it are the same. */
+function Row({ label, children }: { label: string; children?: ReactNode }) {
   return (
     <div className="box-content flex h-setting shrink-0 items-center gap-md border-b border-hairline last:border-b-0">
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-title font-medium text-neutral-950">{label}</span>
-        {detail && <span className="truncate text-caption text-neutral-500">{detail}</span>}
-      </div>
+      <span className="min-w-0 flex-1 truncate text-title font-medium text-neutral-950">{label}</span>
       {children}
     </div>
   );
+}
+
+/** A state the row is in, said on the right, beside its control. It takes
+    the controls' 2px at the top, so its text stands on their line. */
+function State({ children }: { children: ReactNode }) {
+  return <span className="shrink-0 pt-2xs text-meta text-neutral-500">{children}</span>;
 }
 
 function Empty({ children }: { children: ReactNode }) {
@@ -159,6 +159,14 @@ function Empty({ children }: { children: ReactNode }) {
 const BUTTON =
   "h-row shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-2xs text-label font-medium text-neutral-800 " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 active:bg-neutral-200 " +
+  "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
+
+/** A quiet action at the end of a row. It gives its padding back on both
+    sides: its text ends on the axis where the controls end, and stands from
+    the state beside it by the row's own gap. */
+const GHOST_BUTTON =
+  "-mx-ms h-row shrink-0 cursor-interactive rounded-lg px-ms pt-2xs text-label font-medium text-neutral-600 " +
+  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
 /** F1 in each Houdini release installed on the machine. A release series
@@ -174,13 +182,10 @@ function HelpSection() {
     <Section title="Houdini Integration">
       {releases?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
       {releases?.map((one) => (
-        <Row
-          key={one.release}
-          label={`Houdini ${one.release}`}
-          // The switch shows whether F1 opens this app. A third help server
-          // is the one fact it cannot show: turning the switch on replaces it.
-          detail={one.external && one.url && !one.ours ? "F1 opens another help server" : undefined}
-        >
+        <Row key={one.release} label={`Houdini ${one.release}`}>
+          {/* The switch shows whether F1 opens this app. A third help server
+              is the one fact it cannot show: turning the switch on replaces it. */}
+          {one.external && one.url && !one.ours && <State>F1 opens another help server</State>}
           <Toggle
             checked={one.external && one.ours}
             onChange={(next) => void flip(one.release, next)}
@@ -198,14 +203,6 @@ interface Agent {
   /** What the agent's own config says. See `mcp::Link`. */
   link: "ours" | "other" | "none";
 }
-
-/** What the agent's config holds, when the button cannot say it: Connect
-    alone already says that nothing is set up. */
-const LINK: Record<Agent["link"], string | undefined> = {
-  ours: "Connected",
-  other: "Another Houdini MCP is set up",
-  none: undefined,
-};
 
 /** Houdini MCP, read from each agent's own config: the truth, whoever
     installed it. Read again each time the window gets the focus, so an agent
@@ -248,19 +245,17 @@ function McpSection() {
         </Empty>
       )}
       {agents?.map((agent) => (
-        <Row
-          key={agent.key}
-          label={agent.label}
-          detail={
-            LINK[agent.link] && (
-              <span className={cn("inline-flex items-center gap-2xs", agent.link === "ours" && "text-neutral-700")}>
-                {agent.link === "ours" && <Icons.chosen className="size-3" />}
-                {LINK[agent.link]}
-              </span>
-            )
-          }
-        >
-          <button type="button" disabled={busy !== ""} className={BUTTON} onClick={() => void install(agent)}>
+        // A connected agent says so, and offers the quiet action of writing
+        // its config again. Any other agent offers Connect, which writes ours
+        // over whatever Houdini MCP its config holds.
+        <Row key={agent.key} label={agent.label}>
+          {agent.link === "ours" && <State>Connected</State>}
+          <button
+            type="button"
+            disabled={busy !== ""}
+            className={agent.link === "ours" ? GHOST_BUTTON : BUTTON}
+            onClick={() => void install(agent)}
+          >
             {busy === agent.key ? "Installing…" : agent.link === "ours" ? "Update" : "Connect"}
           </button>
         </Row>
@@ -439,19 +434,17 @@ function UsageSection() {
 
   return (
     <Section title="Usage data">
-      <Row
-        label="Send anonymous usage data"
-        detail={
-          <button
-            type="button"
-            className={QUIET_LINK}
-            onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason), "error"))}
-          >
-            See what is sent
-          </button>
-        }
-      >
+      <Row label="Send anonymous usage data">
         {on !== null && <Toggle checked={on} onChange={(next) => void flip(next)} label="Send anonymous usage data" />}
+      </Row>
+      <Row label="What is sent">
+        <button
+          type="button"
+          className={GHOST_BUTTON}
+          onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason), "error"))}
+        >
+          Show
+        </button>
       </Row>
     </Section>
   );

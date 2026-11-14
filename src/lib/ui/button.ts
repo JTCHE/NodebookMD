@@ -22,15 +22,8 @@ export const BAR_BUTTON =
   "disabled:text-neutral-400 disabled:pointer-events-none " +
   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** What makes a text action read as a link: a rule under the pointer and a
-    dim while it is pressed. The ink is the caller's. */
-const LINK_BEHAVIOUR =
-  "cursor-interactive rounded-sm underline-offset-2 transition-opacity duration-(--duration-fast) motion-reduce:transition-none " +
+/** A text action that reads as a link: the brand ink, a rule under the
+    pointer, and a dim while it is pressed. */
+export const TEXT_LINK =
+  "cursor-interactive rounded-sm text-brand-700 underline-offset-2 transition-opacity duration-(--duration-fast) motion-reduce:transition-none " +
   "pointer-hover:underline active:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
-
-/** A link in the brand ink, for the one way forward in a step of the setup. */
-export const TEXT_LINK = `${LINK_BEHAVIOUR} text-brand-700`;
-
-/** A link in the text's own ink, where the brand is kept for something else.
-    A muted rule at rest says it is a link; the pointer darkens the rule. */
-export const QUIET_LINK = `${LINK_BEHAVIOUR} font-medium text-neutral-700 underline decoration-neutral-400 pointer-hover:decoration-current`;

@@ -33,7 +33,9 @@ export function Toggle({
         "relative h-[24px] w-[48px] shrink-0 cursor-interactive rounded-full",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        checked ? "bg-brand" : "bg-neutral-500",
+        // Off is the quiet state: a light track drawn by its edge, which
+        // keeps 3:1 against the ground in both themes. Only on is filled.
+        checked ? "bg-brand" : "bg-neutral-100 ring-1 ring-neutral-500 ring-inset",
         className,
       )}
     >
@@ -42,9 +44,9 @@ export function Toggle({
         className={cn(
           // The knob is near-white in both themes, the way the ink on a brand
           // plate is, so it never sinks into a dark track.
-          "absolute top-[3px] left-[3px] size-[18px] rounded-full bg-brand-foreground shadow-chip",
+          "absolute top-[3px] left-[3px] size-[18px] rounded-full",
           "transition-transform duration-(--duration-fast) motion-reduce:transition-none",
-          checked && "translate-x-[24px]",
+          checked ? "translate-x-[24px] bg-brand-foreground shadow-chip" : "bg-neutral-500",
         )}
       />
     </button>
