@@ -142,10 +142,17 @@ function Section({ title, action, children }: { title: string; action?: ReactNod
 /** One setting: what it is, a fact under it when the reader needs one, and
     its control on the right. Every row on every tab is one height, with or
     without the fact. Rows of a tab are siblings: a line between two of them
-    runs only as wide as the content, never to the dialog's edges. */
+    runs only as wide as the content, never to the dialog's edges. A fact
+    lifts the label by half its own line, so a first row with one starts
+    that much lower: the label stands as far under the title on every tab. */
 function Row({ label, fact, children }: { label: string; fact?: ReactNode; children?: ReactNode }) {
   return (
-    <div className="box-content flex h-setting shrink-0 items-center gap-md border-b border-hairline last:border-b-0">
+    <div
+      className={cn(
+        "box-content flex h-setting shrink-0 items-center gap-md border-b border-hairline last:border-b-0",
+        fact && "first:mt-[calc((var(--text-meta)*var(--text-meta--line-height)+1px)/2)]",
+      )}
+    >
       <span className="flex min-w-0 flex-1 flex-col gap-px">
         <span className="truncate text-title text-neutral-950">{label}</span>
         {fact && <span className="truncate text-meta text-neutral-500">{fact}</span>}
@@ -216,6 +223,7 @@ function HelpSection() {
             <Toggle
               checked={!!release?.external && !!release.ours}
               disabled={!release}
+              title={release ? undefined : helpTarget(release)}
               onChange={(next) => void flip(name, next)}
               label={`F1 in Houdini ${name} opens ${APP_NAME}`}
             />
