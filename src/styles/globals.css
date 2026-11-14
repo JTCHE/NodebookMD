@@ -135,10 +135,11 @@ a {
      the ladder above, and they stay fixed across the media query below.
      Naming them `--spacing-*` is what puts them on `h-`, `w-`, `p-` and `gap-`
      alike, so one name serves the bar's height and the gap that clears it. */
-  /* The Windows 11 title bar: 32px tall, caption buttons 46px wide. Houdini's
-     own window sits beside this one, and a taller bar reads as a web page. */
-  --spacing-titlebar: 32px;
-  --spacing-statusbar: 44px;
+  /* The bar holds 28px controls with 4px of chrome above and below, so a tab
+     chip clears the sheet under it. Caption buttons are Windows' 46px wide.
+     Taller than this, the bar reads as a web page. */
+  --spacing-titlebar: 36px;
+  --spacing-statusbar: 36px;
   --spacing-caption-w: 46px;
   /* ONE row height for the panel. A group header, a context, a page and the
      recents row are the same object at different depths, so they are the same
@@ -242,6 +243,7 @@ a {
   --color-control-edge: var(--control-edge);
   --color-control-foreground: var(--control-foreground);
   --color-hairline: var(--hairline);
+  --color-chrome: var(--chrome);
   --color-control-sheen: var(--control-sheen);
 
   --shadow-field: var(--elevation-field);
@@ -365,6 +367,9 @@ a {
   --raised: var(--neutral-0);
   --surface-sunken: var(--neutral-100);
   --hairline: oklch(0 0 0 / 9%);
+  /* The window around the page: title bar and panel are one ground, and the
+     page is a sheet laid on it. A step under the page in both themes. */
+  --chrome: var(--neutral-100);
 
   /* A keycap and any other physically-raised chip: lit from the top, with a
      hard bottom edge that reads as thickness rather than as a blur. */
@@ -474,6 +479,8 @@ a {
      `--neutral-0`, which IS the dark page, so this one is stated. */
   --surface-sunken: var(--neutral-0);
   --hairline: oklch(1 0 0 / 10%);
+  /* The ramp has no step under the dark page, so this one is stated. */
+  --chrome: oklch(0.118 0 0);
 
   --elevated-top: var(--neutral-200);
   --elevated-bottom: var(--neutral-100);

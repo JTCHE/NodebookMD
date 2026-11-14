@@ -38,7 +38,7 @@ interface BuildRow {
 
 /** Every row of the popover, so the folder row cannot drift from the builds. */
 const ROW =
-  "flex w-full cursor-interactive items-center justify-between gap-sm rounded-md px-sm py-[7px] text-left text-[13px] " +
+  "flex w-full cursor-interactive items-center justify-between gap-sm rounded-md px-[6px] py-[7px] text-left text-[13px] " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none disabled:cursor-default " +
   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
@@ -47,7 +47,7 @@ const PICK = "\0pick";
 
 /** A key cap, small enough to sit at the end of a row. */
 const CHIP =
-  "mr-sm inline-flex h-4 shrink-0 items-center rounded-[4px] border px-1 text-[10px] font-semibold leading-none " +
+  "mr-xs inline-flex h-4 shrink-0 items-center rounded-[4px] border px-1 text-[10px] font-semibold leading-none " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none " +
   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
@@ -102,23 +102,26 @@ function Card({
       title={onClick ? "Read the docs for a different Houdini" : "Which Houdini pressed F1 decides this"}
       onClick={onClick}
       className={cn(
-        "flex h-[46px] w-full items-center justify-between rounded-lg px-ms text-left",
-        "border border-hairline bg-raised shadow-chip",
-        onClick && "cursor-interactive pointer-hover:bg-neutral-100",
+        // 8px all round, the same 8px every row of the panel pads by, so the
+        // build's name stands on the panel's axis.
+        "group/card flex w-full items-center justify-between gap-sm rounded-lg p-sm text-left",
+        "bg-raised shadow-chip ring-1 ring-hairline",
+        "transition-[background-color,box-shadow] duration-(--duration-fast) motion-reduce:transition-none",
+        onClick && "cursor-interactive pointer-hover:ring-neutral-300 aria-expanded:ring-neutral-300",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         className,
       )}
     >
-      <span className="flex min-w-0 flex-col">
-        <span className="truncate text-[13px] font-medium tracking-[-0.012em] text-neutral-950">
+      <span className="flex min-w-0 flex-col gap-[3px]">
+        <span className="truncate text-[13px] leading-4 font-medium tracking-[-0.012em] text-neutral-950">
           {/* `null` is not read yet, which is not the same as no install. */}
           {version ? `Houdini ${version}` : version === null ? "Houdini" : "No Houdini install found"}
         </span>
-        <span className="truncate text-caption text-neutral-500">
+        <span className="truncate text-caption leading-[14px] text-neutral-500 tabular-nums">
           {pageCount === null ? "Reading the install…" : pagesLabel(pageCount, status)}
         </span>
       </span>
-      <Icons.versionPicker className="size-ms shrink-0 text-neutral-500" />
+      <Icons.versionPicker className="size-ms shrink-0 text-neutral-400 transition-colors duration-(--duration-fast) group-hover/card:text-neutral-700 motion-reduce:transition-none" />
     </button>
   );
 }
@@ -303,7 +306,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
       {currentHooked !== undefined && (
         // Beside the chevron, over the card and not inside it: a button
         // cannot hold a button.
-        <div className="absolute top-1/2 right-lg flex -translate-y-1/2">
+        <div className="absolute top-1/2 right-[28px] flex -translate-y-1/2">
           <F1Chip release={currentSeries} hooked={currentHooked} onToggle={() => toggleF1(currentSeries, currentHooked)} />
         </div>
       )}
@@ -311,8 +314,8 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
         role="listbox"
         aria-label="Houdini installs on this machine"
         className={cn(
-          "absolute left-0 top-full z-10 mt-1 w-full origin-top overflow-hidden rounded-lg",
-          "border border-hairline bg-raised p-1 shadow-xl shadow-black/10",
+          "absolute left-0 top-full z-10 mt-xs w-full origin-top overflow-hidden rounded-lg",
+          "bg-raised p-[2px] shadow-pane ring-1 ring-hairline",
           "transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-none",
           open ? "opacity-100 scale-100" : "pointer-events-none opacity-0 scale-[0.98]",
         )}

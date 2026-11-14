@@ -282,7 +282,7 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
           // together read as two selections.
           mark={
             Mark ? (
-              <Mark className={cn("size-[15px]", isOpen ? "text-brand" : "text-neutral-500")} />
+              <Mark className={cn("size-[15px]", isOpen ? "text-neutral-800" : "text-neutral-500")} />
             ) : undefined
           }
         />
@@ -317,7 +317,9 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
       {pinned.length > 0 && (
         <div
           style={{ paddingRight: gutter }}
-          className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-neutral-100"
+          // The soft edge under the stack: a row passing beneath reads as
+          // going under it, not as clipped by it.
+          className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-chrome after:absolute after:inset-x-0 after:top-full after:h-sm after:bg-linear-to-b after:from-chrome after:to-transparent"
           data-pinned=""
         >
           {pinned.map((line) => folderRow(line, true))}

@@ -11,14 +11,17 @@ import { Icons } from "@/lib/ui/icons";
 import { THEME_ICON, THEME_LABEL, cycleTheme, useThemeChoice } from "@/lib/ui/theme";
 import { Hint } from "@/components/ui/Hint";
 import { SidebarRow } from "./SidebarRow";
+import { version } from "../../../../src-tauri/tauri.conf.json";
 
 /* Bugs go to GitHub issues, in the reader's own browser. See spec: Bug Filing Button. */
 const ISSUES = "https://github.com/JTCHE/NodebookMD/issues/new";
 
+/* Square, with the 16px glyph 8px in, as a row pads: the first one
+   stands on the panel's axis. */
 const FOOTER_BUTTON =
-  "grid size-[30px] cursor-interactive place-items-center rounded-md text-neutral-500 " +
+  "grid size-[32px] cursor-interactive place-items-center rounded-md text-neutral-500 " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none " +
-  "pointer-hover:bg-raised pointer-hover:text-neutral-800 " +
+  "pointer-hover:bg-raised pointer-hover:text-neutral-900 pointer-hover:shadow-chip active:bg-neutral-200 " +
   // Disabled changes what it DOES, not how loud it is: the two controls sit
   // side by side and a dimmed one beside a lit one reads as a rendering bug.
   "disabled:cursor-default " +
@@ -42,7 +45,7 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
           to go and not a label over a list. */}
       <SidebarRow
         label="Recents"
-        mark={<Icons.recent className="size-[15px] translate-y-[0.5px] text-neutral-500" />}
+        mark={<Icons.recent className={cn("size-[15px]", recentsOpen ? "text-neutral-800" : "text-neutral-500")} />}
         disclosure={recentsOpen ? "expanded" : "collapsed"}
         active={recentsOpen}
         count={recentCount}
@@ -51,10 +54,11 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
 
       {/* The two that change the app side by side; the bug report, which
           leaves it, apart in the far corner. */}
-      <div className="flex items-center gap-2xs px-ms pt-ms">
+      {/* One full rule between the trail and the app's own controls. */}
+      <div className="mt-xs flex items-center gap-[2px] border-t border-hairline pt-sm">
         <Hint label="Settings" keys={SETTINGS_KEYS}>
           <button type="button" aria-label="Settings" className={FOOTER_BUTTON} onClick={openSettings}>
-            <Icons.settings className="size-[18px]" />
+            <Icons.settings className="size-4" />
           </button>
         </Hint>
         {/* Three choices, so the mark is the one in force and a press steps to
@@ -66,13 +70,16 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
           className={FOOTER_BUTTON}
           onClick={cycleTheme}
         >
-          <ThemeMark className="size-md" />
+          <ThemeMark className="size-4" />
         </button>
         </Hint>
         <span className="flex-1" />
+        {/* Which build of the app this is: read, not pressed, so it is text
+            beside the one control that leaves the app. */}
+        <span className="mr-2xs text-[11px] text-neutral-400 tabular-nums">v{version}</span>
         <Hint label="File a bug on GitHub">
           <a href={ISSUES} target="_blank" rel="noopener noreferrer" aria-label="File a bug" className={FOOTER_BUTTON}>
-            <Icons.bugReport className="size-4.5" />
+            <Icons.bugReport className="size-4" />
           </a>
         </Hint>
       </div>

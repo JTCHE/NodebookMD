@@ -94,6 +94,15 @@ export function Sidebar({
     document.body.style.userSelect = "none";
   }, []);
 
+  // The title bar keeps the panel's width over it, so its tabs start on the
+  // sheet's edge. Only the docked panel has an edge there.
+  useEffect(() => {
+    if (floating) return;
+    const root = document.documentElement.style;
+    root.setProperty("--sidebar-width", `${width}px`);
+    return () => void root.removeProperty("--sidebar-width");
+  }, [width, floating]);
+
   useEffect(() => {
     const move = (event: PointerEvent) => {
       if (!dragging.current) return;
@@ -122,8 +131,10 @@ export function Sidebar({
     <aside
       style={{ width }}
       className={cn(
-        "relative flex shrink-0 flex-col gap-lg overflow-hidden bg-neutral-100 p-ms",
-        floating ? "h-full rounded-lg border border-hairline shadow-pane" : "border-r border-hairline",
+        // 8px in, and every row gives its own 8px back as padding, so the
+        // panel's text stands on one axis 16px from the window's edge.
+        "relative flex shrink-0 flex-col gap-ms overflow-hidden bg-chrome p-sm",
+        floating && "h-full rounded-xl border border-hairline shadow-pane",
         className,
       )}
     >
@@ -141,7 +152,9 @@ export function Sidebar({
         groups={tree}
         currentPath={currentPath}
         bookmarked={new Set(bookmarks.map((entry) => entry.path))}
-        className="min-h-0 flex-1"
+        // The list's scrollbar takes the panel's right padding, so the
+        // counts end near the edge the card and the footer end on.
+        className="-mr-sm min-h-0 flex-1"
       />
 
       <div className="mt-auto flex flex-col">
@@ -187,7 +200,7 @@ export function Sidebar({
         className={cn(
           "absolute inset-y-0 -right-[2px] w-[5px] cursor-col-resize",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-          "pointer-hover:bg-brand/30",
+          "pointer-hover:bg-neutral-300",
         )}
       />
       )}

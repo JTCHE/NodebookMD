@@ -161,13 +161,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   });
 
   const onLanding = path === "";
+  const docked = !tight && sidebarOpen;
 
   return (
     // A print is the page alone, at its full length: the window's own height,
     // its bars and its panel stay on the screen.
-    <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground print:block print:h-auto print:overflow-visible">
+    // The bars and the panel are one ground (`--chrome`); the page is a sheet
+    // laid on it, so the eye goes to the paper and the furniture recedes.
+    <div className="flex h-dvh flex-col overflow-hidden bg-chrome text-foreground print:block print:h-auto print:overflow-visible print:bg-background">
       <SkipToContent />
       <TitleBar
+        docked={docked}
         sidebarOpen={tight ? floating : sidebarOpen}
         onToggleSidebar={toggleSidebar}
         showTrail={!onLanding}
@@ -178,7 +182,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {ready && onboarding === true && <Onboarding onDone={finish} />}
       {ready && onboarding === false && (
       <div className="relative flex min-h-0 flex-1 print:block">
-        {!tight && sidebarOpen && <Sidebar currentPath={shown || undefined} className="print:hidden" />}
+        {docked && <Sidebar currentPath={shown || undefined} className="print:hidden" />}
         {tight && floating && (
           <div
             ref={card}
@@ -193,7 +197,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <div className={cn("relative flex min-w-0 flex-1 flex-col overflow-hidden print:block print:overflow-visible")}>
+        {/* The sheet. Its top and left edges are hairlines, and the corner
+            where the bar meets the panel is rounded. It runs flush to the
+            window's right and bottom edges, so the window's own corner
+            clips it and the two stay concentric. Without the panel, the
+            sheet meets the window's left edge and has no corner to round. */}
+        <div
+          className={cn(
+            "relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background",
+            "border-t border-hairline",
+            docked && "rounded-tl-[10px] border-l",
+            "print:block print:overflow-visible print:border-0",
+          )}
+        >
           {children}
           <FindBar />
           {/* The strip lies over the bottom of the page, which runs on under

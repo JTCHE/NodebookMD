@@ -21,9 +21,10 @@ import { ALT_KEY, BACK_KEYS, COMMAND_KEY, FORWARD_KEYS, IS_MAC, historyStep, let
 import { Hint } from "@/components/ui/Hint";
 import { BAR_BUTTON } from "@/lib/ui/button";
 import { APP_NAME } from "@/lib/brand";
-import { version } from "../../../src-tauri/tauri.conf.json";
 
 interface TitleBarProps {
+  /** The panel sits beside the sheet, so the bar keeps its width over it. */
+  docked: boolean;
   /** Whether the sidebar is open, and how to change that. */
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
@@ -37,7 +38,7 @@ interface TitleBarProps {
   bare?: boolean;
 }
 
-export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false }: TitleBarProps) {
+export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare = false }: TitleBarProps) {
   const navigate = useNavigate();
   const { canGoBack, canGoForward } = useTrail();
   const tabbed = inTauri && !bare;
@@ -82,126 +83,121 @@ export function TitleBar({ sidebarOpen, onToggleSidebar, showTrail, bare = false
         // No gap on the row itself: the caption buttons have to reach the
         // window's right edge, and a row gap would leave a strip of bar
         // beside the close button that no click can ever hit.
-        "flex h-titlebar shrink-0 items-center print:hidden",
-        // The sidebar button is concentric with the window's corner: 2px from
-        // the top of the 32px bar, so 2px from the left too, and its 6px
-        // radius is the window's 8px less that inset.
-        bare ? "pl-sm" : "pl-[2px]",
+        "flex h-titlebar shrink-0 items-center bg-chrome select-none print:hidden",
         // macOS draws its traffic lights over the left of the bar, and no
         // caption buttons sit at the right edge.
-        nativeFrame && !fullscreen && "pl-[80px]",
-        // The pin is concentric with macOS's corner, as the sidebar button is
-        // with Windows': 2px in, and a top-right radius of the window's 16px
-        // less that inset. Full screen has no corner.
-        nativeFrame && (fullscreen ? "pr-xs" : "pr-[2px]"),
-        // The hairline is drawn INSIDE the bar. A border would take a pixel
-        // off the row, and the caption buttons would stop a pixel short of
-        // the bottom of the window's own bar. It is a layer over the bar's
-        // contents, so the tabs sit behind it, as they do in a browser.
-        "relative bg-neutral-50 select-none",
-        "after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-20 after:h-px after:bg-(--hairline)",
+        nativeFrame && (fullscreen ? "pr-xs" : "pr-[4px]"),
       )}
     >
-      {!bare && (
-      <Hint label={sidebarOpen ? "Hide the sidebar" : "Show the sidebar"} keys={`${COMMAND_KEY}+B`}>
-      <button
-        type="button"
-        tabIndex={-1}
-        aria-label={sidebarOpen ? "Hide the sidebar" : "Show the sidebar"}
-        aria-pressed={sidebarOpen}
-        // The floating panel closes on a press outside it; this press is the
-        // button's own, and must toggle it instead.
-        data-sidebar-toggle=""
-        className={BAR_BUTTON}
-        onClick={(onToggleSidebar)}
-      >
-        <Icons.sidebarToggle className="size-4" />
-      </button>
-      </Hint>
-      )}
-
-      {/* The name is the way home, the way a window title is in every app
-          that has a home to go to. */}
-      <Hint label="Home. Right-click for the app menu">
-      <Link
-        to="/"
-        tabIndex={-1}
-        onContextMenu={(event) => {
-          event.preventDefault();
-          setMenuAt({ x: event.clientX, y: event.clientY });
-        }}
+      {/* The panel's part of the bar. Docked, it is exactly as wide as the
+          panel (`--sidebar-width`, set by the panel), so the tabs start on
+          the sheet's left edge. Its controls sit on the panel's axis: the
+          toggle's glyph is over the panel's text, 16px in. */}
+      <div
+        data-tauri-drag-region
+        style={docked ? { width: "var(--sidebar-width)" } : undefined}
         className={cn(
-          // Same plate as BAR_BUTTON: 28px tall, same radius, same hover fill.
-          // Only the horizontal padding differs, because a logo and a word
-          // need more room than one glyph. A whole-pixel width: the text is a
-          // fraction wide, and the arrows after it drew soft on half pixels.
-          "ml-sm flex h-[28px] w-[117px] shrink-0 cursor-interactive items-center gap-[6px] rounded-md px-sm",
-          // A narrow window with tabs gives the name's room to the tabs.
-          tabbed && "max-[760px]:w-auto",
-          "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-          "pointer-hover:bg-neutral-200",
-          "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+          // A size container only while it has a stated width: as one, its
+          // contents no longer give it a width of their own.
+          docked && "@container",
+          "flex h-full shrink-0 items-center pl-[10px]",
+          nativeFrame && !fullscreen && "pl-[80px]",
         )}
       >
-        <BrandLogo className="h-[16px] w-auto shrink-0" />
-        <span className={cn("translate-y-[0.5px] text-[12.5px] font-medium tracking-[-0.01em] text-neutral-950", tabbed && "max-[760px]:hidden")}>
-          {APP_NAME}
-        </span>
-      </Link>
-      </Hint>
+        {!bare && (
+        <Hint label={sidebarOpen ? "Hide the sidebar" : "Show the sidebar"} keys={`${COMMAND_KEY}+B`}>
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-label={sidebarOpen ? "Hide the sidebar" : "Show the sidebar"}
+          aria-pressed={sidebarOpen}
+          // The floating panel closes on a press outside it; this press is the
+          // button's own, and must toggle it instead.
+          data-sidebar-toggle=""
+          className={BAR_BUTTON}
+          onClick={onToggleSidebar}
+        >
+          <Icons.sidebarToggle className="size-4" />
+        </button>
+        </Hint>
+        )}
 
-      {/* The arrows say where the trail leads before they are pressed: a
-          disabled arrow is the honest answer to "is there a page behind this
-          one", and it never moves, so the bar does not reflow as the reader
-          walks. They are absent on the landing page, which has no trail. */}
-      {showArrows && (
-        // 16px, not 15: an odd size in the 28px plate sat on a half pixel.
-        <span className="ml-xs flex shrink-0 items-center gap-2xs">
-          <Hint label="Back" keys={BACK_KEYS}>
-            <button
-              type="button"
-              tabIndex={-1}
-              aria-label="Back"
-              disabled={!canGoBack}
-              className={BAR_BUTTON}
-              onClick={(() => void navigate(-1))}
-            >
-              <Icons.back className="size-4 -translate-y-px" />
-            </button>
-          </Hint>
-          <Hint label="Forward" keys={FORWARD_KEYS}>
-            <button
-              type="button"
-              tabIndex={-1}
-              aria-label="Forward"
-              disabled={!canGoForward}
-              className={BAR_BUTTON}
-              onClick={(() => void navigate(1))}
-            >
-              <Icons.forward className="size-4 -translate-y-px" />
-            </button>
-          </Hint>
-        </span>
-      )}
+        {/* The name is the way home, the way a window title is in every app
+            that has a home to go to. */}
+        <Hint label="Home. Right-click for the app menu">
+        <Link
+          to="/"
+          tabIndex={-1}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            setMenuAt({ x: event.clientX, y: event.clientY });
+          }}
+          className={cn(
+            // Same plate as BAR_BUTTON: 28px tall, same radius, same hover.
+            // Its padding is given back, so the logo sits 8px after the toggle.
+            "flex h-[28px] shrink-0 cursor-interactive items-center gap-[7px] rounded-md px-sm",
+            bare ? "-ml-[2px]" : "ml-2xs",
+            "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
+            "pointer-hover:bg-neutral-200 active:bg-neutral-300",
+            "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+          )}
+        >
+          <BrandLogo className="h-[15px] w-auto shrink-0" />
+          {/* A narrow panel keeps the logo and gives the word's room to the
+              arrows. */}
+          <span className={cn("translate-y-[0.5px] text-[12.5px] font-semibold tracking-[-0.015em] text-neutral-900", !bare && "@max-[236px]:hidden")}>
+            {APP_NAME}
+          </span>
+        </Link>
+        </Hint>
+
+        {/* The arrows close the panel's part of the bar, right against the
+            sheet, so the tabs after them start on the sheet's edge. A
+            disabled arrow is the honest answer to "is there a page behind
+            this one", and it never moves, so the bar does not reflow as the
+            reader walks. */}
+        {showArrows && (
+          <span className={cn("flex shrink-0 items-center", docked ? "mr-[4px] ml-auto" : "mx-xs")}>
+            <Hint label="Back" keys={BACK_KEYS}>
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label="Back"
+                disabled={!canGoBack}
+                className={BAR_BUTTON}
+                onClick={() => void navigate(-1)}
+              >
+                <Icons.back className="size-4" />
+              </button>
+            </Hint>
+            <Hint label="Forward" keys={FORWARD_KEYS}>
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label="Forward"
+                disabled={!canGoForward}
+                className={BAR_BUTTON}
+                onClick={() => void navigate(1)}
+              >
+                <Icons.forward className="size-4" />
+              </button>
+            </Hint>
+          </span>
+        )}
+      </div>
 
       {tabbed && <TabStrip />}
 
-      {/* The stretch between the app's controls and the window's is the part of
-          the bar a reader grabs to move the window. */}
-      {/* Never all taken by tabs: a bar with no gap cannot be dragged. */}
+      {/* The stretch between the app's controls and the window's is the part
+          of the bar a reader grabs to move the window. Never all taken by
+          tabs: a bar with no gap cannot be dragged. */}
       <span
         data-tauri-drag-region
         className="h-full min-w-[48px] flex-1"
       />
 
-      {/* Which build of the app this is, beside the window's own buttons:
-          it is read, not pressed, and the arrows stay next to the name. */}
-      <span data-tauri-drag-region className={cn("mr-sm shrink-0 translate-y-[0.5px] text-caption text-neutral-500", tabbed && "max-[760px]:hidden")}>
-        v{version}
-      </span>
-
       <PinButton corner={nativeFrame && !fullscreen} />
-      <WindowControls />
+      <WindowControls className="ml-[4px]" />
 
       {menuAt && <TitleBarMenu at={menuAt} port={port} onClose={() => setMenuAt(null)} />}
     </header>
@@ -234,7 +230,7 @@ function PinButton({ corner }: { corner: boolean }) {
       tabIndex={-1}
       aria-label={pinned ? "Stop keeping on top" : "Keep on top"}
       aria-pressed={pinned}
-      className={cn(BAR_BUTTON, corner && "rounded-tr-[14px]", pinned && "text-brand")}
+      className={cn(BAR_BUTTON, corner && "rounded-tr-[12px]", pinned && "text-brand")}
       onClick={toggle}
     >
       <Icons.pin className={cn("size-[13px]", pinned && "fill-current")} />

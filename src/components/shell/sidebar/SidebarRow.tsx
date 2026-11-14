@@ -179,14 +179,14 @@ export function SidebarRow({
         className={cn(
           "min-w-0 flex-1 truncate text-[13px] tracking-[-0.01em]",
           header && "font-medium",
-          raised ? "text-neutral-800" : "text-neutral-500 group-hover:text-neutral-900",
+          raised ? "text-neutral-950" : header ? "text-neutral-700 group-hover:text-neutral-950" : "text-neutral-600 group-hover:text-neutral-950",
         )}
       >
         {label}
       </span>
 
       {count !== undefined && (
-        <span className="shrink-0 text-[11.5px] text-neutral-400 tabular-nums">
+        <span className="shrink-0 text-[11px] text-neutral-400 tabular-nums">
           {count.toLocaleString()}
         </span>
       )}
