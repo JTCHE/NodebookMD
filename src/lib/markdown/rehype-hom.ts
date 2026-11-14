@@ -268,18 +268,14 @@ export function rehypeHom({ name }: { name: string | null }) {
         const caption = body[1];
         const summary: ElementContent[] = [{ type: "element", tagName: "span", properties: { className: ["hom-method-chevron", "transition-opacity", "duration-(--duration-fast)", "motion-reduce:transition-none"], ariaHidden: "true" }, children: [chevronIcon("")] }, div("hom-method-title", title)];
         if (caption?.type === "element" && caption.tagName === "p") {
-          caption.properties.className = ["hom-method-caption"];
-          summary.push(caption);
-          body.splice(1, 1);
+          // The closed row shows the first paragraph as a muted caption. The
+          // open row hides it and shows the same text as body prose, so every
+          // row reads the same way.
+          const copy = JSON.parse(JSON.stringify(caption)) as Element;
+          copy.properties.className = ["hom-method-caption"];
+          summary.push(copy);
         }
         const methodName = methodNames.get(panel as Element) ?? "";
-        // A row opens only when it holds more than it shows: a description,
-        // or the full signature it cut. A row with nothing more is a plain
-        // row, with no chevron and no hover, so the two never look alike.
-        if (body.length === 1 && !shortened.has(panel as Element)) {
-          grouped.push({ type: "element", tagName: "div", properties: { className: ["hom-method", "hom-method-static"], dataName: methodName }, children: [div("hom-method-row", summary.slice(1))] });
-          continue;
-        }
         // The row already shows the whole signature unless it cut it, so the
         // code panel comes in only to show what the row left out.
         const panelShown = shortened.has(panel as Element) ? [body[0]] : [];

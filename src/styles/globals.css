@@ -1651,8 +1651,7 @@ pre code.hljs {
   border-bottom: 1px solid var(--border);
 }
 .hom-method:last-child { border-bottom: 0; }
-.hom-method > summary,
-.hom-method-row {
+.hom-method > summary {
   position: relative;
   padding: 0.5rem calc(1rem + 1px);
   list-style: none;
@@ -1679,8 +1678,6 @@ pre code.hljs {
   height: 100%;
 }
 .hom-method[open] > summary > .hom-method-chevron { transform: rotate(90deg); }
-/* The chevron always shows: it is what tells a row that opens from a
-   plain row. */
 .hom-method-title { font-size: 0.875rem; }
 .hom-method-name { font-family: var(--font-mono); font-weight: 500; }
 .hom-method .hom-method-caption {
@@ -1689,14 +1686,15 @@ pre code.hljs {
   font-size: 0.8125rem;
   line-height: 1.6;
 }
-/* Only a row that opens may cut its caption: a plain row has nowhere
-   else to show the rest. */
-details.hom-method:not([open]) .hom-method-caption {
+/* The closed row cuts its caption to one line; the open row shows the
+   full text as body prose instead. */
+.hom-method:not([open]) .hom-method-caption {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.hom-method[open] .hom-method-caption { display: none; }
 /* The body belongs to its own row: it sits close under the summary and far
    from the next row. */
 .hom-method-body { padding: 0.25rem 0 1.5rem; }
