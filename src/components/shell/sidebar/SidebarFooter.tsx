@@ -54,8 +54,9 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
 
       {/* The two that change the app side by side; the bug report, which
           leaves it, apart in the far corner. */}
-      {/* One full rule between the trail and the app's own controls. */}
-      <div className="mt-xs flex items-center gap-[2px] border-t border-hairline pt-xs">
+      {/* A short rule, inset like the rows, between the trail and the app's own controls. */}
+      <div className="mx-sm mt-xs h-px bg-hairline/60" />
+      <div className="mt-xs flex items-center gap-[2px] pt-xs">
         <Hint label="Settings" keys={SETTINGS_KEYS}>
           <button type="button" aria-label="Settings" className={FOOTER_BUTTON} onClick={openSettings}>
             <Icons.settings className="size-4" />

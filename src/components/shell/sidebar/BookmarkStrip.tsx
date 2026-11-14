@@ -54,7 +54,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
           // The same height and inset as a row of the tree, and of a row of
           // tiles: the strip must not grow the first time a page is kept, or
           // the whole tree below it steps down.
-          <p className="flex h-row w-full items-center gap-[3px] px-sm text-[13px] tracking-[-0.01em] text-neutral-500">
+          <p className="flex h-row w-full items-center gap-[3px] rounded-lg border border-dashed border-hairline px-[7px] text-[13px] tracking-[-0.01em] text-neutral-500">
             <Keycap flat>{COMMAND_KEY}</Keycap>
             <Keycap flat>D</Keycap>
             <span className="ml-xs">to keep a page</span>

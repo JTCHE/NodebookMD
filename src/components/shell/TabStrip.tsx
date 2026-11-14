@@ -198,7 +198,7 @@ export function TabStrip() {
       className={cn(
         // Relative: each tab's `offsetLeft` is then its place in the strip.
         // The first chip starts on the sheet's left edge.
-        "relative flex h-full min-w-0 items-center gap-[2px] overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
+        "relative -mb-px flex h-[calc(100%+1px)] min-w-0 items-end gap-[2px] overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
         "transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none",
       )}
     >
@@ -350,14 +350,14 @@ function TabChip({
       className={cn(
         // Wide enough for a name, and every tab gives way alike when the bar
         // runs short. A size container: the layout inside reads its width.
-        "group/tab @container relative h-[28px] min-w-[36px] shrink basis-(--tab) cursor-interactive",
-        "touch-none select-none rounded-md",
+        "group/tab @container relative h-[32px] min-w-[36px] shrink basis-(--tab) cursor-interactive",
+        "touch-none select-none rounded-t-lg",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         // The tab on screen is the chip the panel gives the page on screen:
         // one look for "this one" across the window. The rest are words on
         // the bar until the pointer finds them.
         active
-          ? "z-10 bg-raised text-neutral-950 shadow-chip ring-1 ring-hairline"
+          ? "z-10 bg-background text-neutral-950"
           : "text-neutral-500 pointer-hover:bg-neutral-200/70 pointer-hover:text-neutral-900",
       )}
     >

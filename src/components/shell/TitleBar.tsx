@@ -83,7 +83,7 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
         // No gap on the row itself: the caption buttons have to reach the
         // window's right edge, and a row gap would leave a strip of bar
         // beside the close button that no click can ever hit.
-        "flex h-titlebar shrink-0 items-center bg-chrome select-none print:hidden",
+        "relative z-20 flex h-titlebar shrink-0 items-center bg-chrome select-none print:hidden",
         // macOS draws its traffic lights over the left of the bar, and no
         // caption buttons sit at the right edge.
         nativeFrame && (fullscreen ? "pr-xs" : "pr-[4px]"),
