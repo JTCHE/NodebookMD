@@ -10,7 +10,7 @@ export const QUIET =
   "text-muted-foreground transition-colors " +
   "hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
 
-export const ACTION_ICON = "size-3.5 shrink-0";
+export const ACTION_ICON = "size-4 shrink-0";
 
 /* A square icon button on the bar. Smaller than a caption button and rounded,
    because it belongs to the app rather than to the window.

@@ -203,7 +203,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
         aria-label={copied ? "Copied" : "Copy as Markdown"}
         className={cn(ACTION, QUIET, "w-7 px-0 pointer-hover:bg-transparent")}
       >
-        {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
+        {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
       </button>
       </Hint>
       <Hint label="More">

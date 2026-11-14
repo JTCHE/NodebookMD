@@ -309,7 +309,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
       {currentHooked !== undefined && (
         // Beside the chevron, over the card and not inside it: a button
         // cannot hold a button.
-        <div className="absolute top-1/2 right-sm flex -translate-y-1/2">
+        <div className="absolute top-[16px] right-sm flex -translate-y-1/2">
           <F1Chip release={currentSeries} hooked={currentHooked} onToggle={() => toggleF1(currentSeries, currentHooked)} />
         </div>
       )}
