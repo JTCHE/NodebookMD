@@ -79,18 +79,18 @@ export function SettingsDialog() {
       // gives back the 10px between its edge and its cross, so the cross ends
       // on the content's right edge. It stands where the title's line stands,
       // so the cross is centred on the title's capitals.
-      closeAt="top-[calc(var(--spacing-xl)-6px)] right-[calc(var(--spacing-xl)-10px)]"
+      closeAt="top-[calc(var(--spacing-lg)-6px)] right-[calc(var(--spacing-lg)-10px)]"
       // One height on every tab, so the dialog never jumps, and room for the
       // six agents Houdini MCP supports, the longest list with a known end
       // (see `Section`). Houdini Integration has no such end, so a longer
       // list scrolls. It stands tall enough to cover the page's heading.
-      className="h-[min(520px,100%)] w-full max-w-[820px] flex-row"
+      className="h-[min(520px,100%)] w-full max-w-[760px] flex-row"
     >
       {/* The sections are places, as the sidebar's rows are, on the panel's
           own ground. The inset is one value on every side: with the row's own
           8px it puts the mark on the content's axis, and the first row,
           30px tall, centres on the title's capitals. */}
-      <nav className="flex w-[240px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 p-[calc(var(--spacing-xl)-var(--spacing-sm))]">
+      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 p-[calc(var(--spacing-lg)-var(--spacing-sm))]">
         {SECTIONS.map((one) => (
           <SidebarRow
             key={one.key}
@@ -135,11 +135,11 @@ export function SettingsDialog() {
 function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <header className="mt-[calc(var(--spacing-xl)-6px)] mr-[calc(var(--spacing-xl)+18px+var(--spacing-md)+var(--spacing-sm))] mb-xs ml-xl flex h-7 shrink-0 items-baseline justify-between gap-md">
+      <header className="mt-[calc(var(--spacing-lg)-6px)] mr-[calc(var(--spacing-lg)+18px+var(--spacing-md)+var(--spacing-sm))] mb-xs ml-lg flex h-7 shrink-0 items-baseline justify-between gap-md">
         <h2 className="truncate text-[20px] leading-7 font-semibold tracking-[-0.02em] text-neutral-950">{title}</h2>
         {action}
       </header>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-xl pb-xl">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-lg pb-lg">{children}</div>
     </section>
   );
 }
