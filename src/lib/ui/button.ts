@@ -32,5 +32,5 @@ const LINK_BEHAVIOUR =
 export const TEXT_LINK = `${LINK_BEHAVIOUR} text-brand-700`;
 
 /** A link in the text's own ink, where the brand is kept for something else.
-    A faint rule at rest says it is a link; the pointer darkens the rule. */
-export const QUIET_LINK = `${LINK_BEHAVIOUR} font-medium text-neutral-700 underline decoration-neutral-300 pointer-hover:decoration-current`;
+    A muted rule at rest says it is a link; the pointer darkens the rule. */
+export const QUIET_LINK = `${LINK_BEHAVIOUR} font-medium text-neutral-700 underline decoration-neutral-400 pointer-hover:decoration-current`;

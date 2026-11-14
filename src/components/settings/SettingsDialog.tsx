@@ -72,16 +72,17 @@ export function SettingsDialog() {
         <span className={cn(MODAL_LINE, "text-caption text-neutral-500")}>Settings</span>
         {/* The rows give their padding back, so their names stand on the
             axis of the title above them. A row stands 8px inside the
-            dialog's 12px corner, so its corner is 4px and the two nest. */}
+            dialog's inner corner (its radius less its 1px border), so the
+            row's corner is that radius less 8px, and the two nest. */}
         <div className="-mx-sm flex flex-col gap-2xs">
           {SECTIONS.map((one) => (
             <SidebarRow
               key={one.key}
               label={one.label}
               bare
-              className="rounded-sm"
+              className="rounded-[calc(var(--radius-xl)-1px-var(--spacing-sm))]"
               selected={shown === one.key}
-              mark={<one.icon className={cn("size-[15px]", shown === one.key ? "text-brand" : "text-neutral-500")} />}
+              mark={<one.icon className={cn("size-[15px]", shown === one.key ? "text-neutral-800" : "text-neutral-500")} />}
               onClick={() => setShown(one.key)}
             />
           ))}
@@ -169,16 +170,13 @@ function HelpSection() {
   return (
     <Section title="Houdini Integration">
       {releases?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
-      {/* Read with each row below it: F1 opens this app in Houdini 22.0. It
-          belongs to the rows, so it sits nearer to them than to the title. */}
-      {!!releases?.length && <p className="mt-sm -mb-xs text-meta text-neutral-500">F1 opens {APP_NAME} in</p>}
       {releases?.map((one) => (
         <Row
           key={one.release}
           label={`Houdini ${one.release}`}
-          // The switch says whether F1 opens this app. Only a third help
-          // server is a fact the switch cannot show: turning it on replaces it.
-          detail={one.external && one.url && !one.ours ? `F1 opens ${one.url}` : undefined}
+          // What F1 opens in that release, when it is not Houdini's own help:
+          // this app, or a third help server that the switch would replace.
+          detail={!one.external || !one.url ? undefined : `F1 opens ${one.ours ? APP_NAME : one.url}`}
         >
           <Toggle
             checked={one.external && one.ours}
