@@ -125,11 +125,12 @@ export function SettingsDialog() {
     content's inset is one value on every side. The title's capitals start
     6px below the top of its 28px line, so the line starts 6px higher and the
     capitals stand as far from the top as the text from the left. The line
-    stops short of the close button: its 18px past the content edge, and a gap. */
+    stops short of the close button: its 18px past the content edge, then one
+    gap between the close button and the action's own hover box. */
 function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <header className="mt-[calc(var(--spacing-xl)-6px)] mr-[calc(var(--spacing-xl)+18px+var(--spacing-sm))] mb-xs ml-xl flex h-7 shrink-0 items-baseline justify-between gap-md">
+      <header className="mt-[calc(var(--spacing-xl)-6px)] mr-[calc(var(--spacing-xl)+18px+var(--spacing-md)+var(--spacing-sm))] mb-2xs ml-xl flex h-7 shrink-0 items-baseline justify-between gap-md">
         <h2 className="truncate text-[20px] leading-7 font-semibold tracking-[-0.02em] text-neutral-950">{title}</h2>
         {action}
       </header>
@@ -176,7 +177,7 @@ const GHOST_BUTTON =
     off, this says what off means. A release that never ran has no
     preferences to write, so its switch stays off and greyed. */
 function helpTarget(release: Release | undefined): string {
-  if (!release) return "Start it once first";
+  if (!release) return "Open this Houdini once to set it up";
   if (release.external && release.ours) return `F1 opens ${APP_NAME}`;
   if (release.external) return "F1 opens another server";
   return "F1 opens Houdini's help";
@@ -290,7 +291,7 @@ function McpSection() {
       )}
       {agents?.map((agent) => (
         // Connect writes ours; Replace writes ours over another Houdini MCP;
-        // Update writes ours again. Not connected needs no line: Connect says it.
+        // Update writes ours again. Every row has its fact, so the labels align.
         <Row
           key={agent.key}
           label={agent.label}
@@ -301,8 +302,10 @@ function McpSection() {
                 Connected
               </span>
             ) : agent.link === "other" ? (
-              "Another server"
-            ) : undefined
+              "Uses another MCP server"
+            ) : (
+              "Not connected"
+            )
           }
         >
           <button type="button" disabled={busy !== ""} className={BUTTON} onClick={() => void install(agent)}>
