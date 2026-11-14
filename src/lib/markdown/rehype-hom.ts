@@ -198,7 +198,12 @@ export function rehypeHom({ name }: { name: string | null }) {
           const first = strong?.type === "element" ? strong.children[0] : undefined;
           const leading = child.children.slice(0, at);
           if (first?.type === "element" && first.tagName === "code" && /^[\w.]+\s*\(/.test(text(first)) && leading.every((node) => !text(node).trim())) {
-            const raw = text(first).replace(/\(\s*(?:self|cls)\s*(?:,\s*)?/, "(");
+            // Some pages put the return type inside the code as `-> type`.
+            // It comes out of the code, so the row shows it as text like
+            // every other return type.
+            const full = text(first).replace(/\(\s*(?:self|cls)\s*(?:,\s*)?/, "(");
+            const arrow = full.match(/^(.*\))\s*->\s*(.+)$/);
+            const raw = arrow ? arrow[1] : full;
             const compact = raw.length > 88 ? `${raw.slice(0, raw.indexOf("("))}(…)` : raw;
             // The return type reads as plain text in the summary: the prose's
             // inline-code chip would shout inside a row that is already
@@ -211,6 +216,7 @@ export function rehypeHom({ name }: { name: string | null }) {
                 : { ...node, children };
             };
             const returns: ElementContent[] = (JSON.parse(JSON.stringify((strong as Element).children.slice(1))) as ElementContent[]).map(plain);
+            if (arrow) returns.unshift({ type: "text", value: ` → ${arrow[2]}` });
             for (const node of (strong as Element).children) if (node.type === "element" && node.tagName === "code") highlight(node);
             const panel = div("vex-sig hom-signature", [div("vex-sig-card code-panel", [div("vex-sig-row", (strong as Element).children)])]);
             methodNames.set(panel, raw.slice(0, raw.indexOf("(")).trim());
@@ -268,20 +274,26 @@ export function rehypeHom({ name }: { name: string | null }) {
         const caption = body[1];
         const summary: ElementContent[] = [{ type: "element", tagName: "span", properties: { className: ["hom-method-chevron", "transition-opacity", "duration-(--duration-fast)", "motion-reduce:transition-none"], ariaHidden: "true" }, children: [chevronIcon("")] }, div("hom-method-title", title)];
         if (caption?.type === "element" && caption.tagName === "p") {
-          // The closed row shows the first paragraph as a muted caption. The
-          // open row hides it and shows the same text as body prose, so every
-          // row reads the same way.
-          const copy = JSON.parse(JSON.stringify(caption)) as Element;
-          copy.properties.className = ["hom-method-caption"];
-          summary.push(copy);
+          // The first paragraph stays in the summary, so the row's hit area
+          // only grows when it opens: a muted line when closed, body prose
+          // when open.
+          caption.properties.className = ["hom-method-caption"];
+          summary.push(caption);
+          body.splice(1, 1);
         }
         const methodName = methodNames.get(panel as Element) ?? "";
+        // A row with no text and nothing cut from its signature has nothing
+        // to open: it is a plain row, with no chevron.
+        if (summary.length === 2 && body.length === 1 && !shortened.has(panel as Element)) {
+          grouped.push({ type: "element", tagName: "div", properties: { className: ["hom-method", "hom-method-row"], dataName: methodName }, children: [summary[1]] });
+          continue;
+        }
         // The row already shows the whole signature unless it cut it, so the
         // code panel comes in only to show what the row left out.
         const panelShown = shortened.has(panel as Element) ? [body[0]] : [];
         grouped.push({ type: "element", tagName: "details", properties: { className: ["hom-method"], dataName: methodName }, children: [
           { type: "element", tagName: "summary", properties: { className: DISCLOSURE_INTERACTION.split(" ") }, children: summary },
-          div("hom-method-body", [...panelShown, div("hom-method-description", listParameters(body.slice(1), names))]),
+          ...(panelShown.length || body.length > 1 ? [div("hom-method-body", [...panelShown, div("hom-method-description", listParameters(body.slice(1), names))])] : []),
         ] });
       }
       const lists: RootContent[] = [];

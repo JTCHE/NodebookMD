@@ -1651,7 +1651,8 @@ pre code.hljs {
   border-bottom: 1px solid var(--border);
 }
 .hom-method:last-child { border-bottom: 0; }
-.hom-method > summary {
+.hom-method > summary,
+.hom-method-row {
   position: relative;
   padding: 0.5rem calc(1rem + 1px);
   list-style: none;
@@ -1687,14 +1688,19 @@ pre code.hljs {
   line-height: 1.6;
 }
 /* The closed row cuts its caption to one line; the open row shows the
-   full text as body prose instead. */
+   full text as body prose, in the same place. */
 .hom-method:not([open]) .hom-method-caption {
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.hom-method[open] .hom-method-caption { display: none; }
+.hom-method[open] .hom-method-caption {
+  margin-top: 0.75rem;
+  color: var(--foreground);
+  font-size: 1rem;
+  line-height: 1.75;
+}
 /* The body belongs to its own row: it sits close under the summary and far
    from the next row. */
 .hom-method-body { padding: 0.25rem 0 1.5rem; }
@@ -1709,7 +1715,7 @@ pre code.hljs {
 }
 /* In a row's caption a value is plain monospace: the chip would make the
    line taller and pull the eye off the method names. The open row keeps it. */
-.hom-method-caption code {
+.hom-method:not([open]) .hom-method-caption code {
   padding: 0;
   border: 0;
   background: none;
