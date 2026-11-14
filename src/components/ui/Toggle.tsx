@@ -33,7 +33,7 @@ export function Toggle({
         "relative h-[24px] w-[48px] shrink-0 cursor-interactive rounded-full",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        checked ? "bg-brand" : "bg-neutral-400",
+        checked ? "bg-brand" : "bg-neutral-500",
         className,
       )}
     >

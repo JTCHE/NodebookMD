@@ -69,7 +69,10 @@ export function SettingsDialog() {
       {/* The panel's own rows, on the panel's own ground: the sections are
           places, as the sidebar's rows are. */}
       <nav className={cn("flex w-[200px] shrink-0 flex-col border-r border-hairline bg-neutral-100 px-md pb-md", MODAL_TOP)}>
-        <span className={cn(MODAL_LINE, "text-caption text-neutral-500")}>Settings</span>
+        {/* Measured on the pixels: the icons below draw 1px inside their box,
+            and small type sits 1px low beside the title's, so the label moves
+            by that much to share both axes. */}
+        <span className={cn(MODAL_LINE, "pb-2xs pl-px text-caption text-neutral-500")}>Settings</span>
         {/* The rows give their padding back, so their names stand on the
             axis of the title above them. A row stands 8px inside the
             dialog's inner corner (its radius less its 1px border), so the
@@ -154,7 +157,7 @@ function Empty({ children }: { children: ReactNode }) {
     and its padding. Geist sits high in its line, so the text in every
     control of Settings takes 2px at the top, which centres its capitals. */
 const BUTTON =
-  "h-row shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-2xs text-label font-medium text-neutral-800 shadow-chip " +
+  "h-row shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-2xs text-label font-medium text-neutral-800 " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
@@ -174,9 +177,9 @@ function HelpSection() {
         <Row
           key={one.release}
           label={`Houdini ${one.release}`}
-          // What F1 opens in that release, when it is not Houdini's own help:
-          // this app, or a third help server that the switch would replace.
-          detail={!one.external || !one.url ? undefined : `F1 opens ${one.ours ? APP_NAME : one.url}`}
+          // The switch shows whether F1 opens this app. A third help server
+          // is the one fact it cannot show: turning the switch on replaces it.
+          detail={one.external && one.url && !one.ours ? "F1 opens another help server" : undefined}
         >
           <Toggle
             checked={one.external && one.ours}
@@ -196,10 +199,12 @@ interface Agent {
   link: "ours" | "other" | "none";
 }
 
-const LINK: Record<Agent["link"], string> = {
+/** What the agent's config holds, when the button cannot say it: Connect
+    alone already says that nothing is set up. */
+const LINK: Record<Agent["link"], string | undefined> = {
   ours: "Connected",
-  other: "Uses another MCP",
-  none: "Not connected",
+  other: "Another Houdini MCP is set up",
+  none: undefined,
 };
 
 /** Houdini MCP, read from each agent's own config: the truth, whoever
@@ -247,10 +252,12 @@ function McpSection() {
           key={agent.key}
           label={agent.label}
           detail={
-            <span className={cn("inline-flex items-center gap-2xs", agent.link === "ours" && "text-brand-700")}>
-              {agent.link === "ours" && <Icons.chosen className="size-3" />}
-              {LINK[agent.link]}
-            </span>
+            LINK[agent.link] && (
+              <span className={cn("inline-flex items-center gap-2xs", agent.link === "ours" && "text-neutral-700")}>
+                {agent.link === "ours" && <Icons.chosen className="size-3" />}
+                {LINK[agent.link]}
+              </span>
+            )
           }
         >
           <button type="button" disabled={busy !== ""} className={BUTTON} onClick={() => void install(agent)}>
