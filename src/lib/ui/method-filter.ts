@@ -23,13 +23,27 @@ export function methodsBox(root: ParentNode = document) {
 /** Shows only the methods whose name or caption holds `query`. An empty
     query shows them all. */
 export function filterMethods(box: HTMLElement, query: string) {
-  const wanted = fold(query);
+  const rows = [...box.querySelectorAll<HTMLElement>(".hom-method[data-name]")];
+  // The name first; the caption too, so "label" finds what returns one.
+  const matches = (row: HTMLElement, words: string) => fold(row.dataset.name ?? "").includes(words) || fold(row.querySelector(".hom-method-caption")?.textContent ?? "").includes(words);
+  // Words that match no method hide nothing: an empty list would shorten the
+  // page and make it jump, and tell the reader no more than the 0/0 count.
+  const typed = fold(query);
+  const wanted = rows.some((row) => matches(row, typed)) ? typed : "";
+  // The view holds still: the first row on screen keeps its place, or, when
+  // the filter hides it, the next row it leaves.
+  let scroller = box.parentElement;
+  while (scroller && !/auto|scroll/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+  const viewTop = scroller?.getBoundingClientRect().top ?? 0;
+  const anchorIndex = rows.findIndex((row) => !row.hidden && row.getBoundingClientRect().bottom > viewTop);
+  const anchorTop = anchorIndex < 0 ? 0 : rows[anchorIndex].getBoundingClientRect().top;
+  // While a filter is on, the box keeps the height it had, so the page
+  // never gets too short to hold its scroll position.
+  box.style.minHeight = wanted ? `${Math.max(parseFloat(box.style.minHeight) || 0, box.getBoundingClientRect().height)}px` : "";
   let only: HTMLElement | null = null;
   let shown = 0;
-  for (const row of box.querySelectorAll<HTMLElement>(".hom-method[data-name]")) {
-    // The name first; the caption too, so "label" finds what returns one.
-    const caption = row.querySelector(".hom-method-caption")?.textContent ?? "";
-    const match = !wanted || fold(row.dataset.name ?? "").includes(wanted) || fold(caption).includes(wanted);
+  for (const row of rows) {
+    const match = !wanted || matches(row, wanted);
     row.hidden = !match;
     if (!match) continue;
     shown += 1;
@@ -47,6 +61,8 @@ export function filterMethods(box: HTMLElement, query: string) {
     const heading = group.previousElementSibling as HTMLElement | null;
     if (heading && /^H[2-6]$/.test(heading.tagName)) heading.toggleAttribute("data-no-match", empty);
   }
+  const anchor = anchorIndex < 0 ? undefined : rows.slice(anchorIndex).find((row) => !row.hidden);
+  if (scroller && anchor) scroller.scrollTop += anchor.getBoundingClientRect().top - anchorTop;
   // One match is the method the reader looked for: open it.
   const single = wanted && shown === 1 && only instanceof HTMLDetailsElement ? only : null;
   if (opened && opened !== single) opened.open = false;

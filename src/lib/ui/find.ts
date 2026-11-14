@@ -106,10 +106,18 @@ export function nearest(ranges: Range[], direction: 1 | -1): number {
   const free = ranges.map((range, i) => ({ range, i })).filter(({ range }) => !pinned(range));
   const list = free.length ? free : ranges.map((range, i) => ({ range, i }));
   if (list.length === 0) return -1;
-  const box = scroller(list[0].range);
+  // The page's own scroller, not the first match's: that match can sit in
+  // a code panel that scrolls on its own.
+  let box = document.querySelector("main")?.parentElement ?? null;
+  while (box && !/auto|scroll/.test(getComputedStyle(box).overflowY)) box = box.parentElement;
   const view = box?.getBoundingClientRect() ?? { top: 0, bottom: window.innerHeight };
-  if (direction === 1) return (list.find(({ range }) => range.getBoundingClientRect().bottom > view.top) ?? list[0]).i;
-  return (list.findLast(({ range }) => range.getBoundingClientRect().top < view.bottom) ?? list[list.length - 1]).i;
+  // The same clear band that `reveal` keeps, so the match it picks on
+  // screen does not scroll the page.
+  const margin = (view.bottom - view.top) * 0.2;
+  // At the end of the page no match sits under the band: then the first
+  // match still on screen.
+  if (direction === 1) return (list.find(({ range }) => range.getBoundingClientRect().top > view.top + margin) ?? list.find(({ range }) => range.getBoundingClientRect().bottom > view.top) ?? list[0]).i;
+  return (list.findLast(({ range }) => range.getBoundingClientRect().bottom < view.bottom - margin) ?? list.findLast(({ range }) => range.getBoundingClientRect().top < view.bottom) ?? list[list.length - 1]).i;
 }
 
 /** True when the range shows in the box that scrolls it. */
