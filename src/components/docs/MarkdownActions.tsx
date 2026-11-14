@@ -201,10 +201,9 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
         // In a tight column the button keeps its icon and gives its words to
         // the page title. The header is the container.
         aria-label={copied ? "Copied" : "Copy as Markdown"}
-        className={cn(ACTION, QUIET, "rounded-r-none px-2.5 @min-[600px]:px-3")}
+        className={cn(ACTION, QUIET, "w-8 px-0")}
       >
         {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
-        <span className="hidden @min-[600px]:inline">{copied ? "Copied" : "Copy as Markdown"}</span>
       </button>
       </Hint>
       <Hint label="More">
@@ -215,7 +214,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((was) => !was)}
-        className={cn(ACTION, QUIET, "w-7 rounded-l-none border-l-0 px-0")}
+        className={cn(ACTION, QUIET, "w-6 px-0")}
       >
         <ChevronDown
           className={cn("size-3.5 transition-transform duration-150 motion-reduce:transition-none", open && "rotate-180")}

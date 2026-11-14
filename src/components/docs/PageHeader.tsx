@@ -55,7 +55,7 @@ export function PageHeader({ name, nodeType, icon, since, summary, markdown, ent
             <div className="flex shrink-0 items-center gap-2">
               <NodeVersionSelector versions={versions} path={entry.path} />
               {since && (
-                <span className="inline-flex shrink-0 items-center rounded-md border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                <span className="shrink-0 text-xs text-neutral-500">
                   Since {since}
                 </span>
               )}
