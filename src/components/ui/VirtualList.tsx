@@ -49,16 +49,24 @@ export function VirtualList<T>({
   const node = useRef<HTMLDivElement>(null);
   const [top, setTop] = useState(0);
   const [height, setHeight] = useState(0);
+  // The most whole rows the parent leaves room for. The list ends on a row's
+  // edge, so no sliver of a row shows through the fade at the bottom.
+  const [whole, setWhole] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const element = node.current;
-    if (!element) return;
-    const measure = () => setHeight(element.clientHeight);
+    const parent = element?.parentElement;
+    if (!element || !parent) return;
+    const measure = () => {
+      setHeight(element.clientHeight);
+      setWhole(Math.max(1, Math.floor(parent.clientHeight / rowHeight)) * rowHeight);
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
+    observer.observe(parent);
     return () => observer.disconnect();
-  }, []);
+  }, [rowHeight]);
 
   // The list is re-windowed on the frame, not on the event: a fast wheel
   // fires scroll far more often than the screen refreshes. And drawn in that
@@ -105,7 +113,7 @@ export function VirtualList<T>({
     <div
       ref={node}
       onScroll={onScroll}
-      style={style}
+      style={{ ...style, maxHeight: whole }}
       data-list=""
       className={cn(
         // The list comes to rest on a row's edge, so a header pinned over its
