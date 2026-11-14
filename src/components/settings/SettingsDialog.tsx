@@ -16,7 +16,7 @@ import { Icons } from "@/lib/ui/icons";
 import { Modal } from "@/components/ui/Modal";
 import { SidebarRow } from "@/components/shell/sidebar/SidebarRow";
 import { Toggle } from "@/components/ui/Toggle";
-import { PICKER_WIDTH, Segmented, TRACK } from "@/components/ui/Segmented";
+import { Segmented, TRACK } from "@/components/ui/Segmented";
 import { showToast } from "@/components/ui/toast-notification";
 import { TELEMETRY } from "@/components/onboarding/Onboarding";
 import { useVaults } from "@/components/obsidian/ObsidianDialog";
@@ -180,14 +180,12 @@ const GHOST_BUTTON =
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:bg-transparent disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** What F1 in a release opens now, in a few words: the switch shows on or
-    off, this says what off means. A release that never ran has no
-    preferences to write, so its switch stays off and greyed. */
-function helpTarget(release: Release | undefined): string {
+/** A fact the switch cannot show: a release that never ran has no
+    preferences to write, so its switch stays off and greyed; F1 that opens
+    another server is off too, but not Houdini's own help. */
+function helpTarget(release: Release | undefined): string | undefined {
   if (!release) return "Open this Houdini once to set it up";
-  if (release.external && release.ours) return `F1 opens ${APP_NAME}`;
-  if (release.external) return "F1 opens another server";
-  return "F1 opens Houdini's help";
+  if (release.external && !release.ours) return "F1 opens another server";
 }
 
 /** F1 in each Houdini release series installed on the machine. A series has
@@ -299,20 +297,17 @@ function McpSection() {
       )}
       {agents?.map((agent) => (
         // Connect writes ours; Replace writes ours over another Houdini MCP;
-        // Update writes ours again. Every row has its fact, so the labels align.
+        // Update writes ours again. The button says the state; only a
+        // connected agent says so in words, with its check.
         <Row
           key={agent.key}
           label={agent.label}
           fact={
-            agent.link === "ours" ? (
+            agent.link === "ours" && (
               <span className="inline-flex items-center gap-xs text-neutral-800">
                 <Icons.chosen className="size-3 text-brand" />
                 Connected
               </span>
-            ) : agent.link === "other" ? (
-              "Uses another MCP server"
-            ) : (
-              "Not connected"
             )
           }
         >
@@ -343,11 +338,11 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
           else onChange(next);
         }}
         className={cn(
-          // A choice, so it wears the picker's sunken track. The chevron
-          // stands as far in from the right as the text from the left.
+          // A choice, so it wears the picker's track, as wide as its longest
+          // vault. The chevron stands as far in from the right as the text
+          // from the left.
           TRACK,
-          PICKER_WIDTH,
-          "cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
+          "max-w-[280px] cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200/60",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         )}

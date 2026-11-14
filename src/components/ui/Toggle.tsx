@@ -45,7 +45,7 @@ export function Toggle({
         // Off is a mid grey, dark enough to read as a live control; disabled
         // fades the whole switch to half, so the two never look alike and
         // the disabled one is still there to see.
-        checked ? "bg-neutral-950" : "bg-neutral-400",
+        checked ? "bg-neutral-950" : "bg-neutral-500",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
