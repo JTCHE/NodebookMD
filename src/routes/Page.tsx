@@ -401,8 +401,8 @@ export default function Page() {
       ref={scroller}
       // The bar's width is held on a short page too, so the column does not
       // step sideways between a page that scrolls and one that does not.
-      // The page runs on under the key strip at the bottom, which fades it
-      // out (see .status-scrim). The page ends on the bottom padding of
+      // The page ends above the key strip at the bottom, and fades out toward it
+      // (see .status-scrim). The page ends on the bottom padding of
       // `main`, which is deeper than the strip, so the last line always reads.
       // --page-bar-h is the height of the bar that stays at the top: the
       // list of contents, the pill and a heading's jump offset clear it.

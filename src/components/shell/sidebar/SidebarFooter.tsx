@@ -55,7 +55,7 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
       {/* The two that change the app side by side; the bug report, which
           leaves it, apart in the far corner. */}
       {/* One full rule between the trail and the app's own controls. */}
-      <div className="mt-xs flex items-center gap-[2px] border-t border-hairline pt-sm">
+      <div className="mt-xs flex items-center gap-[2px] border-t border-hairline pt-xs">
         <Hint label="Settings" keys={SETTINGS_KEYS}>
           <button type="button" aria-label="Settings" className={FOOTER_BUTTON} onClick={openSettings}>
             <Icons.settings className="size-4" />
@@ -76,7 +76,7 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
         <span className="flex-1" />
         {/* Which build of the app this is: read, not pressed, so it is text
             beside the one control that leaves the app. */}
-        <span className="mr-2xs text-[11px] text-neutral-400 tabular-nums">v{version}</span>
+        <span className="mr-xs text-[12px] text-neutral-500 tabular-nums">v{version}</span>
         <Hint label="File a bug on GitHub">
           <a href={ISSUES} target="_blank" rel="noopener noreferrer" aria-label="File a bug" className={FOOTER_BUTTON}>
             <Icons.bugReport className="size-4" />

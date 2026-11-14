@@ -11,9 +11,8 @@
  * makes the Bookmarks tab fill up at all — a bookmark buried in a page menu
  * gets used by nobody.
  *
- * The list fades out at the bottom rather than ending on a cut row: the panel
- * is as tall as the window leaves it, so where it ends is an accident of the
- * window size and should not read as the end of the list.
+ * The list shows whole rows only: the panel is as tall as the window leaves
+ * it, so the list is cut down to the rows that fit, and ends on one.
  *
  * A cold window — no recents and no bookmarks — has no trail to show, so it
  * shows `ExploreColumns` instead of an empty pair of tabs.
@@ -23,13 +22,16 @@ import { cn } from "@/lib/utils";
 import { Hint } from "@/components/ui/Hint";
 import { Icons } from "@/lib/ui/icons";
 import DocIconClient from "@/components/docs/markdown/DocIconClient";
-import { FadeList } from "@/components/ui/FadeList";
+import { WholeRowList } from "@/components/ui/WholeRowList";
 import { forget, shortAgo, toggleBookmark, useLibrary, type LibraryEntry } from "@/lib/store/library";
 import { warm } from "@/lib/pages";
 import { useRowTip } from "@/components/docs/Tooltip";
 import { ExploreColumns } from "@/components/root/ExploreColumns";
 import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
 import { COMMAND_KEY } from "@/lib/hotkeys";
+
+/** Every row of the list is this tall; the list is cut to a whole number of them. */
+const ROW_HEIGHT = 32;
 
 type Tab = "recents" | "bookmarks";
 
@@ -60,10 +62,11 @@ function LibraryRow({ entry, kept, onForget }: { entry: LibraryEntry; kept: bool
         // `shrink-0` is the height: the list is a flex column, so a long list
         // squeezed every row under its stated height and the rows read tighter
         // the more pages the reader had open.
-        "group relative flex h-[32px] shrink-0 items-center gap-sm rounded-lg px-sm",
+        "group relative flex shrink-0 items-center gap-sm rounded-lg px-sm",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         "pointer-hover:bg-neutral-100",
       )}
+      style={{ height: ROW_HEIGHT }}
     >
       <Link
         to={`/${entry.path}`}
@@ -224,7 +227,8 @@ export function LibraryPanel({ className }: { className?: string }) {
             )}
           </p>
         ) : (
-          <FadeList
+          <WholeRowList
+            rowHeight={ROW_HEIGHT}
             // An `overflow-y-auto` scroller clips X too, not only Y — the row's
             // bookmark flag hangs 13px left of the row (see LibraryRow), and
             // `-mx-sm` only pulled the scroller out 8px, so 5px of every flag
@@ -232,8 +236,7 @@ export function LibraryPanel({ className }: { className?: string }) {
             // where `-mx-sm` put it (21 - 13 = 8, the same cancel as before)
             // while moving the scroller's own clipped edge 13px further out —
             // enough for the flag to clear it.
-            className="-mr-sm -ml-[21px] h-full pl-[13px]"
-            deps={[tab, entries.length]}
+            className="-mr-sm -ml-[21px] pl-[13px]"
           >
             {entries.map((entry) => (
               <LibraryRow
@@ -246,7 +249,7 @@ export function LibraryPanel({ className }: { className?: string }) {
                 onForget={tab === "recents" && entry.id !== undefined ? () => forget(entry.id!) : undefined}
               />
             ))}
-          </FadeList>
+          </WholeRowList>
         )}
       </div>
     </section>

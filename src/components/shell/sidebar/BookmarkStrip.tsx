@@ -49,14 +49,15 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
         />
       </Link>
 
-      <div className="flex min-h-[32px] flex-wrap items-center gap-[2px]">
+      <div className="flex min-h-row flex-wrap items-center gap-[2px]">
         {shown.length === 0 ? (
-          // The same height as a row of tiles: the strip must not grow the
-          // first time a page is kept, or the whole tree below it steps down.
-          <p className="flex h-[32px] w-full items-center gap-[3px] px-sm text-[12px] text-neutral-400">
+          // The same height and inset as a row of the tree, and of a row of
+          // tiles: the strip must not grow the first time a page is kept, or
+          // the whole tree below it steps down.
+          <p className="flex h-row w-full items-center gap-[3px] px-sm text-[13px] tracking-[-0.01em] text-neutral-500">
             <Keycap flat>{COMMAND_KEY}</Keycap>
             <Keycap flat>D</Keycap>
-            <span className="ml-[5px]">to keep a page</span>
+            <span className="ml-xs">to keep a page</span>
           </p>
         ) : (
           shown.map((entry) => <BookmarkTile key={entry.path} entry={entry} />)
@@ -87,7 +88,7 @@ function BookmarkTile({ entry }: { entry: LibraryEntry }) {
           // Square, and as quiet as a row of the panel: a mark on the
           // ground until the pointer lifts it. 8px round the 16px icon, the
           // padding every row has, so the first mark stands on the axis.
-          "grid size-[32px] shrink-0 cursor-interactive place-items-center rounded-md",
+          "grid h-row w-[32px] shrink-0 cursor-interactive place-items-center rounded-md",
           "transition-[background-color,box-shadow] duration-(--duration-fast) motion-reduce:transition-none",
           "pointer-hover:bg-raised pointer-hover:shadow-chip active:bg-neutral-200",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
