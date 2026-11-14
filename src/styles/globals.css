@@ -1309,11 +1309,14 @@ button:active kbd.kbd-button {
 }
 
 /* The blur behind a modal (SCRIM in Modal.tsx). Off where the window draws in
-   software, which blurs it again on every keystroke: see lib/ui/blur. */
+   software, which blurs it again on every keystroke: see lib/ui/blur. Black
+   text under a black dim stays black, so without the blur the dim is a grey
+   that lifts the page's text toward the ground instead. */
 @utility scrim-blur {
   backdrop-filter: blur(8px);
   :root[data-no-blur] & {
     backdrop-filter: none;
+    background-color: color-mix(in oklab, var(--neutral-600) 80%, transparent);
   }
 }
 

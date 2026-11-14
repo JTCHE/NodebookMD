@@ -80,16 +80,17 @@ export function SettingsDialog() {
       // on the content's right edge. It stands where the title's line stands,
       // so the cross is centred on the title's capitals.
       closeAt="top-[calc(var(--spacing-xl)-6px)] right-[calc(var(--spacing-xl)-10px)]"
-      // One height on every tab, so the dialog never jumps: the six agents
-      // Houdini MCP supports, the longest list with a known end (see
-      // `Section`), with one inset under the last row as over the title.
-      // Houdini Integration has no such end, so a longer list scrolls.
-      className="h-[min(calc(2*var(--spacing-xl)-6px+28px+var(--spacing-xs)+6*var(--spacing-setting)+5px),100%)] w-full max-w-[820px] flex-row"
+      // One height on every tab, so the dialog never jumps, and room for the
+      // six agents Houdini MCP supports, the longest list with a known end
+      // (see `Section`). Houdini Integration has no such end, so a longer
+      // list scrolls. It stands tall enough to cover the page's heading.
+      className="h-[min(520px,100%)] w-full max-w-[820px] flex-row"
     >
       {/* The sections are places, as the sidebar's rows are, on the panel's
-          own ground. The first row starts where the title's line starts,
-          and its 2px of extra height centre it on the title's capitals. */}
-      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 px-sm pt-[calc(var(--spacing-xl)-6px)] pb-sm">
+          own ground. The inset is one value on every side: with the row's own
+          8px it puts the mark on the content's axis, and the first row,
+          30px tall, centres on the title's capitals. */}
+      <nav className="flex w-[240px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 p-[calc(var(--spacing-xl)-var(--spacing-sm))]">
         {SECTIONS.map((one) => (
           <SidebarRow
             key={one.key}
