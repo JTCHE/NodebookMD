@@ -66,6 +66,13 @@ export interface SidebarRowProps {
   bare?: boolean;
 }
 
+/** The whole name as the native tooltip, but only when the panel cuts it
+    short: a name that shows whole needs no second copy of itself. */
+function titleIfCut(event: React.PointerEvent<HTMLElement>, label: string) {
+  const text = event.currentTarget.querySelector<HTMLElement>("[data-label]");
+  event.currentTarget.title = text && text.scrollWidth > text.clientWidth ? label : "";
+}
+
 export function SidebarRow({
   label,
   icon,
@@ -176,6 +183,7 @@ export function SidebarRow({
       )}
 
       <span
+        data-label=""
         className={cn(
           "min-w-0 flex-1 truncate text-[13px] tracking-[-0.01em]",
           header && "font-medium",
@@ -201,7 +209,8 @@ export function SidebarRow({
       ref={anchorRef}
       to={to}
       {...pointer}
-      onPointerEnter={() => {
+      onPointerEnter={(event) => {
+        titleIfCut(event, label);
         warm(to.replace(/^\/+/, ""));
         pointer.onPointerEnter();
       }}
@@ -219,7 +228,10 @@ export function SidebarRow({
     <button
       type="button"
       onClick={() => onClick?.()}
-      onPointerEnter={onPointerEnter}
+      onPointerEnter={(event) => {
+        titleIfCut(event, label);
+        onPointerEnter?.();
+      }}
       {...shared}
       className={cn("group", shared.className)}
     >

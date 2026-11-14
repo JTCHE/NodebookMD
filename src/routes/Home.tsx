@@ -21,7 +21,7 @@ export default function Home() {
   const { status } = useIndex();
 
   return (
-    <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden pb-statusbar @container">
+    <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden @container">
       {/* The field is a watermark in the top corner rather than a full-bleed
           backdrop: the window already carries a panel and two bars, and a
           pattern behind all of it would be one texture too many. */}
@@ -33,7 +33,10 @@ export default function Home() {
       <UpdatedPill />
 
       <div className="relative flex min-h-0 flex-1 flex-col justify-center px-lg py-lg">
-        <div className="mx-auto flex min-h-0 w-full max-w-hero flex-col gap-xl">
+        {/* The column fills the window up to a cap, and the list takes what
+            the greeting and the field leave. It runs down and fades out near
+            the keys, so the page has no empty floor under a short list box. */}
+        <div className="mx-auto flex max-h-[600px] min-h-0 w-full max-w-hero flex-1 flex-col gap-xl">
           <div className="flex shrink-0 flex-col gap-lg">
             <header className="flex flex-col gap-xs">
               <h1 className={DISPLAY_TITLE}>
@@ -58,10 +61,7 @@ export default function Home() {
             <SearchField />
           </div>
 
-          {/* The list keeps a box of its own size, so the greeting and the
-              field sit on the same axis whatever is in the list and whichever
-              tab is open. */}
-          <LibraryPanel />
+          <LibraryPanel className="flex-1" />
         </div>
       </div>
     </main>

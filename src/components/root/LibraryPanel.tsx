@@ -203,10 +203,11 @@ export function LibraryPanel({ className }: { className?: string }) {
         })}
       </div>
 
-      {/* The list holds its box whichever tab is open and however many rows
-          it has. A box that grew with its content would move the greeting and
-          the field every time the reader crossed between the two tabs. */}
-      <div className="h-list min-h-0">
+      {/* The list takes the height the page gives it, whichever tab is open
+          and however many rows it has. A box that grew with its content would
+          move the greeting and the field every time the reader crossed
+          between the two tabs. */}
+      <div className="min-h-0 flex-1">
         {entries.length === 0 ? (
           <p className="px-sm py-md text-meta text-neutral-500">
             {tab === "recents" ? (

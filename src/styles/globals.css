@@ -155,10 +155,6 @@ a {
      and give it back as a negative margin, or it cuts them. */
   --spacing-slack: 13px;
   --spacing-chip: 38px;
-  /* The box the landing keeps for the list under the search field. It does
-     not grow with the list: the greeting and the field would move every time
-     the reader crossed between Recents and Bookmarks. */
-  --spacing-list: 268px;
 
   /* ── Content widths ───────────────────────────────────────────────────
      Named, because the spacing ladder above shares its names with Tailwind's
@@ -611,6 +607,35 @@ svg[stroke="currentColor"] * {
   bottom: 0;
   height: calc(100% + 1.75rem);
   background: linear-gradient(to top, var(--background) 0, var(--scrim-stops));
+}
+
+/* The list fades. Eased, so a row going out never ends on a hard line.
+   `--fade-top` is the height of the headers a list pins over its top: the
+   rows are hidden under them and fade in below them. See lib/ui/overflow. */
+.fade-out {
+  mask-image: linear-gradient(to bottom, black calc(100% - 40px), rgb(0 0 0 / 0.93) calc(100% - 32px), rgb(0 0 0 / 0.75) calc(100% - 24px), rgb(0 0 0 / 0.45) calc(100% - 16px), rgb(0 0 0 / 0.15) calc(100% - 8px), transparent 100%);
+}
+.fade-in {
+  mask-image: linear-gradient(to top, black calc(100% - 40px), rgb(0 0 0 / 0.93) calc(100% - 32px), rgb(0 0 0 / 0.75) calc(100% - 24px), rgb(0 0 0 / 0.45) calc(100% - 16px), rgb(0 0 0 / 0.15) calc(100% - 8px), transparent 100%);
+}
+.fade-both {
+  --top: var(--fade-top, 0px);
+  --ramp: var(--fade-ramp, 8px);
+  mask-image: linear-gradient(
+    to bottom,
+    transparent var(--top),
+    rgb(0 0 0 / 0.15) calc(var(--top) + var(--ramp) * 0.2),
+    rgb(0 0 0 / 0.45) calc(var(--top) + var(--ramp) * 0.4),
+    rgb(0 0 0 / 0.75) calc(var(--top) + var(--ramp) * 0.6),
+    rgb(0 0 0 / 0.93) calc(var(--top) + var(--ramp) * 0.8),
+    black calc(var(--top) + var(--ramp)),
+    black calc(100% - 40px),
+    rgb(0 0 0 / 0.93) calc(100% - 32px),
+    rgb(0 0 0 / 0.75) calc(100% - 24px),
+    rgb(0 0 0 / 0.45) calc(100% - 16px),
+    rgb(0 0 0 / 0.15) calc(100% - 8px),
+    transparent 100%
+  );
 }
 
 .markdown-media {

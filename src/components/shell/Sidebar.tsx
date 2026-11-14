@@ -45,8 +45,8 @@ function useTree(): TreeBranch[] {
 }
 
 const WIDTH_KEY = "nodebookmd.sidebar-width";
-/** The panel as it first opens: room for a node name, and no more. */
-const DEFAULT_WIDTH = 260;
+/** The panel as it first opens: room for a node name four levels deep. */
+const DEFAULT_WIDTH = 280;
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 460;
 

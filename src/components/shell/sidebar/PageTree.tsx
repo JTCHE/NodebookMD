@@ -37,14 +37,14 @@ import { SidebarRow } from "./SidebarRow";
     windowing needs the same number in JavaScript. */
 const ROW = 30;
 
-/** A branch sits this far in from its group, and every level below it one step
-    further: the step that puts a row's mark under the name of the row above. */
-const BRANCH_INDENT = 19;
+/** Each level sits one step in from the one above: the step that puts a
+    row's mark under the name of its parent. Every row holds the arrow slot
+    and the mark slot, so all names at one depth stand on one axis. */
 const STEP = 23;
 
 function indent(depth: number): React.CSSProperties | undefined {
   if (depth === 0) return undefined;
-  const left = BRANCH_INDENT + STEP * (depth - 1);
+  const left = STEP * depth;
   return { marginLeft: left, width: `calc(100% - ${left}px)` };
 }
 
@@ -283,28 +283,22 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
           mark={
             Mark ? (
               <Mark className={cn("size-[15px]", isOpen ? "text-neutral-800" : "text-neutral-500")} />
-            ) : undefined
+            ) : null
           }
         />
       );
     }
-    if (depth === 1) {
-      return (
-        <SidebarRow
-          key={folder.id}
-          {...shared}
-          // `null`, not `undefined`: a branch the install ships no icon for
-          // still holds the mark's column open, so the names under one group
-          // stay on one axis.
-          icon={folder.icon ?? null}
-          quietDisclosure={!isOpen}
-        />
-      );
-    }
-    // No mark at all. A folder is a place inside the branch, not a page, and
-    // the page glyph said the opposite. Leaving the slot out is also what puts
-    // the folder NAME on the axis the pages under it put their ICONS on.
-    return <SidebarRow key={folder.id} {...shared} />;
+    return (
+      <SidebarRow
+        key={folder.id}
+        {...shared}
+        // `null`, not `undefined`: a folder the install ships no icon for
+        // draws the folder glyph, so its name stays on the axis of the
+        // pages beside it.
+        icon={folder.icon ?? null}
+        quietDisclosure={depth === 1 && !isOpen}
+      />
+    );
   };
 
   return (
@@ -317,9 +311,9 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
       {pinned.length > 0 && (
         <div
           style={{ paddingRight: gutter }}
-          // The soft edge under the stack: a row passing beneath reads as
-          // going under it, not as clipped by it.
-          className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-chrome after:absolute after:inset-x-0 after:top-full after:h-sm after:bg-linear-to-b after:from-chrome after:to-transparent"
+          // No edge of its own: the list hides its rows under the stack and
+          // fades them in below it (`--fade-top`).
+          className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-chrome"
           data-pinned=""
         >
           {pinned.map((line) => folderRow(line, true))}
@@ -334,6 +328,7 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
         // and a page has one open row per level above it.
         revealBelow={reveal >= 0 ? lines[reveal].depth * ROW : 0}
         onTop={setTop}
+        style={{ "--fade-top": `${pinned.length * ROW}px` } as React.CSSProperties}
         // Slack on the left for what a row draws outside its own box — the
         // bookmark flag hangs 9px past the mark, the chip's shadow spreads past
         // every edge — given back as a negative margin so the rows keep their
@@ -354,8 +349,7 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
               selected={line.page.path === currentPath}
               kept={bookmarked?.has(line.page.path)}
               // A page starts its ICON where the folder above it starts its
-              // NAME, which is what makes it read as contents of the folder
-              // rather than as its neighbour.
+              // NAME, and its name where its sibling folders start theirs.
               style={indent(line.depth)}
             />
           )

@@ -89,7 +89,7 @@ export function VirtualList<T>({
     if (top >= element.scrollTop + revealBelow && top + rowHeight <= element.scrollTop + box) return;
     // Centred, not flush against an edge: the rows around it are what say
     // where in the list the reader landed.
-    element.scrollTop = Math.max(0, top - box / 2 + rowHeight / 2);
+    element.scrollTop = Math.max(0, Math.round((top - box / 2) / rowHeight) * rowHeight);
     setTop(element.scrollTop);
     onTop?.(element.scrollTop);
   }, [reveal, revealBelow, rowHeight]);
@@ -108,7 +108,9 @@ export function VirtualList<T>({
       style={style}
       data-list=""
       className={cn(
-        "thin-scroll min-h-0 overflow-y-auto",
+        // The list comes to rest on a row's edge, so a header pinned over its
+        // top (a whole number of rows) never stands over half a row.
+        "thin-scroll min-h-0 snap-y snap-proximity overflow-y-auto",
         // The top edge only fades once something has gone under it.
         overflows && (top > 0 ? FADE_BOTH : FADE_OUT),
         className,
@@ -116,8 +118,8 @@ export function VirtualList<T>({
     >
       {/* The spacer holds the scroll length; the slice rides on top of it.
           The last row clears the fade, so nothing is ever read through it. */}
-      <div style={{ height: total + (overflows ? 32 : 0) }} className="relative">
-        <div style={{ transform: `translateY(${first * rowHeight}px)` }}>
+      <div style={{ height: total + (overflows ? 40 : 0) }} className="relative snap-end">
+        <div style={{ transform: `translateY(${first * rowHeight}px)` }} className="[&>*]:snap-start">
           {slice.map((item, at) => children(item, first + at))}
         </div>
       </div>

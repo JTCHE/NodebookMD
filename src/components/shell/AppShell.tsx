@@ -212,11 +212,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         >
           {children}
           <FindBar />
-          {/* The strip lies over the bottom of the page, which runs on under
-              it and fades out (see .status-scrim), so the page needs room for
-              it at its own foot. Only its contents take the pointer: the
-              scrollbar under it still drags. */}
-          <StatusBar className="pointer-events-none absolute inset-x-0 bottom-0 z-10 print:hidden [&>*]:pointer-events-auto" />
+          {/* The strip keeps its own height under the page: no text is ever
+              under the keys. The page fades out just above it (see
+              .status-scrim); the fade takes no pointer. */}
+          <StatusBar className="relative z-10 print:hidden" />
         </div>
         <Lightbox />
         <ContextMenu />
