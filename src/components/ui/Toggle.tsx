@@ -10,11 +10,14 @@ import { cn } from "@/lib/utils";
  */
 export function Toggle({
   checked,
+  disabled,
   onChange,
   label,
   className,
 }: {
   checked: boolean;
+  /** Greyed and inert, for a setting that cannot change yet. */
+  disabled?: boolean;
   onChange: (next: boolean) => void;
   /** What the switch turns on, for a reader who cannot see the row beside it. */
   label: string;
@@ -25,6 +28,7 @@ export function Toggle({
       type="button"
       role="switch"
       aria-checked={checked}
+      disabled={disabled}
       aria-label={label}
       onClick={() => onChange(!checked)}
       // A click flips the switch and leaves the focus where it was, so the
@@ -34,7 +38,10 @@ export function Toggle({
         "relative h-[20px] w-[34px] shrink-0 cursor-interactive rounded-full",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        checked ? "bg-neutral-950" : "bg-neutral-300",
+        // Off is a mid grey, dark enough to read as a live control; disabled
+        // fades the whole switch, so the two never look alike.
+        checked ? "bg-neutral-950" : "bg-neutral-400",
+        "disabled:cursor-not-allowed disabled:opacity-35",
         className,
       )}
     >

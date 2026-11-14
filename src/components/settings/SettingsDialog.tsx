@@ -16,7 +16,7 @@ import { Icons } from "@/lib/ui/icons";
 import { Modal } from "@/components/ui/Modal";
 import { SidebarRow } from "@/components/shell/sidebar/SidebarRow";
 import { Toggle } from "@/components/ui/Toggle";
-import { Segmented, TRACK } from "@/components/ui/Segmented";
+import { PICKER_WIDTH, Segmented, TRACK } from "@/components/ui/Segmented";
 import { showToast } from "@/components/ui/toast-notification";
 import { TELEMETRY } from "@/components/onboarding/Onboarding";
 import { useVaults } from "@/components/obsidian/ObsidianDialog";
@@ -75,15 +75,17 @@ export function SettingsDialog() {
     <Modal
       label="Settings"
       onClose={() => setOpen(false)}
-      // The close button stands in the corner, in the gutter outside the
-      // content, so a section's title line is free for its own action. Its
-      // radius is the dialog's less the inset, so the corners nest.
-      closeAt="top-sm right-sm [&>button]:rounded-[calc(var(--radius-xl)-var(--spacing-sm))]"
+      // The close button stands on the title's line (see `Section`), and
+      // gives back the 10px between its edge and its cross, so the cross ends
+      // on the content's right edge. It stands where the title's line stands,
+      // so the cross is centred on the title's capitals.
+      closeAt="top-[calc(var(--spacing-xl)-6px)] right-[calc(var(--spacing-xl)-10px)]"
       className="h-[min(540px,100%)] w-full max-w-[820px] flex-row"
     >
       {/* The sections are places, as the sidebar's rows are, on the panel's
-          own ground. The first row shares a centre with the title. */}
-      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 px-sm pt-[calc(var(--spacing-2xl)-1px)] pb-sm">
+          own ground. The first row starts where the title's line starts,
+          and its 2px of extra height centre it on the title's capitals. */}
+      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 px-sm pt-[calc(var(--spacing-xl)-6px)] pb-sm">
         {SECTIONS.map((one) => (
           <SidebarRow
             key={one.key}
@@ -119,16 +121,19 @@ export function SettingsDialog() {
 }
 
 /** A tab of Settings: its title, an action of the tab's own at the end of
-    the title's line, then the rows, which scroll under the title. Title,
-    rows and action all stand on one pair of axes, the content's gutters. */
+    the title's line, then the rows, which scroll under the title. The
+    content's inset is one value on every side. The title's capitals start
+    6px below the top of its 28px line, so the line starts 6px higher and the
+    capitals stand as far from the top as the text from the left. The line
+    stops short of the close button: its 18px past the content edge, and a gap. */
 function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <header className="mx-2xl mt-2xl mb-sm flex h-7 shrink-0 items-center justify-between gap-md">
-        <h2 className="truncate text-[20px] font-semibold tracking-[-0.02em] text-neutral-950">{title}</h2>
+      <header className="mt-[calc(var(--spacing-xl)-6px)] mr-[calc(var(--spacing-xl)+18px+var(--spacing-sm))] mb-xs ml-xl flex h-7 shrink-0 items-baseline justify-between gap-md">
+        <h2 className="truncate text-[20px] leading-7 font-semibold tracking-[-0.02em] text-neutral-950">{title}</h2>
         {action}
       </header>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2xl pb-xl">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-xl pb-xl">{children}</div>
     </section>
   );
 }
@@ -163,16 +168,18 @@ const BUTTON =
 /** A quiet action on a title's line. It gives its padding back, so its text
     ends on the content's right edge, where the row controls end. */
 const GHOST_BUTTON =
-  "-mr-sm h-7 shrink-0 cursor-interactive rounded-md px-sm pt-px text-label font-medium text-neutral-500 " +
-  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-900 active:bg-neutral-200 " +
+  "-mr-sm h-7 shrink-0 cursor-interactive rounded-md px-sm text-label font-medium text-neutral-700 " +
+  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:bg-transparent disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** What F1 in a release opens now. The switch shows on or off; this says
-    what off means, which is the fact a reader needs before turning it on. */
-function helpTarget(release: Release): string {
+/** What F1 in a release opens now, in a few words: the switch shows on or
+    off, this says what off means. A release that never ran has no
+    preferences to write, so its switch stays off and greyed. */
+function helpTarget(release: Release | undefined): string {
+  if (!release) return "Start it once first";
   if (release.external && release.ours) return `F1 opens ${APP_NAME}`;
-  if (release.external && release.url) return `F1 opens ${release.url}`;
-  return "F1 opens Houdini's own help";
+  if (release.external) return "F1 opens another server";
+  return "F1 opens Houdini's help";
 }
 
 /** F1 in each Houdini release series installed on the machine. A series has
@@ -204,18 +211,13 @@ function HelpSection() {
       {series?.map((name) => {
         const release = releases?.find((one) => one.release === name);
         return (
-          <Row
-            key={name}
-            label={`Houdini ${name}`}
-            fact={release ? helpTarget(release) : "Start it once to set its F1 key"}
-          >
-            {release && (
-              <Toggle
-                checked={release.external && release.ours}
-                onChange={(next) => void flip(name, next)}
-                label={`F1 in Houdini ${name} opens ${APP_NAME}`}
-              />
-            )}
+          <Row key={name} label={`Houdini ${name}`} fact={helpTarget(release)}>
+            <Toggle
+              checked={!!release?.external && !!release.ours}
+              disabled={!release}
+              onChange={(next) => void flip(name, next)}
+              label={`F1 in Houdini ${name} opens ${APP_NAME}`}
+            />
           </Row>
         );
       })}
@@ -287,8 +289,8 @@ function McpSection() {
         </Empty>
       )}
       {agents?.map((agent) => (
-        // Connect writes ours over whatever Houdini MCP the config holds;
-        // Update writes ours again.
+        // Connect writes ours; Replace writes ours over another Houdini MCP;
+        // Update writes ours again. Not connected needs no line: Connect says it.
         <Row
           key={agent.key}
           label={agent.label}
@@ -299,14 +301,12 @@ function McpSection() {
                 Connected
               </span>
             ) : agent.link === "other" ? (
-              "Uses another Houdini MCP"
-            ) : (
-              "Not connected"
-            )
+              "Another server"
+            ) : undefined
           }
         >
           <button type="button" disabled={busy !== ""} className={BUTTON} onClick={() => void install(agent)}>
-            {busy === agent.key ? "Installing…" : agent.link === "ours" ? "Update" : "Connect"}
+            {busy === agent.key ? "Installing…" : { ours: "Update", other: "Replace", none: "Connect" }[agent.link]}
           </button>
         </Row>
       ))}
@@ -335,7 +335,8 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
           // A choice, so it wears the picker's sunken track. The chevron
           // stands as far in from the right as the text from the left.
           TRACK,
-          "w-[220px] cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
+          PICKER_WIDTH,
+          "cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200/60",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         )}
