@@ -31,7 +31,7 @@ interface PageHeaderProps {
  *  the "Since" badge, the copy-as-markdown action, and the summary caption. */
 export function PageHeader({ name, nodeType, icon, since, summary, markdown, entry, versions, tree }: PageHeaderProps) {
   return (
-    <header className="@container not-prose mb-4">
+    <header className="@container not-prose mb-0">
       {/* The actions hold the right of the title line at every width. What
           wraps is the title side: a long name wraps under itself. */}
       <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-3">
