@@ -34,11 +34,15 @@ export function Modal({
   label,
   onClose,
   className,
+  closeAt = CLOSE,
   children,
 }: {
   label: string;
   onClose: () => void;
   className?: string;
+  /** Where the close button stands, for a modal whose title line holds
+      controls of its own. */
+  closeAt?: string;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -64,20 +68,20 @@ export function Modal({
           className,
         )}
       >
-        <Hint label="Close" keys="Esc" className={cn("absolute z-10", CLOSE)}>
-        <button
-          type="button"
-          aria-label="Close"
-          onClick={onClose}
-          className={cn(
-            "grid size-7 cursor-interactive place-items-center rounded-md text-neutral-500",
-            "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-            "pointer-hover:bg-neutral-100 pointer-hover:text-neutral-800 active:bg-neutral-200",
-            "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-          )}
-        >
-          <Icons.dismiss className="size-4" />
-        </button>
+        <Hint label="Close" keys="Esc" className={cn("absolute z-10", closeAt)}>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className={cn(
+              "grid size-7 cursor-interactive place-items-center rounded-md text-neutral-500",
+              "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
+              "pointer-hover:bg-neutral-100 pointer-hover:text-neutral-800 active:bg-neutral-200",
+              "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+            )}
+          >
+            <Icons.dismiss className="size-4" />
+          </button>
         </Hint>
         {children}
       </div>

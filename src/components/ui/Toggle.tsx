@@ -2,7 +2,8 @@ import { cn } from "@/lib/utils";
 
 /**
  * An on/off switch. One track, one knob, and the two states a reader can see
- * from across the room: the track carries the brand when it is on.
+ * from across the room: on is a track in ink, off is a pale one. The brand is
+ * kept for the one thing in a view that matters, not for every switch.
  *
  * The knob moves on `transform` alone, so the compositor draws the change and
  * the main thread does nothing. See AGENTS.md, "Animation and compositing".
@@ -30,23 +31,21 @@ export function Toggle({
       // key that ends the screen keeps answering Enter.
       onMouseDown={(event) => event.preventDefault()}
       className={cn(
-        "relative h-[24px] w-[48px] shrink-0 cursor-interactive rounded-full",
+        "relative h-[20px] w-[34px] shrink-0 cursor-interactive rounded-full",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        // Off is a grey track: the lightest step that still keeps 3:1
-        // against the ground in both themes. On carries the brand.
-        checked ? "bg-brand" : "bg-neutral-500",
+        checked ? "bg-neutral-950" : "bg-neutral-300",
         className,
       )}
     >
       <span
         aria-hidden="true"
         className={cn(
-          // The knob is near-white in both themes, the way the ink on a brand
-          // plate is, so it never sinks into a dark track.
-          "absolute top-[3px] left-[3px] size-[18px] rounded-full bg-brand-foreground shadow-chip",
-          "transition-transform duration-(--duration-fast) motion-reduce:transition-none",
-          checked && "translate-x-[24px]",
+          // The knob is the ground's own colour on an ink track, and white on
+          // the pale one, so it stands out of the track in both themes.
+          "absolute top-[2px] left-[2px] size-[16px] rounded-full shadow-chip",
+          "transition-transform duration-(--duration-base) motion-reduce:transition-none",
+          checked ? "translate-x-[14px] bg-neutral-0" : "bg-white",
         )}
       />
     </button>

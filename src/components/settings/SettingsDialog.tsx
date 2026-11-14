@@ -13,10 +13,10 @@ import { invoke, inTauri } from "@/lib/backend";
 import { COMMAND_KEY, IS_MAC, isCommand, useHotkey } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
-import { Modal, MODAL_LINE, MODAL_TOP } from "@/components/ui/Modal";
+import { Modal } from "@/components/ui/Modal";
 import { SidebarRow } from "@/components/shell/sidebar/SidebarRow";
 import { Toggle } from "@/components/ui/Toggle";
-import { Segmented } from "@/components/ui/Segmented";
+import { Segmented, TRACK } from "@/components/ui/Segmented";
 import { showToast } from "@/components/ui/toast-notification";
 import { TELEMETRY } from "@/components/onboarding/Onboarding";
 import { useVaults } from "@/components/obsidian/ObsidianDialog";
@@ -24,8 +24,16 @@ import { APP_NAME } from "@/lib/brand";
 import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
 import { LINK_FORMATS, linkFormat, setLinkFormat, type LinkFormat } from "@/lib/link";
 import { restoresTabs, setRestoresTabs } from "@/lib/tabs";
-import { setHelpServer, useReleases } from "@/lib/help-server";
-import { OBSIDIAN_PICTURES, OBSIDIAN_VAULT, pickFolder, picturesChoice, rememberedVault, type PicturesChoice } from "@/lib/obsidian";
+import { seriesOf, setHelpServer, useReleases, type Release } from "@/lib/help-server";
+import type { Install } from "@/lib/install";
+import {
+  OBSIDIAN_PICTURES,
+  OBSIDIAN_VAULT,
+  pickFolder,
+  picturesChoice,
+  rememberedVault,
+  type PicturesChoice,
+} from "@/lib/obsidian";
 
 const OPEN = "nodebookmd:settings";
 
@@ -64,31 +72,32 @@ export function SettingsDialog() {
 
   const section = SECTIONS.find((one) => one.key === shown)!;
   return (
-    <Modal label="Settings" onClose={() => setOpen(false)} className="h-[min(560px,100%)] w-full max-w-[760px] flex-row">
-      {/* The panel's own rows, on the panel's own ground: the sections are
-          places, as the sidebar's rows are. */}
-      {/* The first row is 2px taller than the title's line, so it starts
-          1px higher and the two share a centre. */}
-      <nav className="flex w-[200px] shrink-0 flex-col border-r border-hairline bg-neutral-100 px-md pt-[calc(var(--spacing-lg)-1px)] pb-md">
-        {/* The rows give their padding back, so their marks stand on the
-            nav's own inset. A row stands 8px inside the dialog's inner corner
-            (its radius less its 1px border), so the row's corner is that
-            radius less 8px, and the two nest. */}
-        <div className="-mx-sm flex flex-col gap-2xs">
-          {SECTIONS.map((one) => (
-            <SidebarRow
-              key={one.key}
-              label={one.label}
-              bare
-              className="rounded-[calc(var(--radius-xl)-1px-var(--spacing-sm))]"
-              selected={shown === one.key}
-              mark={<one.icon className={cn("size-[15px]", shown === one.key ? "text-neutral-800" : "text-neutral-500")} />}
-              onClick={() => setShown(one.key)}
-            />
-          ))}
-        </div>
+    <Modal
+      label="Settings"
+      onClose={() => setOpen(false)}
+      // The close button stands in the corner, in the gutter outside the
+      // content, so a section's title line is free for its own action. Its
+      // radius is the dialog's less the inset, so the corners nest.
+      closeAt="top-sm right-sm [&>button]:rounded-[calc(var(--radius-xl)-var(--spacing-sm))]"
+      className="h-[min(540px,100%)] w-full max-w-[820px] flex-row"
+    >
+      {/* The sections are places, as the sidebar's rows are, on the panel's
+          own ground. The first row shares a centre with the title. */}
+      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 px-sm pt-[calc(var(--spacing-2xl)-1px)] pb-sm">
+        {SECTIONS.map((one) => (
+          <SidebarRow
+            key={one.key}
+            label={one.label}
+            bare
+            selected={shown === one.key}
+            mark={
+              <one.icon className={cn("size-[15px]", shown === one.key ? "text-neutral-900" : "text-neutral-500")} />
+            }
+            onClick={() => setShown(one.key)}
+          />
+        ))}
       </nav>
-      <div className={cn("flex min-w-0 flex-1 flex-col", MODAL_TOP)}>
+      <div className="flex min-w-0 flex-1 flex-col">
         {shown === "general" ? (
           <GeneralSection />
         ) : !inTauri ? (
@@ -109,92 +118,107 @@ export function SettingsDialog() {
   );
 }
 
-/** A tab of Settings. The title stays where it is on every tab; the rows
-    under it scroll. The title is the tab's name, so the eye finds it in the
-    same place each time. */
-function Section({ title, children }: { title: string; children: ReactNode }) {
+/** A tab of Settings: its title, an action of the tab's own at the end of
+    the title's line, then the rows, which scroll under the title. Title,
+    rows and action all stand on one pair of axes, the content's gutters. */
+function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      {/* The close button stands at the end of this line. */}
-      <h2 className={cn(MODAL_LINE, "mb-sm truncate px-lg pr-2xl text-[17px] font-semibold tracking-[-0.01em] text-neutral-950")}>
-        {title}
-      </h2>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-lg pb-lg">{children}</div>
+      <header className="mx-2xl mt-2xl mb-sm flex h-7 shrink-0 items-center justify-between gap-md">
+        <h2 className="truncate text-[20px] font-semibold tracking-[-0.02em] text-neutral-950">{title}</h2>
+        {action}
+      </header>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2xl pb-xl">{children}</div>
     </section>
   );
 }
 
-/** Rows that belong together. Two groups are apart by one line with more
-    air on both sides of it than a line between two rows of one group. */
-function Group({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex flex-col border-b border-hairline py-sm first:pt-0 last:border-b-0 last:pb-0">{children}</div>
-  );
-}
-
-/** One setting: what it is, then its state and its control on the right.
-    Every row on every tab is this one row, one line high, so every label
-    stands at the same height. The line under it is outside that height, so
-    the space above a line and the space below it are the same. */
-function Row({ label, fact, children }: { label: string; fact?: string; children?: ReactNode }) {
+/** One setting: what it is, a fact under it when the reader needs one, and
+    its control on the right. Every row on every tab is one height, with or
+    without the fact. Rows of a tab are siblings: a line between two of them
+    runs only as wide as the content, never to the dialog's edges. */
+function Row({ label, fact, children }: { label: string; fact?: ReactNode; children?: ReactNode }) {
   return (
     <div className="box-content flex h-setting shrink-0 items-center gap-md border-b border-hairline last:border-b-0">
-      {/* A fact hangs under the label and takes no room, so the label stands
-          where every other label stands. */}
-      <span className="relative min-w-0 flex-1">
-        <span className="block truncate text-title font-medium text-neutral-950">{label}</span>
-        {fact && <span className="absolute top-full left-0 truncate text-caption leading-none text-neutral-500">{fact}</span>}
+      <span className="flex min-w-0 flex-1 flex-col gap-px">
+        <span className="truncate text-title text-neutral-950">{label}</span>
+        {fact && <span className="truncate text-meta text-neutral-500">{fact}</span>}
       </span>
       {children}
     </div>
   );
 }
 
-/** A state the row is in, said on the right, beside its control. It takes
-    the controls' 2px at the top, so its text stands on their line. */
-function State({ children }: { children: ReactNode }) {
-  return <span className="shrink-0 pt-2xs text-meta text-neutral-500">{children}</span>;
-}
-
 function Empty({ children }: { children: ReactNode }) {
-  return <p className="py-ms text-meta text-neutral-500">{children}</p>;
+  return <p className="py-ms text-label text-neutral-500">{children}</p>;
 }
 
-/** The one button style of Settings: as tall as a picker, with its radius
-    and its padding. Geist sits high in its line, so the text in every
-    control of Settings takes 2px at the top, which centres its capitals. */
+/** The one button that acts: raised off the ground, as a choice's track is
+    sunk into it. Geist sits high in its line: 1px at the top centres it. */
 const BUTTON =
-  "h-row min-w-button shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-2xs text-center text-label font-medium text-neutral-800 " +
-  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 active:bg-neutral-200 " +
+  "h-row min-w-[80px] shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-px text-center text-label font-medium text-neutral-900 shadow-chip " +
+  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-50 active:bg-neutral-100 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** F1 in each Houdini release installed on the machine. A release series
-    has its own preferences, so each one has its own switch. */
+/** A quiet action on a title's line. It gives its padding back, so its text
+    ends on the content's right edge, where the row controls end. */
+const GHOST_BUTTON =
+  "-mr-sm h-7 shrink-0 cursor-interactive rounded-md px-sm pt-px text-label font-medium text-neutral-500 " +
+  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-900 active:bg-neutral-200 " +
+  "disabled:cursor-wait disabled:bg-transparent disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
+
+/** What F1 in a release opens now. The switch shows on or off; this says
+    what off means, which is the fact a reader needs before turning it on. */
+function helpTarget(release: Release): string {
+  if (release.external && release.ours) return `F1 opens ${APP_NAME}`;
+  if (release.external && release.url) return `F1 opens ${release.url}`;
+  return "F1 opens Houdini's own help";
+}
+
+/** F1 in each Houdini release series installed on the machine. A series has
+    its own preferences, so each has its own switch. A series that never ran
+    has no preferences yet, so it has no switch until it runs once. */
 function HelpSection() {
   const releases = useReleases();
+  const [builds, setBuilds] = useState<string[] | null>(null);
+  useEffect(() => {
+    void invoke<Install[]>("installs")
+      .then((list) => list.map((one) => one.version))
+      .catch(() => [])
+      .then(setBuilds);
+  }, []);
 
   async function flip(release: string, on: boolean) {
     await setHelpServer(release, on).then(showToast, (reason) => showToast(String(reason), "error"));
   }
 
+  const series =
+    releases && builds
+      ? [...new Set([...builds.map(seriesOf), ...releases.map((one) => one.release)])].sort((first, second) =>
+          second.localeCompare(first, undefined, { numeric: true }),
+        )
+      : null;
   return (
     <Section title="Houdini Integration">
-      {releases?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
-      {releases?.map((one) => (
-        <Row
-          key={one.release}
-          label={`Houdini ${one.release}`}
-          // The switch shows whether F1 opens this app. A third help server
-          // is the one fact it cannot show: turning the switch on replaces it.
-          fact={one.external && one.url && !one.ours ? "F1 opens another help server" : undefined}
-        >
-          <Toggle
-            checked={one.external && one.ours}
-            onChange={(next) => void flip(one.release, next)}
-            label={`F1 in Houdini ${one.release} opens ${APP_NAME}`}
-          />
-        </Row>
-      ))}
+      {series?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
+      {series?.map((name) => {
+        const release = releases?.find((one) => one.release === name);
+        return (
+          <Row
+            key={name}
+            label={`Houdini ${name}`}
+            fact={release ? helpTarget(release) : "Start it once to set its F1 key"}
+          >
+            {release && (
+              <Toggle
+                checked={release.external && release.ours}
+                onChange={(next) => void flip(name, next)}
+                label={`F1 in Houdini ${name} opens ${APP_NAME}`}
+              />
+            )}
+          </Row>
+        );
+      })}
     </Section>
   );
 }
@@ -208,18 +232,27 @@ interface Agent {
 
 /** Houdini MCP, read from each agent's own config: the truth, whoever
     installed it. Read again each time the window gets the focus, so an agent
-    installed while Settings is open shows when the reader comes back. */
+    installed while Settings is open shows when the reader comes back, and
+    again on Scan again. */
 function McpSection() {
   const [agents, setAgents] = useState<Agent[] | null>(null);
+  const [scanning, setScanning] = useState(false);
   const [busy, setBusy] = useState("");
 
-  const scan = useCallback(() => {
-    void invoke<Agent[]>("mcp_agents")
-      .catch(() => [])
-      .then(setAgents);
-  }, []);
+  // The quiet read, on open and on focus; Scan again says it is working.
+  const scan = useCallback(
+    () =>
+      invoke<Agent[]>("mcp_agents")
+        .catch(() => [])
+        .then(setAgents),
+    [],
+  );
+  function scanAgain() {
+    setScanning(true);
+    void scan().finally(() => setScanning(false));
+  }
   useEffect(() => {
-    scan();
+    void scan();
     window.addEventListener("focus", scan);
     return () => window.removeEventListener("focus", scan);
   }, [scan]);
@@ -229,7 +262,7 @@ function McpSection() {
     try {
       await invoke("install_houdini_mcp", { agent: agent.key });
       showToast(`Houdini MCP is connected to ${agent.label}. Restart Houdini and ${agent.label}.`);
-      scan();
+      void scan();
     } catch (reason) {
       showToast(`Houdini MCP did not install: ${String(reason)}`, "error");
     } finally {
@@ -238,26 +271,41 @@ function McpSection() {
   }
 
   return (
-    <Section title="Houdini MCP">
+    <Section
+      title="Houdini MCP"
+      action={
+        <button type="button" disabled={scanning} className={GHOST_BUTTON} onClick={scanAgain}>
+          {scanning ? "Scanning…" : "Scan again"}
+        </button>
+      }
+    >
       {agents === null && <Empty>Looking for agents…</Empty>}
       {agents?.length === 0 && (
         <Empty>
-          No supported agent found on this machine. Houdini MCP works with Claude, Codex, Gemini CLI, Cursor, opencode and
-          pi.
+          No supported agent found on this machine. Houdini MCP works with Claude, Codex, Gemini CLI, Cursor, opencode
+          and pi. Install one, then scan again.
         </Empty>
       )}
       {agents?.map((agent) => (
-        // A connected agent says so, and offers to write its config again.
-        // Any other agent offers Connect, which writes ours over whatever
-        // Houdini MCP its config holds.
-        <Row key={agent.key} label={agent.label}>
-          {agent.link === "ours" && <State>Connected</State>}
-          <button
-            type="button"
-            disabled={busy !== ""}
-            className={BUTTON}
-            onClick={() => void install(agent)}
-          >
+        // Connect writes ours over whatever Houdini MCP the config holds;
+        // Update writes ours again.
+        <Row
+          key={agent.key}
+          label={agent.label}
+          fact={
+            agent.link === "ours" ? (
+              <span className="inline-flex items-center gap-xs text-neutral-800">
+                <Icons.chosen className="size-3 text-brand" />
+                Connected
+              </span>
+            ) : agent.link === "other" ? (
+              "Uses another Houdini MCP"
+            ) : (
+              "Not connected"
+            )
+          }
+        >
+          <button type="button" disabled={busy !== ""} className={BUTTON} onClick={() => void install(agent)}>
             {busy === agent.key ? "Installing…" : agent.link === "ours" ? "Update" : "Connect"}
           </button>
         </Row>
@@ -284,11 +332,11 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
           else onChange(next);
         }}
         className={cn(
-          // Quieter than a picker's track: no fill until the pointer is on
-          // it. The chevron stands as far in from the right as the text from
-          // the left; the text stops a gap short of it.
-          "h-row w-picker cursor-interactive appearance-none truncate rounded-lg bg-transparent pt-2xs pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
-          "border border-hairline transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100",
+          // A choice, so it wears the picker's sunken track. The chevron
+          // stands as far in from the right as the text from the left.
+          TRACK,
+          "w-[220px] cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
+          "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200/60",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         )}
       >
@@ -378,32 +426,33 @@ function GeneralSection() {
   const trayLabel = IS_MAC ? "Keep running in the menu bar" : "Keep running in the tray";
   return (
     <Section title="General">
-      <Group>
-        <Row label="Theme">
-          <Segmented
-            label="Theme"
-            value={theme}
-            options={THEME_CHOICES.map((choice) => ({ value: choice, label: THEME_LABEL[choice] }))}
-            onChange={setTheme}
-          />
-        </Row>
-        <Row label="Copied links">
-          {/* What each form looks like is in its tooltip, for the reader who
+      <Row label="Theme">
+        <Segmented
+          label="Theme"
+          value={theme}
+          options={THEME_CHOICES.map((choice) => ({
+            value: choice,
+            label: THEME_LABEL[choice],
+          }))}
+          onChange={setTheme}
+        />
+      </Row>
+      <Row label="Copied links">
+        {/* What each form looks like is in its tooltip, for the reader who
               asks; the row itself stays one line. */}
-          <Segmented
-            label="Copied links"
-            value={format}
-            options={(Object.keys(LINK_FORMATS) as LinkFormat[]).map((key) => ({
-              value: key,
-              label: LINK_FORMATS[key].label,
-              hint: LINK_FORMATS[key].example,
-            }))}
-            onChange={(next) => void pickFormat(next)}
-          />
-        </Row>
-      </Group>
+        <Segmented
+          label="Copied links"
+          value={format}
+          options={(Object.keys(LINK_FORMATS) as LinkFormat[]).map((key) => ({
+            value: key,
+            label: LINK_FORMATS[key].label,
+            hint: LINK_FORMATS[key].example,
+          }))}
+          onChange={(next) => void pickFormat(next)}
+        />
+      </Row>
       {inTauri && (
-        <Group>
+        <>
           <Row label="Open tabs again at start">
             <Toggle
               checked={restore}
@@ -417,7 +466,7 @@ function GeneralSection() {
           <Row label={trayLabel}>
             {tray !== null && <Toggle checked={tray} onChange={(next) => void flipTray(next)} label={trayLabel} />}
           </Row>
-        </Group>
+        </>
       )}
     </Section>
   );
