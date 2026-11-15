@@ -34,7 +34,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
         // Every kept page, in a box of six whole rows that scrolls. The last
         // row fades across its height while more hide below it, so the box
         // ends on a row and the gap to the tree never changes.
-        <FadeList className="max-h-[calc(var(--spacing-row)*6)] [scrollbar-gutter:auto]! [--fade-size:var(--spacing-row)] [--fade-head-size:12px]" deps={[entries.length]}>
+        <FadeList className="max-h-[calc(var(--spacing-row)*6)] [scrollbar-gutter:auto]! [--fade-size:var(--spacing-row)] [--fade-head-size:22px]" deps={[entries.length]}>
           {entries.map((entry) => (
             <BookmarkRow key={entry.path} entry={entry} open={pathname === `/${entry.path}`} />
           ))}
@@ -61,7 +61,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
         onClick={() => toggleBookmark(entry)}
         className={cn(
           "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600 dark:text-neutral-700",
-          "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
+          "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 group-focus-within/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
           "pointer-hover:bg-foreground/[0.09] dark:pointer-hover:bg-foreground/[0.13] pointer-hover:text-neutral-950",
           "focus-visible:bg-foreground/[0.09] dark:focus-visible:bg-foreground/[0.13] focus-visible:text-neutral-950 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
         )}
