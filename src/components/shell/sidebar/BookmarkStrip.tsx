@@ -32,7 +32,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
           "flex h-[22px] cursor-interactive items-center self-start rounded-md px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-500",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
           "pointer-hover:text-neutral-900",
-          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
+          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-500/60 focus-visible:outline-none",
         )}
       >
         Bookmarks
@@ -61,16 +61,18 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
             aria-expanded={whole}
             onClick={() => setWhole(!whole)}
             className={cn(
-              // The words start on the names' axis: arrow-less row padding,
-              // plus the 15px mark and its gap.
-              "flex h-row w-full cursor-interactive items-center gap-2xs rounded-md pr-sm pl-[calc(var(--spacing-sm)*2+15px)] text-left text-[12px] text-neutral-500",
+              // The caret takes the mark slot, so it stands on the icons'
+              // axis and the words on the names' axis.
+              "flex h-row w-full cursor-interactive items-center gap-sm rounded-md px-sm text-left text-[12px] text-neutral-500",
               "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
               "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045] pointer-hover:text-neutral-900",
-              "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
+              "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-500/60 focus-visible:outline-none",
             )}
           >
+            <span className="grid size-[15px] shrink-0 place-items-center">
+              <Icons.expanded className={cn("size-[11px]", whole && "rotate-180")} />
+            </span>
             {whole ? "Show less" : `${entries.length - SHOWN} more`}
-            <Icons.expanded className={cn("size-[10px] translate-y-[0.5px]", whole && "rotate-180")} />
           </button>
         )}
       </div>
@@ -97,7 +99,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
           "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[4px] text-neutral-500",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
           "pointer-hover:bg-foreground/[0.07] dark:pointer-hover:bg-foreground/[0.1] pointer-hover:text-neutral-950",
-          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
+          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-500/60 focus-visible:outline-none",
         )}
       >
         <Icons.dismiss className="size-[11px]" />
