@@ -3,6 +3,7 @@ import hljs from "highlight.js/lib/core";
 import c from "highlight.js/lib/languages/c";
 import python from "highlight.js/lib/languages/python";
 import type { CodeLanguage } from "@/lib/markdown/types";
+import "./CodeBlock.css";
 
 const withFunctionCalls = (languageFactory: typeof c) => (highlightJs: Parameters<typeof c>[0]) => {
   const language = languageFactory(highlightJs);

@@ -1,0 +1,14 @@
+/* With a pointer, the copy button and the scrollbar show on hover. */
+@media (hover: hover) {
+  .code-copy {
+    opacity: 0;
+  }
+  .group:hover > .code-copy,
+  .code-copy:focus-visible,
+  .code-copy[data-copied] {
+    opacity: 1;
+  }
+  .group:not(:hover) .code-panel {
+    scrollbar-color: transparent transparent;
+  }
+}

@@ -512,56 +512,6 @@ img.markdown-media {
   scrollbar-color: oklch(1 0 0 / 22%) transparent;
 }
 
-/* With a pointer, the copy button, the heading link and the section toggle show on hover. */
-@media (hover: hover) {
-  .code-copy {
-    opacity: 0;
-  }
-  .group:hover > .code-copy,
-  .code-copy:focus-visible,
-  .code-copy[data-copied] {
-    opacity: 1;
-  }
-  .group:not(:hover) .code-panel {
-    scrollbar-color: transparent transparent;
-  }
-
-  .heading-copy {
-    opacity: 0;
-  }
-  :where(h2, h3, h4):hover .heading-copy,
-  .heading-copy:focus-visible {
-    opacity: 1;
-  }
-  .section-toggle {
-    opacity: 0;
-  }
-  /* A closed section keeps its chevron, so the reader can open it again. */
-  :hover > .section-toggle,
-  .section-toggle:focus-visible,
-  [data-collapsed] > .section-toggle {
-    opacity: 1;
-  }
-
-  /* A heading with no section under it has nothing to collapse. */
-  :where(h2, h3, h4):not(:has(+ [data-section])) > .section-toggle {
-    display: none;
-  }
-  .section-toggle svg {
-    transition: transform var(--duration-fast) var(--ease-out-quint);
-    transform: rotate(90deg);
-  }
-  [data-collapsed] > .section-toggle svg {
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .section-toggle svg {
-    transition: none;
-  }
-}
-
 /* The code elements that the renderer outputs always have a class. */
 pre code[class] * {
   background: transparent;
@@ -1096,56 +1046,6 @@ pre code.hljs {
 }
 .vex-signature-caption a {
   color: inherit;
-}
-
-/* GFM tables and VEX arguments share one look: row lines only, edge to edge through a negative --md margin. */
-.markdown-table-wrap {
-  overflow-x: auto;
-  margin: 2rem calc(var(--md) * -1);
-}
-.markdown-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-.markdown-table th {
-  padding: var(--ms) var(--md);
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-  font-weight: 500;
-  color: var(--muted-foreground);
-}
-.markdown-table td {
-  padding: var(--ms) var(--md);
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-  color: var(--foreground);
-}
-.markdown-table tr:last-child td {
-  border-bottom: 0;
-}
-
-/* A headerless source table: hide the blank header row that markdown requires. */
-.markdown-table-headerless thead {
-  display: none;
-}
-.markdown-table td code {
-  white-space: nowrap;
-}
-.markdown-table-declarations {
-  table-layout: fixed;
-}
-.markdown-table-declarations td code {
-  overflow-wrap: anywhere;
-  white-space: normal;
-}
-.markdown-table tr > :first-child {
-  width: 20%;
-  color: var(--muted-foreground);
-}
-.markdown-table-declarations tr > :nth-child(2):not(:last-child) {
-  width: 50%;
 }
 
 /* One rule, so the gap above Arguments and above Returns is the same. */

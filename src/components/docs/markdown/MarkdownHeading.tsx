@@ -7,6 +7,7 @@ import { showToast } from "@/components/ui/toast-notification";
 import { pageLink } from "@/lib/link";
 import { cn } from "@/lib/utils";
 import { isCollapsed, sectionKey, sectionOf, setCollapsed } from "@/lib/ui/sections";
+import "./MarkdownHeading.css";
 
 type Tag = "h2" | "h3" | "h4";
 

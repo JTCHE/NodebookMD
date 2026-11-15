@@ -1,0 +1,36 @@
+/* With a pointer, the heading link and the section toggle show on hover. */
+@media (hover: hover) {
+  .heading-copy {
+    opacity: 0;
+  }
+  :where(h2, h3, h4):hover .heading-copy,
+  .heading-copy:focus-visible {
+    opacity: 1;
+  }
+  .section-toggle {
+    opacity: 0;
+  }
+  /* A closed section keeps its chevron, so the reader can open it again. */
+  :hover > .section-toggle,
+  .section-toggle:focus-visible,
+  [data-collapsed] > .section-toggle {
+    opacity: 1;
+  }
+  /* A heading with no section under it has nothing to collapse. */
+  :where(h2, h3, h4):not(:has(+ [data-section])) > .section-toggle {
+    display: none;
+  }
+  .section-toggle svg {
+    transition: transform var(--duration-fast) var(--ease-out-quint);
+    transform: rotate(90deg);
+  }
+  [data-collapsed] > .section-toggle svg {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-toggle svg {
+    transition: none;
+  }
+}

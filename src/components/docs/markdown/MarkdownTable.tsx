@@ -1,5 +1,6 @@
 import type { Components } from "react-markdown";
 import type { Element, Root, RootContent } from "hast";
+import "./MarkdownTable.css";
 
 function textContent(child: Element | Root | RootContent): string {
   if (child.type === "text") return child.value;
@@ -30,8 +31,8 @@ function hasEmptyHeader(node: Element | undefined): boolean {
 /**
  * GFM table rendering. The visual rule — row lines only, no rule after the
  * last row, edge-to-edge via the wrap's negative margin against the cells'
- * own inset — is the `.markdown-table` component in globals.css, shared with the
- * VEX arguments table so the two can't drift apart.
+ * own inset — is in MarkdownTable.css. The VEX arguments table in globals.css
+ * uses the same inset, --md, so the two can't drift apart.
  */
 export const Table: Components["table"] = ({ children, node }) => (
   <div className="not-prose markdown-table-wrap">
