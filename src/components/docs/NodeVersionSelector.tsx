@@ -25,6 +25,21 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
   const latest = versions[0];
   const onLatest = current === latest;
 
+  // Each item's key is the first character of its own label ("2" in 2.0,
+  // "L" in Latest), underlined like the access letters of the other menus.
+  // A character two labels share is no key.
+  const firsts = versions.map((version) => version.label[0].toLowerCase());
+  const keyed = (version: NodeVersion) => firsts.filter((first) => first === version.label[0].toLowerCase()).length === 1;
+  const onMenuKey = (event: React.KeyboardEvent) => {
+    const hit = open && !event.ctrlKey && !event.altKey && !event.metaKey && versions.find((version) => keyed(version) && version.label[0].toLowerCase() === event.key.toLowerCase());
+    if (hit) {
+      event.preventDefault();
+      pick(hit);
+      return;
+    }
+    onKeyDown(event);
+  };
+
   function pick(version: NodeVersion) {
     setOpen(false);
     if (version !== current) navigate(`/${version.path}`);
@@ -32,7 +47,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
 
   return (
     <Hint side="below" label={onLatest ? "The latest version of this node" : `An older version. The latest is ${latest.label}.`}>
-    <div ref={container} onKeyDown={onKeyDown} className="relative -ml-2 mr-xs inline-flex print:hidden">
+    <div ref={container} onKeyDown={onMenuKey} className="relative -ml-2 mr-xs inline-flex print:hidden">
       <button
         ref={trigger}
         type="button"
@@ -67,7 +82,11 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
               className={cn(MENU_ITEM, version === current && "text-foreground")}
             >
               <Check className={cn(MENU_ICON, "text-current", version !== current && "invisible")} aria-hidden="true" />
-              {named(version.label)}
+              <span>
+                {named(version.label).slice(0, -version.label.length)}
+                {keyed(version) ? <u className="underline-offset-2">{version.label[0]}</u> : version.label[0]}
+                {version.label.slice(1)}
+              </span>
               {version === latest && version.label !== "Latest" && (
                 <span className="ml-auto text-caption text-neutral-500">Latest</span>
               )}
