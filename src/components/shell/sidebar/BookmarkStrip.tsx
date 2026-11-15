@@ -31,9 +31,10 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
           <span className="ml-xs">to keep a page</span>
         </p>
       ) : (
-        // Every kept page, in a box that stops at six and a half rows and
-        // scrolls: the half row and the fade say there is more below.
-        <FadeList className="max-h-[calc(var(--spacing-row)*6.5)] [scrollbar-gutter:auto]! [--fade-size:8px] [--fade-head-size:16px]" deps={[entries.length]}>
+        // Every kept page, in a box of six whole rows that scrolls. The last
+        // row fades across its height while more hide below it, so the box
+        // ends on a row and the gap to the tree never changes.
+        <FadeList className="max-h-[calc(var(--spacing-row)*6)] [scrollbar-gutter:auto]! [--fade-size:var(--spacing-row)] [--fade-head-size:12px]" deps={[entries.length]}>
           {entries.map((entry) => (
             <BookmarkRow key={entry.path} entry={entry} open={pathname === `/${entry.path}`} />
           ))}
