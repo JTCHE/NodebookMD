@@ -145,7 +145,7 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
           <BrandLogo className="h-icon w-auto shrink-0" />
           {/* A narrow panel keeps the logo and gives the word's room to the
               arrows. */}
-          <span className={cn("translate-y-light text-meta font-semibold tracking-[-0.015em] text-neutral-900", !bare && "@max-[236px]:hidden")}>
+          <span className={cn("translate-y-light text-meta font-medium tracking-[-0.015em] text-neutral-900", !bare && "@max-[236px]:hidden")}>
             {APP_NAME}
           </span>
         </Link>

@@ -368,13 +368,13 @@ function TabChip({
             index > 0 &&
               "before:pointer-events-none before:absolute before:right-full before:bottom-0 before:size-(--radius-lg) before:content-[''] before:bg-[radial-gradient(circle_at_0_0,transparent_calc(var(--radius-lg)-0.5px),var(--background)_var(--radius-lg))]",
           )
-          : "text-neutral-500 pointer-hover:bg-neutral-200/70 pointer-hover:text-neutral-900",
+          : "text-neutral-500 pointer-hover:bg-neutral-200/70 pointer-hover:text-neutral-900 dark:pointer-hover:bg-foreground/[0.035]",
       )}
     >
-      {/* Narrow, a tab shows one thing, centred: its icon, or its close
-          when it is the active one. */}
+      {/* Narrow, a tab shows one thing, centred: its icon, and on the active
+          tab its close under the pointer. */}
       <span className="flex size-full items-center gap-[7px] pr-xs pb-[6px] pl-sm @max-[72px]:justify-center @max-[72px]:px-0">
-        <span className={cn("grid shrink-0 place-items-center", active && "@max-[72px]:hidden")}>
+        <span className={cn("grid shrink-0 place-items-center", active && "@max-[72px]:group-hover/tab:hidden")}>
           {icon ? (
             <DocIconClient src={icon} alt="" className="size-[14px]" fallback={<Icons.page className="size-[14px]" />} />
           ) : title === "Home" ? (
@@ -397,7 +397,7 @@ function TabChip({
             "pointer-hover:bg-neutral-200 pointer-hover:text-neutral-950",
             // The active tab always shows its close; another only under the
             // pointer, and a narrow one never, so its icon keeps the room.
-            active ? "opacity-100" : "opacity-0 group-hover/tab:opacity-100 @max-[72px]:hidden",
+            active ? "opacity-100 @max-[72px]:hidden @max-[72px]:group-hover/tab:grid" : "opacity-0 group-hover/tab:opacity-100 @max-[72px]:hidden",
           )}
         >
           <Icons.dismiss className="size-ms" />

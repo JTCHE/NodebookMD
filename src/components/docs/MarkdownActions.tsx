@@ -192,7 +192,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
     <div ref={container} onKeyDown={onMenuKey} // One pill for the split control: hover and the focus ring both wrap the copy button and the chevron.
       // -mr-[11px] (its padding plus the chevron glyph's own 3px inset): the chevron lands on the right edge of "Since" and "SideFX".
       className="group/copy relative -mr-[11px] inline-flex rounded-lg transition-colors [corner-shape:squircle] pointer-hover:bg-muted active:bg-neutral-200 has-[[aria-expanded=true]]:bg-muted has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-inset has-[:focus-visible]:ring-neutral-400 print:hidden">
-      <Hint label="Copy as Markdown" keys={`${COMMAND_KEY}+C`}>
+      <Hint keys={`${COMMAND_KEY}+C`}>
       <button
         ref={button}
         type="button"
