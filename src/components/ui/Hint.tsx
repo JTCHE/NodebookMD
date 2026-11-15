@@ -41,7 +41,7 @@ export function Hint({ label, keys, className, children }: { label: string; keys
     >
       {children}
       {shown && (
-        <TooltipBox anchorRef={anchor} className="z-[80] w-max max-w-[24rem] rounded-[10px] py-xs pr-xs pl-sm [corner-shape:squircle]">
+        <TooltipBox anchorRef={anchor} className="z-[80] w-max max-w-[24rem] rounded-[11px] py-xs pr-xs pl-sm [corner-shape:squircle]">
           <span className="flex items-center gap-2 font-medium text-foreground">
             {label}
             {keys && (

@@ -1,5 +1,6 @@
 import { Check, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router";
+import { Hint } from "@/components/ui/Hint";
 import { cn } from "@/lib/utils";
 import { MENU_ICON, MENU_ITEM, MENU_PANEL, useMenu } from "@/lib/ui/menu";
 import type { NodeVersion } from "@/lib/pages";
@@ -30,17 +31,17 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
   }
 
   return (
-    <div ref={container} onKeyDown={onKeyDown} className="relative -ml-2 inline-flex print:hidden">
+    <Hint label={onLatest ? "The latest version of this node" : `An older version. The latest is ${latest.label}.`}>
+    <div ref={container} onKeyDown={onKeyDown} className="relative -ml-2 mr-xs inline-flex print:hidden">
       <button
         ref={trigger}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        title={onLatest ? "The latest version of this node" : `An older version. The latest is ${latest.label}.`}
         onClick={() => setOpen((was) => !was)}
         className={cn(
           // A ghost picker like Copy; only an older version is marked.
-          "inline-flex cursor-interactive items-center gap-1 rounded-md border px-2 py-0.5 text-xs transition-colors",
+          "inline-flex h-6 cursor-interactive items-center gap-1 rounded-md border px-2 text-xs transition-colors [corner-shape:squircle] active:bg-neutral-200",
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400",
           onLatest
             ? "border-transparent text-neutral-600 hover:bg-muted hover:text-foreground"
@@ -75,5 +76,6 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
         </div>
       )}
     </div>
+    </Hint>
   );
 }
