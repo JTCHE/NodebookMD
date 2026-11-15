@@ -375,6 +375,15 @@ export default function Page() {
   const hasToc = headings.length >= 2;
   const name = useMemo(() => (page ? nameOf(page, path) : ""), [page, path]);
 
+  // A new page settles in: a short fade and a 4px rise, so a click lands as a
+  // change of page, not a cut. Once per path, not on each re-render of the tree.
+  const article = useRef<HTMLElement>(null);
+  const shown = Boolean(page);
+  useLayoutEffect(() => {
+    if (!shown || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    article.current?.animate([{ opacity: 0, translate: "0 4px" }, { opacity: 1, translate: "0 0" }], { duration: 180, easing: "cubic-bezier(0.2, 0, 0, 1)" });
+  }, [path, shown]);
+
   // The tree comes parsed from `read` (a worker). The components are made once
   // per page, so the body's slices keep their elements across renders.
   const pagePath = page?.path;
@@ -450,7 +459,7 @@ export default function Page() {
             <main tabIndex={-1} className="w-full min-w-0 outline-none px-page-x pt-7 pb-10 @max-xl:pt-2 print:p-0">
               {error && <p className="text-sm text-muted-foreground">{error.message}</p>}
               {page && (
-                <article className="prose prose-neutral dark:prose-invert max-w-none">
+                <article ref={article} className="prose prose-neutral dark:prose-invert max-w-none">
                   <PageHeader
                     entry={{ path, title: name, icon: page.icon }}
                     name={name}

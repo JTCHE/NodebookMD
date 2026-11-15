@@ -181,7 +181,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {ready && onboarding === true && <Onboarding onDone={finish} />}
       {ready && onboarding === false && (
       <div className="relative flex min-h-0 flex-1 print:block">
-        {docked && <Sidebar currentPath={shown || undefined} className="print:hidden" />}
+        {/* The docked panel fades in when shown, like the floating one slides in. */}
+        {docked && <Sidebar currentPath={shown || undefined} className="transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none print:hidden" />}
         {tight && floating && (
           <div
             ref={card}

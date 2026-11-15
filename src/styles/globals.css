@@ -624,6 +624,21 @@ kbd {
   }
 }
 
+/* How a tooltip comes in: a short fade and a 2px rise, so it arrives and does not blink. */
+@keyframes tip-in {
+  from {
+    opacity: 0;
+    translate: 0 2px;
+  }
+}
+
+@utility tip-in {
+  animation: tip-in 140ms cubic-bezier(0.2, 0, 0, 1);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 @utility pop-out {
   animation: pop-in 120ms cubic-bezier(0.2, 0, 0, 1) reverse forwards;
 }

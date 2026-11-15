@@ -7,7 +7,7 @@
  * arrows walk the items, Escape and Tab close the menu.
  */
 import { forwardRef, type ComponentType, type ReactNode } from "react";
-import { accelerators, MENU_ICON, MENU_ITEM } from "@/lib/ui/menu";
+import { accelerators, MENU_ICON, MENU_ITEM, MENU_SURFACE } from "@/lib/ui/menu";
 import { showToast } from "@/components/ui/toast-notification";
 import { cn } from "@/lib/utils";
 import { Keys } from "@/components/ui/Keycap";
@@ -101,7 +101,7 @@ export const MenuList = forwardRef<
               </>
             )}
           </span>
-          {item.keys && <Keys keys={item.keys} className="ml-auto pl-md [&>*]:rounded-sm" />}
+          {item.keys && <Keys keys={item.keys} className="ml-auto pl-md" />}
         </button>,
       );
     }
@@ -116,7 +116,7 @@ export const MenuList = forwardRef<
       onKeyDown={onKeyDown}
       onContextMenu={(event) => event.preventDefault()}
       style={style}
-      className={cn("rounded-lg border border-hairline bg-raised p-1 shadow-xl shadow-black/10 outline-none pop-in", className)}
+      className={cn(MENU_SURFACE, "origin-top-left outline-none", className)}
     >
       {rows}
     </div>

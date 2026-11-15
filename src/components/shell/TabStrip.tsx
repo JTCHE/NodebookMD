@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 /**
  * The tabs of the window, in the title bar. Always drawn, a lone tab too:
  * the strip does not appear and push the bar about when a second tab opens.
@@ -416,7 +417,8 @@ function TabMenu({ x, y, index, count, onClose }: { x: number; y: number; index:
     document.addEventListener("mousedown", outside);
     return () => document.removeEventListener("mousedown", outside);
   }, [onClose]);
-  return (
+  // On the body: inside the title bar the menu shares its stacking order and goes under the page bar.
+  return createPortal(
     <MenuList
       ref={panel}
       label="Tab"
@@ -435,6 +437,7 @@ function TabMenu({ x, y, index, count, onClose }: { x: number; y: number; index:
         ],
         [{ label: "Reopen closed tab", icon: Icons.recent, keys: REOPEN_TAB_KEYS, disabled: !canReopenTab(), run: reopenTab }],
       ]}
-    />
+    />,
+    document.body,
   );
 }

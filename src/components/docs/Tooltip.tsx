@@ -260,7 +260,7 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
             }
       }
       className={cn(
-        "[@media(hover:none)]:hidden rounded-lg fixed z-50 bg-background border border-border shadow-lg p-2 text-xs pointer-events-none whitespace-normal [overflow-wrap:anywhere]",
+        "tip-in [@media(hover:none)]:hidden rounded-lg fixed z-50 bg-background border border-border shadow-lg p-2 text-xs pointer-events-none whitespace-normal [overflow-wrap:anywhere]",
         className,
       )}
     >

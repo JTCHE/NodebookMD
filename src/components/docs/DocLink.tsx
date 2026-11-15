@@ -35,10 +35,11 @@ function getLinkObserver() {
 // at the top of the ramp where the prose sits at neutral-700. The hover dims
 // the whole link, text and rule together, because opacity interpolates in both
 // themes and a colour that suits the light theme goes wrong in the dark one.
+// The rule takes the link's own ink, so a link tinted by its context (a callout) keeps a matching rule.
 // Weight and offset never change, so a paragraph never reflows under the pointer.
 const LINK =
-  "text-brand-700 dark:text-brand-bright underline decoration-brand/35 underline-offset-3 decoration-1 " +
-  "hover:decoration-brand transition-colors motion-reduce:transition-none " +
+  "text-brand-700 dark:text-brand-bright underline decoration-current/35 underline-offset-3 decoration-1 " +
+  "hover:decoration-current transition-colors motion-reduce:transition-none " +
   "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
 /**

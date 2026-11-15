@@ -190,8 +190,8 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
 
   return (
     <div ref={container} onKeyDown={onMenuKey} // One pill for the split control: hover and the focus ring both wrap the copy button and the chevron.
-      // -mr-2 (its own padding): the chevron lands on the right edge of "Since" and "SideFX".
-      className="group/copy relative -mr-2 inline-flex rounded-lg transition-colors [corner-shape:squircle] pointer-hover:bg-muted active:bg-neutral-200 has-[[aria-expanded=true]]:bg-muted has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-inset has-[:focus-visible]:ring-neutral-400 print:hidden">
+      // -mr-[11px] (its padding plus the chevron glyph's own 3px inset): the chevron lands on the right edge of "Since" and "SideFX".
+      className="group/copy relative -mr-[11px] inline-flex rounded-lg transition-colors [corner-shape:squircle] pointer-hover:bg-muted active:bg-neutral-200 has-[[aria-expanded=true]]:bg-muted has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-inset has-[:focus-visible]:ring-neutral-400 print:hidden">
       <Hint label="Copy as Markdown" keys={`${COMMAND_KEY}+C`}>
       <button
         ref={button}
@@ -218,7 +218,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((was) => !was)}
-        className={cn(ACTION, QUIET, "w-[22px] justify-start pl-0 pr-2 pointer-hover:bg-transparent active:bg-transparent focus-visible:ring-0 group-hover/copy:text-foreground group-has-[[aria-expanded=true]]/copy:text-foreground")}
+        className={cn(ACTION, QUIET, "w-[26px] justify-center border-l border-transparent px-0 group-hover/copy:border-hairline group-has-[[aria-expanded=true]]/copy:border-hairline pointer-hover:bg-transparent active:bg-transparent focus-visible:ring-0 group-hover/copy:text-foreground group-has-[[aria-expanded=true]]/copy:text-foreground")}
       >
         <ChevronDown
           className={cn("size-3.5 transition-transform duration-150 motion-reduce:transition-none", open && "rotate-180")}

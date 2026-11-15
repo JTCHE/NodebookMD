@@ -45,7 +45,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400",
           onLatest
             ? "border-transparent text-neutral-600 hover:bg-muted hover:text-foreground"
-            : "border-brand/40 bg-brand/10 text-brand-700 dark:text-brand-bright",
+            : "border-transparent bg-brand/10 text-brand-700 dark:text-brand-bright",
         )}
       >
         {named(current.label)}
