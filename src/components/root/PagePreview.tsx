@@ -16,6 +16,14 @@ const SCALE = 0.42; // also in the padding classes below: text inside sits on th
 /** Enough blocks to fill the window; the rest is never seen. */
 const BLOCKS = 8;
 
+/** True when the block is, or wraps, a code block or a code panel (a VEX or HOM signature). */
+function holdsCode(node: { type: string; tagName?: string; properties?: { className?: unknown }; children?: unknown[] }): boolean {
+  if (node.tagName === "pre") return true;
+  const classes = node.properties?.className;
+  if (Array.isArray(classes) && classes.some((name) => String(name).includes("code-panel") || String(name).includes("vex-signature"))) return true;
+  return (node.children ?? []).some((child) => holdsCode(child as typeof node));
+}
+
 export function PagePreview({ path, title }: { path: string; title: string }) {
   const [page, setPage] = useState<PageView | undefined>(() => known(path));
 
@@ -40,7 +48,11 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
     };
   }, [path, page]);
 
-  const tree = page?.tree && { ...page.tree, children: page.tree.children.slice(0, BLOCKS) };
+  // The window stops before the first code block: a dark slab under the foot
+  // fade reads as a smear, and the prose above it says what the page is.
+  const blocks = page?.tree?.children.slice(0, BLOCKS) ?? [];
+  const code = blocks.findIndex(holdsCode);
+  const tree = page?.tree && { ...page.tree, children: code < 0 ? blocks : blocks.slice(0, code) };
   // The fade is set here, not inherited: the list around the cards turns its own fade off at its ends.
   return (
     <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-clip select-none [--fade-above:0] [--fade-below:1] [--fade-size:32px]">
