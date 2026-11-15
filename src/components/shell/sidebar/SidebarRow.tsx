@@ -127,7 +127,8 @@ export function SidebarRow({
       // Hover is a tint of the panel, never the chip: a hovered row must not
       // read as a second row you are on.
       raised ? cn("bg-raised", !bare && "shadow-chip") : "pointer-hover:bg-foreground/[0.05]",
-      "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+      // Focus is drawn inside the row's own shape, as quiet as hover.
+      "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-foreground/30 focus-visible:outline-none",
       className,
     ),
   };
@@ -182,7 +183,7 @@ export function SidebarRow({
         data-label=""
         className={cn(
           "min-w-0 flex-1 truncate text-[13px] tracking-[-0.01em]",
-          header && "font-medium",
+          (header || selected) && "font-medium",
           raised ? "text-neutral-950" : header ? "text-neutral-700 group-hover:text-neutral-950" : "text-neutral-600 group-hover:text-neutral-950",
         )}
       >
