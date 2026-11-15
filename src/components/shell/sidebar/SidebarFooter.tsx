@@ -8,7 +8,6 @@
 import { SETTINGS_KEYS, openSettings } from "@/components/settings/SettingsDialog";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
-import { THEME_ICON, THEME_LABEL, cycleTheme, useThemeChoice } from "@/lib/ui/theme";
 import { Hint } from "@/components/ui/Hint";
 import { SidebarRow } from "./SidebarRow";
 import { version } from "../../../../src-tauri/tauri.conf.json";
@@ -35,8 +34,6 @@ interface SidebarFooterProps {
 }
 
 export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, className }: SidebarFooterProps) {
-  const theme = useThemeChoice();
-  const ThemeMark = THEME_ICON[theme];
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -52,8 +49,8 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
         onClick={onToggleRecents}
       />
 
-      {/* The two that change the app side by side; the bug report, which
-          leaves it, apart in the far corner. */}
+      {/* Settings and the bug report on the left; the build it is, as text, on
+          the right. The theme lives in Settings. */}
       {/* A short rule, inset like the rows, between the trail and the app's own controls. */}
       <div className="mx-sm mt-xs h-px bg-hairline/60" />
       <div className="mt-xs flex items-center gap-[2px] pt-xs">
@@ -62,26 +59,15 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
             <Icons.settings className="size-4" />
           </button>
         </Hint>
-        {/* Three choices, so the mark is the one in force and a press steps to
-            the next. Settings has the three side by side. */}
-        <Hint label={`${THEME_LABEL[theme]} theme`}>
-        <button
-          type="button"
-          aria-label={`Theme: ${THEME_LABEL[theme]}. Press for the next one.`}
-          className={FOOTER_BUTTON}
-          onClick={cycleTheme}
-        >
-          <ThemeMark className="size-4" />
-        </button>
-        </Hint>
-        <span className="flex-1" />
-        {/* Which build of the app this is goes with the bug report, the one
-            place a reader needs it; as text in a row of icons it read as one. */}
-        <Hint label={`File a bug on GitHub · v${version}`}>
+        <Hint label="File a bug on GitHub">
           <a href={ISSUES} target="_blank" rel="noopener noreferrer" aria-label="File a bug" className={FOOTER_BUTTON}>
             <Icons.bugReport className="size-4" />
           </a>
         </Hint>
+        <span className="flex-1" />
+        {/* Which build of the app this is: read, not pressed, so it ends the
+            row as text. */}
+        <span className="mr-xs text-[12px] text-neutral-500 tabular-nums">v{version}</span>
       </div>
     </div>
   );
