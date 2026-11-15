@@ -101,7 +101,7 @@ export const MenuList = forwardRef<
               </>
             )}
           </span>
-          {item.keys && <Keys keys={item.keys} className="ml-auto pl-md" />}
+          {item.keys && <Keys keys={item.keys} className="ml-auto pl-md [&>*]:rounded-sm" />}
         </button>,
       );
     }

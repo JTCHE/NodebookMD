@@ -16,7 +16,7 @@ const WAIT = 60;
 
 /** `className` places the wrapper: a button that sits `absolute` gives its
     place to the wrapper, so the name is drawn at the button. */
-export function Hint({ label, keys, className, children }: { label: string; keys?: string; className?: string; children: ReactNode }) {
+export function Hint({ label, keys, side, className, children }: { label: string; keys?: string; side?: "above" | "below"; className?: string; children: ReactNode }) {
   const anchor = useRef<HTMLSpanElement>(null);
   const [shown, setShown] = useState(false);
   const timer = useRef<number>(undefined);
@@ -27,6 +27,7 @@ export function Hint({ label, keys, className, children }: { label: string; keys
   };
   useEffect(() => hide, []);
 
+  // With keycaps the box closes on them, so the right inset is the key inset; a label alone gets even sides.
   return (
     <span
       ref={anchor}
@@ -41,7 +42,7 @@ export function Hint({ label, keys, className, children }: { label: string; keys
     >
       {children}
       {shown && (
-        <TooltipBox anchorRef={anchor} className="z-[80] w-max max-w-[24rem] rounded-[11px] py-xs pr-xs pl-sm [corner-shape:squircle]">
+        <TooltipBox anchorRef={anchor} side={side} className={cn("z-[80] w-max max-w-[24rem] rounded-[11px] py-xs [corner-shape:squircle]", keys ? "pr-xs pl-sm" : "px-sm")}>
           <span className="flex items-center gap-2 font-medium text-foreground">
             {label}
             {keys && (

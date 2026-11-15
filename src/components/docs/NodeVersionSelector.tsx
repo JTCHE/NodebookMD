@@ -31,7 +31,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
   }
 
   return (
-    <Hint label={onLatest ? "The latest version of this node" : `An older version. The latest is ${latest.label}.`}>
+    <Hint side="below" label={onLatest ? "The latest version of this node" : `An older version. The latest is ${latest.label}.`}>
     <div ref={container} onKeyDown={onKeyDown} className="relative -ml-2 mr-xs inline-flex print:hidden">
       <button
         ref={trigger}

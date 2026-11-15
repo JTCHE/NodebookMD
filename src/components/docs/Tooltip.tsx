@@ -155,7 +155,7 @@ interface Anchored {
   hoverPosRef?: React.RefObject<{ x: number; y: number } | null>;
   /** `right` is for a row of the sidebar: it opens past the panel's edge, so
       it hides none of the rows the reader may scroll to. */
-  side?: "above" | "right";
+  side?: "above" | "below" | "right";
 }
 
 /** The box every tooltip sits in. Fixed, so it escapes any ancestor's
@@ -220,7 +220,7 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
     const left = line.left + line.width / 2 - width / 2;
     const x =
       left < margin ? margin - left : left + width > window.innerWidth - margin ? window.innerWidth - margin - (left + width) : 0;
-    const below = line.top - 4 - height < margin && line.bottom + 4 + height <= window.innerHeight - margin;
+    const below = side === "below" || (line.top - 4 - height < margin && line.bottom + 4 + height <= window.innerHeight - margin);
     // Whole pixels, and a change under one is no change: a scale on the box
     // makes the measured width jitter in the fifth decimal, and an exact
     // compare set the state on every render until React gave up (#185).
