@@ -1473,15 +1473,14 @@ pre code.hljs {
   /* Negative inline margin against the equal inline padding, so callout text
      sits on the page's text axis and only the surface overhangs — matching
      the code block and the VEX signature panel. */
-  margin: 1.25rem -1rem;
-  padding: 0.85rem 1rem;
+  margin: 1.25rem 0 1.25rem -1rem;
+  padding: 0.1rem 0 0.1rem calc(1rem - 2px);
   border: none;
-  border-radius: var(--radius-xl);
-  background: var(--callout-surface);
+  border-left: 2px solid var(--callout-rule, var(--hairline));
+  border-radius: 0;
+  background: none;
   font-size: 0.9rem;
   color: var(--card-foreground);
-  /* Even rim: faint hairline all around + a whisper of top-left light. */
-  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
 :root[data-theme="dark"] .callout {

@@ -158,9 +158,9 @@ export function SidebarRow({
       {/* The mark sits in a box of a stated size whatever fills it. A help
           icon carries its own aspect ratio and an app glyph does not, and
           without the box the two draw rows of different heights. */}
-      {/* A row that opens already says so with its arrow; a folder glyph on
-          top says it twice. Indent carries the depth. */}
-      {(mark !== undefined || (icon !== undefined && !(opens && !icon))) && (
+      {/* A row that opens already says so with its arrow, so it draws no folder
+          glyph. The slot stays, so a name never lands left of its parent's. */}
+      {(mark !== undefined || icon !== undefined) && (
         <span className="grid size-[15px] shrink-0 place-items-center" aria-hidden="true">
           {mark === undefined && icon !== undefined ? (
             icon ? (
@@ -176,7 +176,7 @@ export function SidebarRow({
                 // the page glyph reads as a page.
                 fallback={<Stand className="size-[15px] text-neutral-400" />}
               />
-            ) : (
+            ) : opens ? null : (
               <Stand className="size-[15px] text-neutral-400" />
             )
           ) : (
