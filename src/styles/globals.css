@@ -73,7 +73,6 @@ a {
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, Menlo, Consolas, monospace;
 
-  --breakpoint-xs: 20rem;
 
   /* The spacing ladder. Only the large steps grow on a wide window. */
   --spacing-thin: var(--thin);
@@ -86,8 +85,6 @@ a {
   --spacing-lg: var(--lg);
   --spacing-xl: var(--xl);
   --spacing-2xl: var(--2xl);
-  --spacing-3xl: var(--3xl);
-  --spacing-4xl: var(--4xl);
 
   /* Window chrome sizes. They do not grow on a wide window. */
   --spacing-titlebar: 36px;
@@ -111,7 +108,7 @@ a {
 
   --container-toc: 780px;
 
-  /* Widths have their own names: the spacing ladder shadows Tailwind's max-w-sm to max-w-4xl.
+  /* Widths have their own names: the spacing ladder shadows Tailwind's max-w-sm to max-w-2xl.
      The measure cap. In Geist, 72ch is about 105 characters of prose. */
   --container-page: calc(72ch + 2 * var(--page-x));
   --container-overlay: 32rem;
@@ -122,9 +119,6 @@ a {
   --text-display: var(--type-display);
   --text-display--line-height: 0.92;
   --text-display--letter-spacing: -0.045em;
-  --text-lede: var(--type-lede);
-  --text-lede--line-height: 1.45;
-  --text-lede--letter-spacing: -0.011em;
   --text-title: var(--type-title);
   --text-title--line-height: 1.2;
   --text-title--letter-spacing: -0.01em;
@@ -155,9 +149,7 @@ a {
   --color-brand: var(--brand);
   --color-brand-bright: var(--brand-bright);
   --color-brand-700: var(--brand-700);
-  --color-brand-foreground: var(--brand-foreground);
 
-  --color-surface: var(--surface);
   --color-surface-sunken: var(--surface-sunken);
   --color-elevated-top: var(--elevated-top);
   --color-elevated-bottom: var(--elevated-bottom);
@@ -168,7 +160,6 @@ a {
   --color-control-foreground: var(--control-foreground);
   --color-hairline: var(--hairline);
   --color-chrome: var(--chrome);
-  --color-control-sheen: var(--control-sheen);
 
   --shadow-field: var(--elevation-field);
   --shadow-keycap: var(--elevation-keycap);
@@ -186,40 +177,17 @@ a {
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-window-close: var(--window-close);
   --color-border: var(--border);
-  --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 :root {
@@ -236,11 +204,8 @@ a {
   --lg: 24px;
   --xl: 32px;
   --2xl: 40px;
-  --3xl: 56px;
-  --4xl: 72px;
 
   --type-display: 34px;
-  --type-lede: 15px;
   --type-title: 14px;
   --type-label: 13px;
   --type-meta: 12px;
@@ -271,7 +236,6 @@ a {
   --brand-700: oklch(0.575 0.147 52);
   --brand-foreground: oklch(0.985 0 0);
 
-  --surface: var(--neutral-0);
 
   /* A chip on the panel: one step lighter than its ground. */
   --raised: var(--neutral-0);
@@ -302,37 +266,16 @@ a {
   --background: var(--neutral-0);
   --foreground: var(--neutral-950);
   --card: var(--neutral-0);
-  --card-foreground: var(--neutral-950);
   --popover: var(--neutral-0);
-  --popover-foreground: var(--neutral-950);
-  --primary: var(--neutral-900);
-  --primary-foreground: var(--neutral-50);
-  --secondary: var(--neutral-100);
-  --secondary-foreground: var(--neutral-900);
   --muted: var(--neutral-100);
   --muted-foreground: var(--neutral-500);
   --accent: var(--neutral-100);
-  --accent-foreground: var(--neutral-900);
   --destructive: oklch(0.577 0.245 27.325);
 
   /* The Windows close hover: #c42b1c on a light bar, #e81123 on a dark bar. */
   --window-close: oklch(0.505 0.181 29);
   --border: oklch(0 0 0 / 10%);
-  --input: var(--neutral-200);
   --ring: var(--neutral-400);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
 
   /* The modal wash where the blur is off (see scrim-blur). */
   --scrim-wash: oklch(0.44 0 0 / 80%);
@@ -343,11 +286,8 @@ a {
   :root {
     --xl: 40px;
     --2xl: 56px;
-    --3xl: 80px;
-    --4xl: 128px;
 
     --type-display: 66px;
-    --type-lede: 19px;
     --type-label: 13.5px;
     --type-meta: 12.5px;
     --type-caption: 11.5px;
@@ -369,7 +309,6 @@ a {
   --neutral-900: oklch(0.97 0 0);
   --neutral-950: oklch(0.985 0 0);
 
-  --surface: var(--neutral-100);
   --raised: var(--neutral-200);
 
   --surface-sunken: var(--neutral-0);
@@ -396,29 +335,12 @@ a {
 
   --card: var(--neutral-100);
   --popover: var(--neutral-100);
-  --primary: var(--neutral-800);
-  --primary-foreground: var(--neutral-100);
-  --secondary: var(--neutral-200);
   --muted: var(--neutral-200);
   --accent: var(--neutral-200);
   --destructive: oklch(0.704 0.191 22.216);
   --window-close: oklch(0.577 0.235 29.2);
   --border: oklch(1 0 0 / 15%);
-  --input: oklch(1 0 0 / 15%);
   --ring: var(--neutral-500);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {
@@ -1027,23 +949,6 @@ kbd {
   line-height: 1.5;
 }
 
-kbd.kbd-button {
-  transition:
-    transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-button:active kbd.kbd-button {
-  transform: translateY(1px);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
-}
-
-@media (pointer: coarse) {
-  .search-kbd-hint {
-    display: none;
-  }
-}
-
 @keyframes sk-shimmer {
   to {
     transform: translateX(150%);
@@ -1277,7 +1182,7 @@ pre code.hljs {
   border-radius: var(--radius-xl);
   background: var(--callout-surface);
   font-size: 0.9rem;
-  color: var(--card-foreground);
+  color: var(--foreground);
 
   box-shadow:
     inset 0 0 0 1px color-mix(in oklab, white 5%, transparent),
@@ -1798,64 +1703,4 @@ span.doc-icon.inline-icon-large {
   width: 2em !important;
   height: 2em !important;
   vertical-align: middle;
-}
-
-.shelf-grid ul {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.75rem;
-  margin: 1.5rem -0.75rem;
-  padding: 0;
-  list-style: none;
-}
-.shelf-grid li {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--card);
-}
-.shelf-grid li > p {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-.shelf-grid li > p:first-child {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-  font-weight: 600;
-  color: var(--card-foreground);
-}
-.shelf-grid li > p:first-child > span {
-  min-width: 0;
-}
-.shelf-grid li > p:last-child:not(:first-child) {
-  font-size: 0.8125rem;
-  color: var(--muted-foreground);
-}
-.shelf-grid img.doc-icon {
-  width: 1.75rem !important;
-  height: 1.75rem !important;
-  margin: 0 !important;
-}
-
-.shelf-grid li > p:first-child > span {
-  position: static;
-}
-.shelf-grid li > p:first-child a::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-}
-.shelf-grid li:has(a):hover {
-  border-color: var(--muted-foreground);
-}
-.shelf-grid li:has(a):focus-within {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
 }
