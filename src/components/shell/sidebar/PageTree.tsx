@@ -37,14 +37,13 @@ import { SidebarRow } from "./SidebarRow";
     windowing needs the same number in JavaScript. */
 const ROW = 30;
 
-/** One rule: a child starts under its parent's NAME. The arrow slot is 11px
-    plus an 8px gap; a mark adds 15px plus 8px. Only groups (depth 0) draw a
-    mark; folders are places, not pages, and draw none. */
+/** One step per level: a child's arrow stands under its parent's first glyph,
+    the icon when the parent has one, else the name. The arrow slot is 11px
+    plus an 8px gap. */
 const ARROW = 19;
-const MARK = 23;
 
 function folderLeft(depth: number): number {
-  return (ARROW + MARK) * Math.min(depth, 1) + ARROW * Math.max(depth - 1, 0);
+  return ARROW * depth;
 }
 
 function place(left: number): React.CSSProperties | undefined {
@@ -307,6 +306,10 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
         <SidebarRow
           key={folder.id}
           {...shared}
+          // `null`, not `undefined`: a branch the install ships no icon for
+          // still holds the mark's column open, so the names under one group
+          // stay on one axis.
+          icon={folder.icon ?? null}
           quietDisclosure={!isOpen}
         />
       );
