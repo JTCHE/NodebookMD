@@ -54,7 +54,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
               // axis and the words on the names' axis.
               "flex h-row w-full cursor-interactive items-center gap-sm rounded-md px-sm text-left text-[12px] text-neutral-500",
               "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-              "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.03] pointer-hover:text-neutral-900",
+              "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.03] pointer-hover:text-neutral-900 focus-visible:text-neutral-900",
               "focus-visible:ring-[1.5px] focus-visible:ring-inset focus-visible:ring-neutral-500/80 focus-visible:outline-none",
             )}
           >
