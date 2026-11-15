@@ -91,7 +91,7 @@ export function LibraryPanel({ className }: { className?: string }) {
           <div className="flex h-full flex-col gap-sm">
             <div aria-hidden="true" className="fade-out -mr-xs -ml-ms grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-sm [--fade-size:48px] lg:-ml-md">
               {[0, 1, 2].map((index) => (
-                <div key={index} className="flex h-[118px] flex-col gap-[7px] rounded-[14px] border-[0.5px] border-dashed border-neutral-300 p-ms [corner-shape:squircle] lg:p-md">
+                <div key={index} className="flex h-window flex-col gap-[7px] rounded-[14px] border-[0.5px] border-dashed border-neutral-300 p-ms [corner-shape:squircle] lg:p-md">
                   <div className="h-[7px] w-1/3 rounded-sm bg-neutral-100" />
                   <div className="h-[9px] w-2/3 rounded-sm bg-neutral-100" />
                   <div className="h-[5px] w-full rounded-sm bg-neutral-100" />
@@ -101,8 +101,9 @@ export function LibraryPanel({ className }: { className?: string }) {
             </div>
           </div>
         ) : (
-          // Out like the search field, so text inside a window sits on its text axis.
-          <FadeList className="-mr-xs -ml-ms h-full snap-y lg:-ml-md snap-mandatory [--fade-size:24px] [--fade-head-size:24px]" deps={[tab, entries.length]}>
+          // Out like the search field on both sides, so text inside a window sits on its text axis.
+          // No scrollbar lane: it would pull the right edge in from the field's. The fade and the half row say "scroll".
+          <FadeList className="-mr-xs -ml-ms h-full [scrollbar-gutter:auto]! [scrollbar-width:none]! snap-y lg:-ml-md snap-mandatory [--fade-size:56px] [--fade-head-size:24px]" deps={[tab, entries.length]}>
             <div className="grid shrink-0 grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-sm">
               {entries.map((entry) => (
                 <LibraryCard

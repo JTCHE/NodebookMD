@@ -30,11 +30,12 @@ export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; ke
         onPointerEnter={() => warm(entry.path)}
         className={cn(
           // Closed frame; the page inside fades out at the foot, as if it goes on.
-          "relative block h-[118px] cursor-interactive overflow-hidden",
+          "relative block h-window cursor-interactive overflow-hidden",
           WINDOW,
-          "transition-[border-color,translate] duration-(--duration-fast) motion-reduce:transition-none",
-          "pointer-hover:border-neutral-300 dark:pointer-hover:border-neutral-500 active:translate-y-px",
-          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 focus-visible:outline-none",
+          "transition-[border-color,translate,box-shadow] duration-(--duration-fast) motion-reduce:transition-none",
+          // Hover lifts the window one step, to the search field's depth.
+          "pointer-hover:border-neutral-300 pointer-hover:shadow-field dark:pointer-hover:border-neutral-500 active:translate-y-px",
+          "focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
         )}
       >
         <PagePreview path={entry.path} title={entry.title} />

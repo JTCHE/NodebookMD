@@ -43,7 +43,7 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
   const tree = page?.tree && { ...page.tree, children: page.tree.children.slice(0, BLOCKS) };
   // The fade is set here, not inherited: the list around the cards turns its own fade off at its ends.
   return (
-    <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-clip select-none [--fade-above:0] [--fade-below:1] [--fade-size:40px]">
+    <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-clip select-none [--fade-above:0] [--fade-below:1] [--fade-size:64px]">
       <article
         className="prose prose-neutral dark:prose-invert max-w-none px-[calc(var(--spacing-ms)/0.42)] pt-[calc(var(--spacing-ms)/0.42)] lg:px-[calc(var(--spacing-md)/0.42)] lg:pt-[calc(var(--spacing-md)/0.42)]"
         style={{ width: width || undefined, zoom: SCALE }}

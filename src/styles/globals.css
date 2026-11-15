@@ -88,7 +88,9 @@ a {
   --spacing-chip: 38px;
 
   /* The landing list box. It does not grow, so the field does not move between tabs. */
-  --spacing-list: 268px;
+  --spacing-window: 118px;
+  /* Two rows of windows and the top of a third, so a hidden row shows its title, not a sliver. */
+  --spacing-list: calc(var(--spacing-window) * 2.4 + var(--spacing-sm) * 2);
   --spacing-icon: 15px;
   --spacing-glyph: 11px;
   --text-row: 13px;
