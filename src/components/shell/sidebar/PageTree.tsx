@@ -38,13 +38,13 @@ import { SidebarRow } from "./SidebarRow";
 const ROW = 30;
 
 /** One rule: a child starts under its parent's NAME. The arrow slot is 11px
-    plus an 8px gap; a mark adds 15px plus 8px. Groups (depth 0) and branches
-    (depth 1) draw a mark, folders below do not. */
+    plus an 8px gap; a mark adds 15px plus 8px. Only groups (depth 0) draw a
+    mark; folders are places, not pages, and draw none. */
 const ARROW = 19;
 const MARK = 23;
 
 function folderLeft(depth: number): number {
-  return (ARROW + MARK) * Math.min(depth, 2) + ARROW * Math.max(depth - 2, 0);
+  return (ARROW + MARK) * Math.min(depth, 1) + ARROW * Math.max(depth - 1, 0);
 }
 
 function place(left: number): React.CSSProperties | undefined {
@@ -307,10 +307,6 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
         <SidebarRow
           key={folder.id}
           {...shared}
-          // `null`, not `undefined`: a branch the install ships no icon for
-          // still holds the mark's column open, so the names under one group
-          // stay on one axis.
-          icon={folder.icon ?? null}
           quietDisclosure={!isOpen}
         />
       );
