@@ -144,7 +144,9 @@ export function SidebarRow({
       ) : (
         <Disclosure
           className={cn(
-            "size-[11px] shrink-0",
+            // The arrow's ink is narrower than its box: pulled left by the
+            // side bearing, its point stands on the panel's text axis.
+            "size-[11px] shrink-0 -translate-x-[3px]",
             // Open reads as a darker arrow, not as the raised chip: the chip
             // means "the row you are on", and an open branch is a place you
             // are inside, not the row itself.
