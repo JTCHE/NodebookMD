@@ -389,7 +389,7 @@ a {
 
   --control-sheen: oklch(1 0 0 / 12%);
 
-  --elevation-field: 0 18px 50px 0 oklch(0 0 0 / 10%);
+  --elevation-field: 0 1px 2px 0 oklch(0 0 0 / 5%), 0 6px 16px -4px oklch(0 0 0 / 6%);
   --elevation-keycap: 0 2px 0 0 var(--elevated-edge), 0 1px 1.5px 0 oklch(0 0 0 / 10%);
   --elevation-control: 0 1px 0.75px 0 oklch(0 0 0 / 28%), 0 1px 2px 0 oklch(0 0 0 / 16%);
   --elevation-pane: 0 4px 12px 0 oklch(0 0 0 / 8%);
