@@ -5,8 +5,9 @@
 import { useEffect, useRef, useState } from "react";
 import { ROW_INTERACTION } from "./interactive";
 
+/** Panel corner = item corner (md, 6px) + panel padding (4px), so the corners nest. */
 export const MENU_PANEL =
-  "absolute top-[calc(100%+4px)] right-0 z-50 origin-top-right rounded-lg border border-hairline bg-raised p-1 " +
+  "absolute top-[calc(100%+4px)] right-0 z-50 origin-top-right rounded-[10px] border border-hairline bg-raised p-1 " +
   "shadow-xl shadow-black/10 pop-in";
 
 export const MENU_ITEM =

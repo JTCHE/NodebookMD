@@ -18,7 +18,7 @@ interface PageTitleProps {
  */
 export function PageTitle({ name, nodeType, icon }: PageTitleProps) {
   return (
-    <div className="flex items-center gap-3 min-w-0">
+    <div className="flex items-start gap-3 min-w-0">
       {/* No stand-in here. A list needs one, because a blank in a column of
           marks reads as a fault; a title stands alone, and a generic glyph in
           front of it only says the page has no icon. */}

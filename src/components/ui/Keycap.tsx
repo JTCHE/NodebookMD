@@ -23,3 +23,16 @@ export function Keycap({ children, className }: KeycapProps) {
     </span>
   );
 }
+
+/** A shortcut such as "Ctrl+C", one small key per part: tooltips and menu rows draw it the same way. */
+export function Keys({ keys, className }: { keys: string; className?: string }) {
+  return (
+    <span className={cn("flex items-center gap-2xs font-normal", className)}>
+      {keys.split("+").map((key) => (
+        <Keycap key={key} className={SMALL_KEY}>
+          {key}
+        </Keycap>
+      ))}
+    </span>
+  );
+}

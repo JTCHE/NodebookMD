@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { TooltipBox } from "@/components/docs/Tooltip";
 import { cn } from "@/lib/utils";
-import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
+import { Keys } from "@/components/ui/Keycap";
 
 /** Only long enough that a pointer moving across the bar does not light
     up every button it passes. */
@@ -41,17 +41,11 @@ export function Hint({ label, keys, className, children }: { label: string; keys
     >
       {children}
       {shown && (
-        <TooltipBox anchorRef={anchor} className="z-[80] w-max max-w-[24rem]">
+        <TooltipBox anchorRef={anchor} className="z-[80] w-max max-w-[24rem] rounded-[10px] py-xs pr-xs pl-sm [corner-shape:squircle]">
           <span className="flex items-center gap-2 font-medium text-foreground">
             {label}
             {keys && (
-              <span className="flex items-center gap-2xs font-normal">
-                {keys.split("+").map((key) => (
-                  <Keycap key={key} className={SMALL_KEY}>
-                    {key}
-                  </Keycap>
-                ))}
-              </span>
+              <Keys keys={keys} />
             )}
           </span>
         </TooltipBox>

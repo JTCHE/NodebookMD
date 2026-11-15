@@ -30,7 +30,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
   }
 
   return (
-    <div ref={container} onKeyDown={onKeyDown} className="relative inline-flex print:hidden">
+    <div ref={container} onKeyDown={onKeyDown} className="relative -mx-2 inline-flex print:hidden">
       <button
         ref={trigger}
         type="button"
@@ -40,7 +40,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
         onClick={() => setOpen((was) => !was)}
         className={cn(
           // A ghost picker like Copy; only an older version is marked.
-          "-mx-2 inline-flex cursor-interactive items-center gap-1 rounded-md border px-2 py-0.5 text-xs transition-colors",
+          "inline-flex cursor-interactive items-center gap-1 rounded-md border px-2 py-0.5 text-xs transition-colors",
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400",
           onLatest
             ? "border-transparent text-neutral-600 hover:bg-muted hover:text-foreground"
@@ -63,7 +63,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
               role="option"
               aria-selected={version === current}
               onClick={() => pick(version)}
-              className={cn(MENU_ITEM, version === current && "text-brand-700 dark:text-brand-bright")}
+              className={cn(MENU_ITEM, version === current && "text-foreground")}
             >
               <Check className={cn(MENU_ICON, "text-current", version !== current && "invisible")} aria-hidden="true" />
               {named(version.label)}
