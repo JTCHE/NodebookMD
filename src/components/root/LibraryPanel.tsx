@@ -103,7 +103,7 @@ export function LibraryPanel({ className }: { className?: string }) {
         ) : (
           // Out like the search field on both sides, so text inside a window sits on its text axis.
           // No scrollbar lane: it would pull the right edge in from the field's. The fade and the half row say "scroll".
-          <FadeList className="-mr-xs -ml-ms h-full [scrollbar-gutter:auto]! [scrollbar-width:none]! snap-y lg:-ml-md snap-mandatory [--fade-size:56px] [--fade-head-size:24px]" deps={[tab, entries.length]}>
+          <FadeList className="-mr-xs -ml-ms h-full [scrollbar-gutter:auto]! [scrollbar-width:none]! snap-y lg:-ml-md snap-mandatory [--fade-size:56px] [--fade-head-size:56px]" deps={[tab, entries.length]}>
             <div className="grid shrink-0 grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-sm">
               {entries.map((entry) => (
                 <LibraryCard

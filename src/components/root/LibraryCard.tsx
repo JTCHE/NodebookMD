@@ -11,7 +11,7 @@ import { warm } from "@/lib/pages";
 import { PagePreview } from "@/components/root/PagePreview";
 
 const CONTROL =
-  "grid size-[22px] cursor-interactive place-items-center rounded-md text-neutral-500 " +
+  "grid size-[22px] cursor-interactive place-items-center rounded-sm text-neutral-500 " +
   "transition-[opacity,background-color,color] duration-(--duration-fast) motion-reduce:transition-none " +
   "pointer-hover:bg-foreground/[0.06] pointer-hover:text-neutral-900 active:bg-foreground/[0.1] " +
   "focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 focus-visible:outline-none";
@@ -35,7 +35,7 @@ export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; ke
           "transition-[border-color,translate,box-shadow] duration-(--duration-fast) motion-reduce:transition-none",
           // Hover lifts the window one step, to the search field's depth.
           "pointer-hover:border-neutral-400 pointer-hover:shadow-field dark:pointer-hover:border-neutral-300 active:translate-y-px",
-          "focus-visible:border-neutral-500 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-500 dark:focus-visible:ring-neutral-600 focus-visible:outline-none",
+          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 focus-visible:outline-none",
         )}
       >
         <PagePreview path={entry.path} title={entry.title} />

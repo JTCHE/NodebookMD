@@ -48,11 +48,10 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
     };
   }, [path, page]);
 
-  // The window stops before the first code block: a dark slab under the foot
-  // fade reads as a smear, and the prose above it says what the page is.
-  const blocks = page?.tree?.children.slice(0, BLOCKS) ?? [];
-  const code = blocks.findIndex(holdsCode);
-  const tree = page?.tree && { ...page.tree, children: code < 0 ? blocks : blocks.slice(0, code) };
+  // The window skips code panels: a dark slab under the foot fade reads as a
+  // smear, and the prose around it says what the page is.
+  const blocks = page?.tree?.children.filter((block) => !holdsCode(block)).slice(0, BLOCKS) ?? [];
+  const tree = page?.tree && { ...page.tree, children: blocks };
   // The fade is set here, not inherited: the list around the cards turns its own fade off at its ends.
   return (
     <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-clip select-none [--fade-above:0] [--fade-below:1] [--fade-size:32px]">
