@@ -35,7 +35,7 @@ import { SidebarRow } from "./SidebarRow";
 
 /** Every row in the panel is this tall. `--spacing-row` states it in CSS; the
     windowing needs the same number in JavaScript. */
-const ROW = 30;
+const ROW = 28;
 
 /** Each level sits one step in from the one above: the step that puts a
     row's mark under the name of its parent. Every row holds the arrow slot
