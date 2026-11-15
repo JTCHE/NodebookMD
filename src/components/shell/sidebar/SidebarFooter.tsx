@@ -24,7 +24,7 @@ const FOOTER_BUTTON =
   // Disabled changes what it DOES, not how loud it is: the two controls sit
   // side by side and a dimmed one beside a lit one reads as a rendering bug.
   "disabled:cursor-default " +
-  "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none";
+  "focus-ring";
 
 interface SidebarFooterProps {
   recentCount: number;

@@ -40,7 +40,7 @@ interface BuildRow {
 const ROW =
   "flex w-full cursor-interactive items-center justify-between gap-sm rounded-md px-[6px] py-[7px] text-left text-row " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none disabled:cursor-default " +
-  "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none";
+  "focus-ring";
 
 /** Stands for the folder row in `switching`, which otherwise holds a build. */
 const PICK = "\0pick";
@@ -49,7 +49,7 @@ const PICK = "\0pick";
 const CHIP =
   "mr-xs inline-flex h-4 shrink-0 items-center rounded-sm border px-1 text-[10px] font-semibold leading-none " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none " +
-  "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none";
+  "focus-ring";
 
 /** Keys that work the picker itself. Any other key closes it: the reader
     has moved on to something else. */
@@ -108,7 +108,7 @@ function Card({
         "pointer-hover:bg-foreground/[0.05] aria-expanded:bg-foreground/[0.05]",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         onClick && "cursor-interactive",
-        "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
+        "focus-ring",
         className,
       )}
     >

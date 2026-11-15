@@ -443,7 +443,7 @@ export default function Page() {
             href={sideFxUrl(path)}
             target="_blank"
             rel="noopener noreferrer"
-            className="group ml-auto flex shrink-0 items-center text-meta text-muted-foreground transition-colors hover:text-foreground print:hidden"
+            className="group focus-ring ml-auto flex shrink-0 items-center rounded-sm text-meta text-muted-foreground transition-colors hover:text-foreground print:hidden"
           >
             SideFX
             <LucideArrowUpRight

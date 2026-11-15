@@ -218,7 +218,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((was) => !was)}
-        className={cn(ACTION, QUIET, "w-[26px] justify-center border-l border-transparent px-0 group-hover/copy:border-hairline group-has-[[aria-expanded=true]]/copy:border-hairline pointer-hover:bg-transparent active:bg-transparent focus-visible:ring-0 group-hover/copy:text-foreground group-has-[[aria-expanded=true]]/copy:text-foreground")}
+        className={cn(ACTION, QUIET, "w-[26px] justify-center rounded-l-none border-l border-transparent px-0 group-hover/copy:border-hairline group-has-[[aria-expanded=true]]/copy:border-hairline pointer-hover:bg-transparent active:bg-transparent focus-visible:ring-0 group-hover/copy:text-foreground group-has-[[aria-expanded=true]]/copy:text-foreground")}
       >
         <ChevronDown
           className={cn("size-3.5 transition-transform duration-150 motion-reduce:transition-none", open && "rotate-180")}

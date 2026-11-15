@@ -40,7 +40,7 @@ function getLinkObserver() {
 const LINK =
   "text-brand-700 dark:text-brand-bright underline decoration-current/35 underline-offset-3 decoration-1 " +
   "hover:decoration-current transition-colors motion-reduce:transition-none " +
-  "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+  "rounded-sm focus-ring";
 
 /**
  * Every link in the reading view. An app path opens in the window; an external
