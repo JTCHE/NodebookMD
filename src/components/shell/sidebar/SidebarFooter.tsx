@@ -75,10 +75,9 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
         </button>
         </Hint>
         <span className="flex-1" />
-        {/* Which build of the app this is: read, not pressed, so it is text
-            beside the one control that leaves the app. */}
-        <span className="mr-xs text-[12px] text-neutral-500 tabular-nums">v{version}</span>
-        <Hint label="File a bug on GitHub">
+        {/* Which build of the app this is goes with the bug report, the one
+            place a reader needs it; as text in a row of icons it read as one. */}
+        <Hint label={`File a bug on GitHub · v${version}`}>
           <a href={ISSUES} target="_blank" rel="noopener noreferrer" aria-label="File a bug" className={FOOTER_BUTTON}>
             <Icons.bugReport className="size-4" />
           </a>
