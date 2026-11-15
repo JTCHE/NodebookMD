@@ -54,8 +54,8 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
               // axis and the words on the names' axis.
               "flex h-row w-full cursor-interactive items-center gap-sm rounded-md px-sm text-left text-[12px] text-neutral-500",
               "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-              "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045] pointer-hover:text-neutral-900",
-              "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-neutral-500/80 focus-visible:outline-none",
+              "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.03] pointer-hover:text-neutral-900",
+              "focus-visible:ring-[1.5px] focus-visible:ring-inset focus-visible:ring-neutral-500/80 focus-visible:outline-none",
             )}
           >
             <span className="grid size-[15px] shrink-0 place-items-center">
@@ -78,7 +78,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
       <SidebarRow label={entry.title} icon={entry.icon ?? null} to={`/${entry.path}`} selected={open}
         // The remove control covers the row's end, so the row keeps its hover
         // while the pointer is on the control.
-        className={cn("pr-[28px]", !open && "group-hover/bookmark:bg-foreground/[0.035] dark:group-hover/bookmark:bg-foreground/[0.045]")}
+        className={cn("pr-[28px]", !open && "group-hover/bookmark:bg-foreground/[0.035] dark:group-hover/bookmark:bg-foreground/[0.03]")}
       />
       <button
         type="button"
@@ -88,7 +88,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
           "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-full text-neutral-500",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
           "pointer-hover:bg-foreground/[0.05] dark:pointer-hover:bg-foreground/[0.07] pointer-hover:text-neutral-950",
-          "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-neutral-500/80 focus-visible:outline-none",
+          "focus-visible:ring-[1.5px] focus-visible:ring-inset focus-visible:ring-neutral-500/80 focus-visible:outline-none",
         )}
       >
         <Icons.dismiss className="size-[11px]" />
