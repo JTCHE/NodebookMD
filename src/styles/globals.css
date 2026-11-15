@@ -647,6 +647,21 @@ kbd {
   }
 }
 
+/* How the rows a folder opens come in: a fade and a 3px drop from under the folder. */
+@keyframes row-in {
+  from {
+    opacity: 0;
+    translate: 0 -3px;
+  }
+}
+
+@utility row-in {
+  animation: row-in 180ms cubic-bezier(0.2, 0, 0, 1);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 @utility pop-out {
   animation: pop-in 120ms cubic-bezier(0.2, 0, 0, 1) reverse forwards;
 }

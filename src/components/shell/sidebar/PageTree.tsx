@@ -261,7 +261,28 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
     const at = lines.findIndex((line) => line.kind === "folder" && line.folder.id === id);
     if (list && at >= 0) held.current = { id, offset: Math.max(depth * ROW, at * ROW - list.scrollTop) };
     setOpen((now) => (now[depth] === id ? now.slice(0, depth) : [...now.slice(0, depth), id]));
+    if (open[depth] !== id) setOpened(id);
   };
+
+  // The rows a click opens fade in under their folder. Only those rows, and
+  // only for a moment: the list mounts rows as it scrolls too, and a row
+  // scrolled into view must not fade.
+  const [opened, setOpened] = useState<string | null>(null);
+  useEffect(() => {
+    if (!opened) return;
+    const timer = window.setTimeout(() => setOpened(null), 320);
+    return () => window.clearTimeout(timer);
+  }, [opened]);
+  const fresh = useMemo(() => {
+    const at = opened ? lines.findIndex((line) => line.kind === "folder" && line.folder.id === opened) : -1;
+    if (at < 0) return null;
+    const keys = new Set<string>();
+    for (const line of lines.slice(at + 1)) {
+      if (line.depth <= lines[at].depth) break;
+      keys.add(line.kind === "folder" ? line.folder.id : line.page.path);
+    }
+    return keys;
+  }, [opened, lines]);
   useLayoutEffect(() => {
     const want = held.current;
     held.current = null;
@@ -281,7 +302,7 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
       // are in by the time the rows draw.
       onPointerEnter: isOpen ? undefined : () => void warmIcons(iconsShownBy(folder)),
       style: indent(depth),
-      className: pinnedCopy ? "pointer-events-auto" : undefined,
+      className: pinnedCopy ? "pointer-events-auto" : fresh?.has(folder.id) ? "row-in" : undefined,
     };
     if (depth === 0) {
       const Mark = groupIcon(folder.id);
@@ -370,6 +391,7 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
               // A page starts its ICON where the folder above it starts its
               // NAME, and its name where its sibling folders start theirs.
               style={pageIndent(line.depth)}
+              className={fresh?.has(line.page.path) ? "row-in" : undefined}
             />
           )
         }
