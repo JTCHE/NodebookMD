@@ -137,19 +137,21 @@ export function SidebarRow({
   const content = (
     <>
       {bare || disclosure === "none" ? null : (
-        <Disclosure
-          className={cn(
-            // The arrow's ink is narrower than its box: pulled left by the
-            // side bearing, its point stands on the panel's text axis.
-            "size-[11px] shrink-0 -translate-x-[3px]",
-            // Open reads as a darker arrow, not as the raised chip: the chip
-            // means "the row you are on", and an open branch is a place you
-            // are inside, not the row itself.
-            disclosure === "expanded" ? "text-neutral-600" : "text-neutral-400",
-            quietDisclosure &&
-              "opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none",
-          )}
-        />
+        // The arrow sits in a slot as wide as a mark, so its centre stands on
+        // the icon column of the rows above and below.
+        <span className="grid size-[15px] shrink-0 place-items-center" aria-hidden="true">
+          <Disclosure
+            className={cn(
+              "size-[11px]",
+              // Open reads as a darker arrow, not as the raised chip: the chip
+              // means "the row you are on", and an open branch is a place you
+              // are inside, not the row itself.
+              disclosure === "expanded" ? "text-neutral-600" : "text-neutral-400",
+              quietDisclosure &&
+                "opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none",
+            )}
+          />
+        </span>
       )}
 
       {/* The mark sits in a box of a stated size whatever fills it. A help

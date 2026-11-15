@@ -40,7 +40,7 @@ const ROW = 30;
 /** One step per level: a child's arrow stands under its parent's first glyph,
     the icon when the parent has one, else the name. The arrow slot is 11px
     plus an 8px gap. */
-const ARROW = 19;
+const ARROW = 23;
 
 function folderLeft(depth: number): number {
   return ARROW * depth;
