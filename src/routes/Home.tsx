@@ -19,7 +19,9 @@ export default function Home() {
     <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden @container">
       <UpdatedPill />
 
-      <div className="relative flex min-h-0 flex-1 flex-col justify-center px-lg py-lg">
+      {/* Centred a little above the middle: the eye's centre of a window sits
+          higher than its geometric one. */}
+      <div className="relative flex min-h-0 flex-1 flex-col justify-center px-lg pt-lg pb-[12vh]">
 <div className="mx-auto flex min-h-0 w-full max-w-hero flex-col gap-xl">
           <div className="flex shrink-0 flex-col gap-lg">
             <header className="flex flex-col gap-xs">
