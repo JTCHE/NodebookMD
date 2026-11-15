@@ -53,7 +53,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
       <SidebarRow label={entry.title} icon={entry.icon ?? null} to={`/${entry.path}`} selected={open}
         // The remove control covers the row's end, so the row keeps its hover
         // while the pointer is on the control.
-        className={cn("pr-[28px]", !open && "group-hover/bookmark:bg-foreground/[0.035] dark:group-hover/bookmark:bg-foreground/[0.03]")}
+        className={cn("pr-[32px]", !open && "group-hover/bookmark:bg-foreground/[0.035] dark:group-hover/bookmark:bg-foreground/[0.055]")}
       />
       <button
         type="button"
