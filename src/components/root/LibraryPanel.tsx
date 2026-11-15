@@ -17,12 +17,12 @@
  */
 import { useSearchParams } from "react-router";
 import { cn } from "@/lib/utils";
-import { LibraryCard } from "@/components/root/LibraryCard";
+import { LibraryCard, WINDOW } from "@/components/root/LibraryCard";
 import { Icons } from "@/lib/ui/icons";
 import { FadeList } from "@/components/ui/FadeList";
 import { forget, useLibrary } from "@/lib/store/library";
 import { ExploreColumns } from "@/components/root/ExploreColumns";
-import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
+import { Keycap } from "@/components/ui/Keycap";
 import { COMMAND_KEY } from "@/lib/hotkeys";
 
 type Tab = "recents" | "bookmarks";
@@ -73,7 +73,7 @@ export function LibraryPanel({ className }: { className?: string }) {
                 active
                   ? "text-neutral-950"
                   : "text-neutral-500 pointer-hover:text-neutral-800",
-                "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
               )}
             >
               <Mark className="size-[13px] shrink-0 translate-y-light" />
@@ -89,17 +89,16 @@ export function LibraryPanel({ className }: { className?: string }) {
           between the two tabs. */}
       <div className="h-list min-h-0">
         {entries.length === 0 ? (
-          <p className="px-sm py-md text-meta text-neutral-500">
+          // One empty window, out like the search field, so an empty tab keeps
+          // the look of a full one.
+          <p className={cn(WINDOW, "-mr-xs -ml-ms flex h-[118px] items-center justify-center gap-[3px] px-md text-meta text-neutral-500 lg:-ml-md")}>
             {tab === "recents" ? (
               "Pages you open show up here."
             ) : (
               <>
-                Press{" "}
-                <span className="inline-flex translate-y-[-1px] gap-2xs align-middle">
-                  <Keycap className={SMALL_KEY}>{COMMAND_KEY}</Keycap>
-                  <Keycap className={SMALL_KEY}>D</Keycap>
-                </span>{" "}
-                or the bookmark button on a page to save it for later.
+                <Keycap flat className="translate-y-light border-neutral-300 text-neutral-600">{COMMAND_KEY}</Keycap>
+                <Keycap flat className="translate-y-light border-neutral-300 text-neutral-600">D</Keycap>
+                <span className="ml-[3px]">on a page keeps it here</span>
               </>
             )}
           </p>

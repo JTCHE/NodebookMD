@@ -16,6 +16,11 @@ const CONTROL =
   "pointer-hover:bg-foreground/[0.06] pointer-hover:text-neutral-900 active:bg-foreground/[0.1] " +
   "focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 focus-visible:outline-none";
 
+/** The surface of a window: squircle corners, a hairline, and a soft sheen lit
+    from above in both themes. The empty panel uses it too. */
+export const WINDOW =
+  "rounded-[14px] border-[0.5px] border-hairline bg-linear-to-b from-background to-neutral-50 shadow-chip [corner-shape:squircle] dark:from-neutral-100 dark:to-background";
+
 export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; kept: boolean; onForget?: () => void }) {
   return (
     <div className="group relative snap-start">
@@ -25,7 +30,8 @@ export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; ke
         onPointerEnter={() => warm(entry.path)}
         className={cn(
           // Closed frame; the page inside fades out at the foot, as if it goes on.
-          "relative block h-[118px] cursor-interactive overflow-hidden rounded-[14px] border-[0.5px] border-hairline bg-linear-to-b from-background to-neutral-50 shadow-chip [corner-shape:squircle] dark:to-neutral-100",
+          "relative block h-[118px] cursor-interactive overflow-hidden",
+          WINDOW,
           "transition-[border-color,translate] duration-(--duration-fast) motion-reduce:transition-none",
           "pointer-hover:border-neutral-300 dark:pointer-hover:border-neutral-500 active:translate-y-px",
           "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 focus-visible:outline-none",
