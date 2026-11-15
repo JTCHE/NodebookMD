@@ -8,7 +8,7 @@ import { useEffect, useState, type RefObject } from "react";
  * second row and reads as a rendering fault — so every list that fades asks
  * this first.
  */
-export function useOverflow(node: RefObject<HTMLElement | null>, deps: unknown[] = [], reverse = false): boolean {
+export function useOverflow(node: RefObject<HTMLElement | null>, deps: unknown[] = []): boolean {
   const [overflows, setOverflows] = useState(false);
 
   useEffect(() => {
@@ -18,14 +18,15 @@ export function useOverflow(node: RefObject<HTMLElement | null>, deps: unknown[]
     // the pixel independently, which can leave a list a couple of px taller
     // than its box with no extra row behind it. 4px clears that without
     // hiding a real one, which is always at least one row's worth more.
-    // "More" is measured from where the reader is, not from the top: a list
-    // scrolled to its last row has nothing left below it, and drops the fade.
-    const measure = () =>
-      setOverflows(
-        reverse
-          ? element.scrollTop > 4
-          : element.scrollHeight - element.scrollTop > element.clientHeight + 4,
-      );
+    // The box overflows or not; which edge fades follows the scroll: a list
+    // scrolled to its last row drops the bottom fade, and a list scrolled
+    // down fades its top so the row under the heading is not cut on a line.
+    const measure = () => {
+      setOverflows(element.scrollHeight > element.clientHeight + 4);
+      const below = element.scrollHeight - element.scrollTop > element.clientHeight + 4;
+      element.style.setProperty("--fade-below", below ? "1" : "0");
+      element.style.setProperty("--fade-above", element.scrollTop > 4 ? "1" : "0");
+    };
     measure();
     element.addEventListener("scroll", measure, { passive: true });
     const observer = new ResizeObserver(measure);

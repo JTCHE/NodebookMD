@@ -26,7 +26,7 @@ export function FadeList({
   reverse?: boolean;
 }) {
   const node = useRef<HTMLDivElement>(null);
-  const overflows = useOverflow(node, [children, ...deps], reverse);
+  const overflows = useOverflow(node, [children, ...deps]);
 
   useEffect(() => {
     if (reverse) node.current?.scrollTo({ top: node.current.scrollHeight });

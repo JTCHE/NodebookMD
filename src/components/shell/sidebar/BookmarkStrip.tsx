@@ -33,7 +33,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
       ) : (
         // Every kept page, in a box that stops at six and a half rows and
         // scrolls: the half row and the fade say there is more below.
-        <FadeList className="max-h-[calc(var(--spacing-row)*6.5)] [scrollbar-gutter:auto]!" deps={[entries.length]}>
+        <FadeList className="max-h-[calc(var(--spacing-row)*6.5)] [scrollbar-gutter:auto]! [--fade-size:40px]" deps={[entries.length]}>
           {entries.map((entry) => (
             <BookmarkRow key={entry.path} entry={entry} open={pathname === `/${entry.path}`} />
           ))}
@@ -62,7 +62,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
           "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
           "pointer-hover:bg-foreground/[0.05] dark:pointer-hover:bg-foreground/[0.07] pointer-hover:text-neutral-950",
-          "focus-visible:ring-[1.5px] focus-visible:ring-inset focus-visible:ring-neutral-500/80 focus-visible:outline-none",
+          "focus-visible:bg-foreground/[0.08] focus-visible:text-neutral-950 focus-visible:outline-none",
         )}
       >
         <Icons.dismiss className="size-[11px]" />
