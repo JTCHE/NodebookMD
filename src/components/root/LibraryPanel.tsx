@@ -17,12 +17,12 @@
  */
 import { useSearchParams } from "react-router";
 import { cn } from "@/lib/utils";
-import { LibraryCard, WINDOW } from "@/components/root/LibraryCard";
+import { LibraryCard } from "@/components/root/LibraryCard";
 import { Icons } from "@/lib/ui/icons";
 import { FadeList } from "@/components/ui/FadeList";
 import { forget, useLibrary } from "@/lib/store/library";
 import { ExploreColumns } from "@/components/root/ExploreColumns";
-import { Keycap } from "@/components/ui/Keycap";
+import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
 import { COMMAND_KEY } from "@/lib/hotkeys";
 
 type Tab = "recents" | "bookmarks";
@@ -89,19 +89,30 @@ export function LibraryPanel({ className }: { className?: string }) {
           between the two tabs. */}
       <div className="h-list min-h-0">
         {entries.length === 0 ? (
-          // One empty window, out like the search field, so an empty tab keeps
-          // the look of a full one.
-          <p className={cn(WINDOW, "-mr-xs -ml-ms flex h-[118px] items-center justify-center gap-[3px] px-md text-meta text-neutral-500 lg:-ml-md")}>
-            {tab === "recents" ? (
-              "Pages you open show up here."
-            ) : (
-              <>
-                <Keycap flat className="translate-y-light border-neutral-300 text-neutral-600">{COMMAND_KEY}</Keycap>
-                <Keycap flat className="translate-y-light border-neutral-300 text-neutral-600">D</Keycap>
-                <span className="ml-[3px]">on a page keeps it here</span>
-              </>
-            )}
-          </p>
+          // An empty tab: the shape of the cards it will hold, faint, under one short line.
+          <div className="flex h-full flex-col gap-sm">
+            <p className="flex h-[22px] items-center gap-[3px] text-meta text-neutral-500">
+              {tab === "recents" ? (
+                "Opened pages show here"
+              ) : (
+                <>
+                  <Keycap className={SMALL_KEY}>{COMMAND_KEY}</Keycap>
+                  <Keycap className={SMALL_KEY}>D</Keycap>
+                  <span className="ml-[3px]">to bookmark a page</span>
+                </>
+              )}
+            </p>
+            <div aria-hidden="true" className="fade-out -mr-xs -ml-ms grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-sm [--fade-size:48px] lg:-ml-md">
+              {[0, 1, 2].map((index) => (
+                <div key={index} className="flex h-[118px] flex-col gap-[7px] rounded-[14px] border-[0.5px] border-dashed border-neutral-300 p-ms [corner-shape:squircle] lg:p-md">
+                  <div className="h-[7px] w-1/3 rounded-sm bg-neutral-100" />
+                  <div className="h-[9px] w-2/3 rounded-sm bg-neutral-100" />
+                  <div className="h-[5px] w-full rounded-sm bg-neutral-100" />
+                  <div className="h-[5px] w-5/6 rounded-sm bg-neutral-100" />
+                </div>
+              ))}
+            </div>
+          </div>
         ) : (
           // Out like the search field, so text inside a window sits on its text axis.
           <FadeList className="-mr-xs -ml-ms h-full snap-y lg:-ml-md snap-mandatory [--fade-size:24px] [--fade-head-size:24px]" deps={[tab, entries.length]}>

@@ -11,7 +11,7 @@ import { COMMAND_KEY } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
 import { toggleBookmark, type LibraryEntry } from "@/lib/store/library";
-import { Keycap } from "@/components/ui/Keycap";
+import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
 import { SidebarRow } from "./SidebarRow";
 import { FadeList } from "@/components/ui/FadeList";
 
@@ -26,9 +26,9 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
         // The same height and inset as a row of the tree: the strip must not
         // grow the first time a page is kept, or the whole tree steps down.
         <p className="flex h-row w-full items-center gap-[3px] px-sm text-row tracking-[-0.01em] text-neutral-500">
-          <Keycap flat className="translate-y-light border-neutral-300 text-neutral-600">{COMMAND_KEY}</Keycap>
-          <Keycap flat className="translate-y-light border-neutral-300 text-neutral-600">D</Keycap>
-          <span className="ml-xs">to keep a page</span>
+          <Keycap className={SMALL_KEY}>{COMMAND_KEY}</Keycap>
+          <Keycap className={SMALL_KEY}>D</Keycap>
+          <span className="ml-xs">to bookmark</span>
         </p>
       ) : (
         // Every kept page, in a box of six whole rows that scrolls. The last
