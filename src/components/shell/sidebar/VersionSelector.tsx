@@ -298,7 +298,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
   return (
     <div
       ref={wrapper}
-      className={cn("relative", className)}
+      className={cn("group/version relative", className)}
     >
       <Card
         version={version}
@@ -308,8 +308,10 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
       />
       {currentHooked !== undefined && (
         // Beside the chevron, over the card and not inside it: a button
-        // cannot hold a button.
-        <div className="absolute top-[16px] right-sm flex -translate-y-1/2">
+        // cannot hold a button. It shows under the pointer or the keyboard
+        // only: at rest an unlabelled key at the panel's edge reads as debris,
+        // and the version list names it for every install.
+        <div className="absolute top-[16px] right-sm flex -translate-y-1/2 opacity-0 transition-opacity duration-(--duration-fast) group-hover/version:opacity-100 focus-within:opacity-100 motion-reduce:transition-none">
           <F1Chip release={currentSeries} hooked={currentHooked} onToggle={() => toggleF1(currentSeries, currentHooked)} />
         </div>
       )}
