@@ -6,6 +6,7 @@
  * With nothing kept the strip is one row tall, the height of one kept page,
  * so the first bookmark does not move the tree below it.
  */
+import { useState } from "react";
 import { Link, useLocation } from "react-router";
 import { COMMAND_KEY } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
@@ -18,7 +19,8 @@ import { SidebarRow } from "./SidebarRow";
 const SHOWN = 4;
 
 export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[]; className?: string }) {
-  const shown = entries.slice(0, SHOWN);
+  const [whole, setWhole] = useState(false);
+  const shown = whole ? entries : entries.slice(0, SHOWN);
   const { pathname } = useLocation();
 
   return (
@@ -51,22 +53,25 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
             <BookmarkRow key={entry.path} entry={entry} open={pathname === `/${entry.path}`} />
           ))
         )}
-        {/* The strip shows the newest few; a cut list says how much is cut,
-            and the rest is one click away on the home page. */}
+        {/* The strip shows the newest few; a cut list says how much is cut
+            and opens in place. */}
         {entries.length > SHOWN && (
-          <Link
-            to="/?tab=bookmarks"
+          <button
+            type="button"
+            aria-expanded={whole}
+            onClick={() => setWhole(!whole)}
             className={cn(
-              // The count starts on the names' axis: arrow-less row padding, plus the
-              // 15px mark and its gap.
-              "flex h-row cursor-interactive items-center rounded-md pr-sm pl-[calc(var(--spacing-sm)*2+15px)] text-[12px] text-neutral-500",
+              // The words start on the names' axis: arrow-less row padding,
+              // plus the 15px mark and its gap.
+              "flex h-row w-full cursor-interactive items-center gap-2xs rounded-md pr-sm pl-[calc(var(--spacing-sm)*2+15px)] text-left text-[12px] text-neutral-500",
               "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
               "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045] pointer-hover:text-neutral-900",
               "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
             )}
           >
-            {entries.length - SHOWN} more
-          </Link>
+            {whole ? "Show less" : `${entries.length - SHOWN} more`}
+            <Icons.expanded className={cn("size-[10px] translate-y-[0.5px]", whole && "rotate-180")} />
+          </button>
         )}
       </div>
     </section>
