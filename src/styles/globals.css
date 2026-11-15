@@ -1,19 +1,15 @@
-/* Scan only the app's own files. Automatic detection walks the repository
-   root, where the site-era build folders still sit; that crawl blocked every
-   dev-server request until it finished, so the app window opened empty. */
+/* Scan only the app's own files: a scan of the repository root blocked the dev server. */
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
-/* Bundled with the app: a desktop window has no promise of a network, so
-   the fonts ship as woff2 in the binary instead of from a CDN. */
+/* The fonts ship in the binary: a desktop window has no promise of a network. */
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
 @source "../../src";
 @source "../../index.html";
 
-/* Hover only where a pointer can actually hover, so a tap on a phone does not
-   leave a chip or card stuck in its hover state until the next tap elsewhere. */
+/* Hover only where a pointer can hover, so a tap does not leave a hover state. */
 @custom-variant pointer-hover {
   @media (hover: hover) {
     &:hover {
@@ -22,19 +18,11 @@
   }
 }
 
-/* The theme is an attribute, not a media query. Tailwind own dark: variant
-   reads prefers-color-scheme, so every dark: utility fired from the machine
-   setting while the app painted the theme the reader chose: a light window
-   wearing the dark theme black borders and inverted prose. The variant is
-   pointed at the same attribute theme.ts writes. */
+/* The theme is the data-theme attribute that theme.ts writes, not the machine setting. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* Every control acts on the press (lib/ui/press), and the click it raises
-   there takes `:active` away in Chromium. The press marks the held control
-   instead, so `active:` reads that mark as well as the real state.
-   `pointer-hover:` sits in a media query, which Tailwind writes after every
-   plain variant, so at one weight the hover look would cover the press.
-   `:not(:disabled)` adds that weight, and a disabled control has no press. */
+/* A press (lib/ui/press) takes :active away, so [data-pressed] marks the held control.
+   :not(:disabled) adds the weight that puts the press over pointer-hover. */
 @custom-variant active (&:is(:active, [data-pressed]):not(:disabled));
 
 html {
@@ -42,9 +30,7 @@ html {
   color-scheme: light dark;
 }
 
-/* The shell holds the window still and only its columns scroll. On macOS the
-   webview still bounces the page itself at the end of a scroll, which moves
-   the title bar and the panel with it, as no native window does. */
+/* The window holds still: only its columns scroll, and the page does not bounce. */
 @media screen {
   html,
   body {
@@ -53,19 +39,11 @@ html {
   }
 }
 
-/* A list that scrolls says so. The gutter is reserved in both states, so the
-   thumb appearing under the pointer never re-flows the rows beside it; the
-   track stays empty because the fade at the bottom already says there is
-   more, and a painted track would draw a second line down the panel. */
+/* A thin bar that always shows. The gutter is held, so rows do not move when the bar comes. */
 .thin-scroll {
-  /* A visible bar, always. The webview draws it over the content rather than
-     beside it, so a bar that waits for the pointer is a list with no sign it
-     scrolls at all. */
   scrollbar-width: thin;
   scrollbar-color: var(--neutral-300) transparent;
-  /* The bar's place is held from the start. Without this a list that grows
-     past its box takes the width for the bar out of its rows at that moment,
-     and every name and count in it steps left. */
+
   scrollbar-gutter: stable;
 }
 
@@ -74,12 +52,7 @@ html {
   scrollbar-color: var(--neutral-400) transparent;
 }
 
-/* Every button, row and app-internal link draws the plain Windows arrow
-   instead of the web's pointing hand — a desktop window, not a page of
-   links. A real hyperlink (an external URL, a breadcrumb to another page)
-   keeps its own `cursor-pointer` and is not this class.
-   One name, one place: change the value below to bring the hand back
-   everywhere at once, instead of hunting every button across the tree. */
+/* Buttons and app links show the arrow, as in a desktop window. Change it here to bring back the hand. */
 @theme {
   --cursor-interactive: default;
 }
@@ -87,14 +60,7 @@ html {
 a {
   @apply cursor-interactive;
 }
-/* a.cursor-interactive{
-  cursor: pointer;
-} */
 
-/* The theme is chosen, not sensed. `theme.ts` writes `data-theme` on the
-   root before the first paint — the reader's choice, or the system's when
-   they have not made one — so the switch in the panel is one attribute.
-   Nothing in the app reads `prefers-color-scheme` any more. */
 :root[data-theme="light"] {
   color-scheme: light;
 }
@@ -104,20 +70,12 @@ a {
 }
 
 @theme inline {
-  /* ── Type families ─────────────────────────────────────
-     Geist and Geist Mono, bundled above. The generic names stay behind them
-     for the first paint and for a glyph the file does not have. */
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, Menlo, Consolas, monospace;
 
   --breakpoint-xs: 20rem;
 
-  /* ── Spacing ladder ────────────────────────────────────────────────────
-     One ladder, consumed by name. Responsiveness lives in the media query on
-     the raw values below, not in per-component breakpoint classes. The small
-     steps are absolute because they are component-internal (a chip's padding
-     is the same physical size on any screen); only the large steps, which set
-     page rhythm, grow on wide viewports. */
+  /* The spacing ladder. Only the large steps grow on a wide window. */
   --spacing-thin: var(--thin);
   --spacing-light: var(--light);
   --spacing-2xs: var(--2xs);
@@ -131,73 +89,36 @@ a {
   --spacing-3xl: var(--3xl);
   --spacing-4xl: var(--4xl);
 
-  /* ── Shell metrics ─────────────────────────────────────────────────────
-     The window chrome is furniture, not rhythm: a title bar is the height a
-     title bar is on this platform, and it does not grow on a wide display the
-     way page rhythm does. So these are their own names rather than steps of
-     the ladder above, and they stay fixed across the media query below.
-     Naming them `--spacing-*` is what puts them on `h-`, `w-`, `p-` and `gap-`
-     alike, so one name serves the bar's height and the gap that clears it. */
-  /* The bar holds 28px controls with 4px of chrome above and below, so a tab
-     chip clears the sheet under it. Caption buttons are Windows' 46px wide.
-     Taller than this, the bar reads as a web page. */
+  /* Window chrome sizes. They do not grow on a wide window. */
   --spacing-titlebar: 36px;
   --spacing-caption-w: 46px;
-  /* ONE row height for the panel. A group header, a context, a page and the
-     recents row are the same object at different depths, so they are the same
-     height; two heights is what made the panel look assembled rather than
-     drawn. The chip is the raised tile in the bookmark strip. */
+
   --spacing-row: 30px;
-  /* ONE row height for Settings: a switch, a picker and a button row are the
-     same height on every tab, with or without a fact under the label. */
+
   --spacing-setting: 52px;
-  /* What a row draws outside its own box: the bookmark flag hangs 9px to
-     the left of the mark, and the chip's shadow spreads a little past every
-     edge. A list that scrolls has to hold this much slack inside its clip,
-     and give it back as a negative margin, or it cuts them. */
+
+  /* What a row draws outside its box (flag, shadow). A scrolling list keeps this slack inside its clip. */
   --spacing-slack: 13px;
   --spacing-chip: 38px;
-  /* The box the landing keeps for the list under the search field. It does
-     not grow with the list: the greeting and the field would move every time
-     the reader crossed between Recents and Bookmarks. */
+
+  /* The landing list box. It does not grow, so the field does not move between tabs. */
   --spacing-list: 268px;
-  /* The box of a row's mark or icon, and of a small glyph (a chevron, a close X). */
+
   --spacing-icon: 15px;
   --spacing-glyph: 11px;
-  /* The text of a panel or menu row. Chrome, so it does not grow on a wide window. */
+
   --text-row: 13px;
-  /* The page width where the contents list gets its own gutter. */
+
   --container-toc: 780px;
 
-  /* ── Content widths ───────────────────────────────────────────────────
-     Named, because the spacing ladder above shares its names with Tailwind's
-     built-in container scale (`sm`, `md`, `4xl`, …) and shadows it — a
-     `max-w-4xl` would silently resolve to the 128px spacing step, not 56rem.
-     Ask for the thing you mean instead: `max-w-page` is the content column
-     every page and the footer share. */
-  /* The measure, as a fixed cap: the same line on every window wide enough to
-     draw it, not a line that reaches 80 characters at one width only.
-     `ch` is the advance of `0`, which in Geist is 10.61px against a mean
-     character of 7.31px — measured on real body prose, not on a sample of
-     digits. So 105 characters of running text is 105 x 7.31 = 72ch, not
-     105ch. The cap includes the column's own `px-page-x`, because the box is
-     border-box.
-
-     This is a CEILING, not the width. The gutter that holds the contents
-     list is taken off the container before the column centres in what is
-     left, so a narrow window shrinks the column on its own — Houdini's help
-     pane gives the page 927px and the column draws 695 there, gutter and all.
-     The ceiling only bites on a wide window, and it is set so that the text
-     reaches the gutter instead of leaving a band of nothing beside it. */
+  /* Widths have their own names: the spacing ladder shadows Tailwind's max-w-sm to max-w-4xl.
+     The measure cap. In Geist, 72ch is about 105 characters of prose. */
   --container-page: calc(72ch + 2 * var(--page-x));
   --container-overlay: 32rem;
-  /* The landing column: the heading, the field and the list below it share one
-     axis, narrower than a page of prose because none of the three is prose. */
+
   --container-hero: 41.25rem;
 
-  /* ── Type ladder ───────────────────────────────────────────────────────
-     Six roles, each carrying its own leading and tracking. Deliberately does
-     NOT redefine Tailwind's text-xs…text-xl scale, which the docs pages use. */
+  /* The type ladder. Tailwind's text-xs to text-xl stay for the docs pages. */
   --text-display: var(--type-display);
   --text-display--line-height: 0.92;
   --text-display--letter-spacing: -0.045em;
@@ -215,11 +136,7 @@ a {
   --text-caption: var(--type-caption);
   --text-caption--line-height: 1.35;
 
-  /* ── Neutral ramp ─────────────────────────────────────────────────────
-     The single palette. 0 is the page, 950 is the ink; the whole ramp flips
-     in dark mode so a component written against it needs no dark: variant.
-     The semantic shadcn tokens below are expressed on top of this ramp, so
-     there is one palette rather than two. */
+  /* One neutral ramp. It flips in dark mode, so a component needs no dark: variant. */
   --color-neutral-0: var(--neutral-0);
   --color-raised: var(--raised);
   --color-neutral-50: var(--neutral-50);
@@ -234,14 +151,12 @@ a {
   --color-neutral-900: var(--neutral-900);
   --color-neutral-950: var(--neutral-950);
 
-  /* Brand. Fixed in both themes — it is the one colour that identifies the
-     product, so it must not shift when the ramp flips. */
+  /* The brand is the same in both themes. */
   --color-brand: var(--brand);
   --color-brand-bright: var(--brand-bright);
   --color-brand-700: var(--brand-700);
   --color-brand-foreground: var(--brand-foreground);
 
-  /* Surfaces and controls, named by elevation rather than by colour. */
   --color-surface: var(--surface);
   --color-surface-sunken: var(--surface-sunken);
   --color-elevated-top: var(--elevated-top);
@@ -265,8 +180,6 @@ a {
   --default-transition-duration: var(--duration-base);
   --default-transition-timing-function: var(--ease-out-quint);
 
-  /* Page gutter — SSoT for horizontal padding on page-width containers.
-     Same `px-page-x` class everywhere; only --page-x below shifts per media query. */
   --spacing-page-x: var(--page-x);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -313,7 +226,6 @@ a {
   --page-x: 1.5rem;
   --radius: 8px;
 
-  /* ── Base ladder values (small screens) ──────────────────────────────── */
   --thin: 0.25px;
   --light: 0.5px;
   --2xs: 2px;
@@ -339,7 +251,6 @@ a {
   --duration-slow: 420ms;
   --easing-quint: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* ── Neutral ramp — light ─────────────────────────────────────────────── */
   --neutral-0: oklch(1 0 0);
   --neutral-50: oklch(0.985 0 0);
   --neutral-100: oklch(0.97 0 0);
@@ -353,42 +264,27 @@ a {
   --neutral-900: oklch(0.205 0 0);
   --neutral-950: oklch(0.145 0 0);
 
-  /* Brand — #e97204 converted to OKLCH. Identical in both themes. */
   --brand: oklch(0.680 0.174 52);
   --brand-bright: oklch(0.720 0.185 52);
-  /* The brand as TEXT. `--brand` is a plate colour: 3.1:1 on white, which a
-     word cannot be set in. This step is 4.6:1 and reads at label size. */
+
+  /* The brand as text: 4.6:1 on white, where --brand is 3.1:1. */
   --brand-700: oklch(0.575 0.147 52);
   --brand-foreground: oklch(0.985 0 0);
 
-  /* Surfaces.
-
-     Everything below names a step of the ramp rather than a fresh colour, so
-     the palette stays one ladder. Elevation is the one thing that cannot be
-     derived: a light theme raises a surface toward white and a dark theme
-     raises it away from black, so the two themes pick DIFFERENT steps for the
-     same role. That is why each of these appears again in the dark block —
-     the value flips role, not just lightness. */
   --surface: var(--neutral-0);
-  /* A chip on the panel: one step LIGHTER than whatever it sits on. White on
-     a light theme; a step up the ramp on a dark one, where white would be a
-     hole and the page colour would be a step DOWN. */
+
+  /* A chip on the panel: one step lighter than its ground. */
   --raised: var(--neutral-0);
   --surface-sunken: var(--neutral-100);
   --hairline: oklch(0 0 0 / 9%);
-  /* The window around the page: title bar and panel are one ground, and the
-     page is a sheet laid on it. A step under the page in both themes. */
+
+  /* The ground of the title bar and the panel, one step under the page. */
   --chrome: var(--neutral-100);
 
-  /* A keycap and any other physically-raised chip: lit from the top, with a
-     hard bottom edge that reads as thickness rather than as a blur. */
   --elevated-top: var(--neutral-0);
   --elevated-bottom: var(--neutral-100);
   --elevated-edge: var(--neutral-300);
 
-  /* The primary control (Paste & Search). Dark in light mode, light in dark
-     mode, so it always carries the strongest contrast on the page. Its label
-     is `--neutral-50` in both themes — the ramp flip alone gets that right. */
   --control-top: var(--neutral-800);
   --control-bottom: var(--neutral-900);
   --control-edge: var(--neutral-800);
@@ -400,13 +296,9 @@ a {
   --elevation-keycap: 0 2px 0 0 var(--elevated-edge), 0 1px 1.5px 0 oklch(0 0 0 / 10%);
   --elevation-control: 0 1px 0.75px 0 oklch(0 0 0 / 28%), 0 1px 2px 0 oklch(0 0 0 / 16%);
   --elevation-pane: 0 4px 12px 0 oklch(0 0 0 / 8%);
-  /* A chip lifted barely off the sidebar — the selected page row, a bookmark
-     tile, the version card. One hairline of light under the bottom edge and
-     no blur worth the name, so a column of them does not read as a stack of
-     floating cards. */
+
   --elevation-chip: 0 1px 0.75px 0 oklch(0 0 0 / 8%);
 
-  /* ── Semantic tokens, expressed on the ramp above ─────────────────────── */
   --background: var(--neutral-0);
   --foreground: var(--neutral-950);
   --card: var(--neutral-0);
@@ -422,8 +314,8 @@ a {
   --accent: var(--neutral-100);
   --accent-foreground: var(--neutral-900);
   --destructive: oklch(0.577 0.245 27.325);
-  /* The close button's hover fill, Windows' own: #c42b1c on a light bar,
-     #e81123 on a dark one, where the darker red reads as brown. */
+
+  /* The Windows close hover: #c42b1c on a light bar, #e81123 on a dark bar. */
   --window-close: oklch(0.505 0.181 29);
   --border: oklch(0 0 0 / 10%);
   --input: var(--neutral-200);
@@ -442,14 +334,11 @@ a {
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* The wash behind a modal where the blur is off (see scrim-blur). Light
-     lifts the page's text toward the ground; dark sinks the page. */
+  /* The modal wash where the blur is off (see scrim-blur). */
   --scrim-wash: oklch(0.44 0 0 / 80%);
 }
 
-/* Wide screens — only the layout-rhythm steps and the display type grow. The
-   component-internal steps stay put, so a chip is the same size on a phone and
-   on a 27" display. */
+/* Wide windows: only the layout steps and the display type grow. */
 @media (width >= 64rem) {
   :root {
     --xl: 40px;
@@ -466,7 +355,7 @@ a {
 }
 
 :root[data-theme="dark"] {
-  /* The ramp reverses. Everything expressed against it follows for free. */
+  /* The ramp reverses. Elevation steps are stated, because a raised surface does not mirror. */
   --neutral-0: oklch(0.145 0 0);
   --neutral-50: oklch(0.175 0 0);
   --neutral-100: oklch(0.205 0 0);
@@ -480,19 +369,12 @@ a {
   --neutral-900: oklch(0.97 0 0);
   --neutral-950: oklch(0.985 0 0);
 
-  /* Elevation is the one thing that does not mirror: a light theme raises a
-     surface by making it whiter than the page, a dark theme by making it
-     lighter than the page. Both are "one step up", but not the same ramp
-     index — so these pick their own steps rather than being derived. */
   --surface: var(--neutral-100);
   --raised: var(--neutral-200);
-  /* Sunken means below the page, in both themes: the light theme puts the
-     field one step under white, so the dark theme puts it one step under the
-     page rather than one step over it. The ramp has no step below
-     `--neutral-0`, which IS the dark page, so this one is stated. */
+
   --surface-sunken: var(--neutral-0);
   --hairline: oklch(1 0 0 / 10%);
-  /* The ramp has no step under the dark page, so this one is stated. */
+
   --chrome: oklch(0.118 0 0);
   --scrim-wash: oklch(0 0 0 / 80%);
 
@@ -506,13 +388,10 @@ a {
 
   --control-sheen: oklch(0 0 0 / 10%);
 
-  /* A wide black shadow on a near-black page is invisible; what reads as
-     depth here is the field's own edge pair. */
   --elevation-field: 0 12px 28px 0 oklch(0 0 0 / 45%);
   --elevation-pane: 0 4px 12px 0 oklch(0 0 0 / 45%);
-  /* The chip lift is a shadow in the light theme and a lit top edge in the
-     dark one: a drop shadow under a near-black chip on a near-black sidebar
-     shows nothing, so the same 1px reads from above instead. */
+
+  /* A drop shadow shows nothing on a near-black panel, so the chip gets a lit top edge. */
   --elevation-chip: inset 0 1px 0 0 oklch(1 0 0 / 6%);
 
   --card: var(--neutral-100);
@@ -553,13 +432,10 @@ a {
   }
 }
 
-/* ONE line weight for every line icon, lucide's and the ones the app draws,
-   whatever size the icon has. `non-scaling-stroke` makes the width a width on
-   the screen, not a part of the icon box. `lib/ui/icon-stroke.ts` keeps the
-   value on whole device pixels. */
 :root {
   --icon-stroke: 1px;
 }
+/* One line weight for every line icon at any size. lib/ui/icon-stroke.ts keeps it on whole pixels. */
 svg[stroke="currentColor"] {
   stroke-width: var(--icon-stroke);
 }
@@ -567,13 +443,12 @@ svg[stroke="currentColor"] * {
   vector-effect: non-scaling-stroke;
 }
 
-/* Text selection in the brand, the one colour the window owns. */
 ::selection {
   background: var(--brand-700);
   color: var(--brand-foreground);
 }
 
-/* The find bar's matches, and the one it stands on. See lib/ui/find.ts. */
+/* The find bar's matches. See lib/ui/find.ts. */
 ::highlight(find) {
   background: color-mix(in oklch, var(--brand) 30%, transparent);
 }
@@ -582,12 +457,7 @@ svg[stroke="currentColor"] * {
   color: var(--brand-foreground);
 }
 
-/* Where the page runs under the chrome: under the page bar at the top and
-   under the key strip at the bottom. The ground is solid for the first half,
-   where the chrome's own text sits, then thins out on an eased ramp. A
-   straight ramp leaves a hard line where it leaves the solid part; an eased
-   one reads as the page fading out, as the sidebar's lists do. The stops are
-   set on the element, so they take the ground of its theme. */
+/* The ground under the page bar and the key strip: solid, then an eased fade. */
 .page-bar-scrim {
   --scrim-stops:
     var(--background) 50%,
@@ -629,12 +499,8 @@ svg[stroke="currentColor"] * {
   background: linear-gradient(to bottom, var(--background) 0, var(--scrim-stops));
 }
 
-/* The list fades. Eased, so a row going out never ends on a hard line.
-   `--fade-top` is the height of the headers a list pins over its top: the
-   rows are hidden under them and fade in below them. See lib/ui/overflow. */
+/* Eased list fades. lib/ui/overflow turns each edge on while rows hide past it. */
 .fade-out {
-  /* Depth is the list's own (`--fade-size`); lib/ui/overflow turns each edge
-     on only while rows hide past it (`--fade-below`, `--fade-above`). */
   --depth: calc(var(--fade-size, 72px) * var(--fade-below, 1));
   --head: calc(var(--fade-head-size, 18px) * var(--fade-above, 0));
   mask-image: linear-gradient(
@@ -672,37 +538,29 @@ svg[stroke="currentColor"] * {
   );
 }
 
+/* auto 16 / 9 holds a box until the file gives its own size. */
 .markdown-media {
   margin-inline: -1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  /* Neither the width nor the height is set on this element — both track the
-     file's own size. Before the file arrives there is no size to track, and
-     this browser draws that as a 2px box instead of holding the line's
-     height, so a page of these before they finish loading reads as empty.
-     `auto <ratio>` guesses a wide screenshot's shape until the real one
-     is known, then the real one wins. */
+
   aspect-ratio: auto 16 / 9;
 }
-/* A picture keeps its own width (`--natural`, set by MarkdownImage), sits in
-   the middle of the text, and once it is wider than the text it hangs into
-   the gutter by as much as a video does, and no further. Before the file
-   arrives there is no width, and the box holds the text's. */
+
+/* A picture keeps its own width (--natural). A wide one hangs into the gutter as far as a video. */
 img.markdown-media {
   --w: var(--natural, 100%);
   width: min(var(--w), calc(100% + 2rem));
   max-width: none;
   margin-inline: max(-1rem, calc((100% - var(--w)) / 2));
 }
-/* A cell and a column are boxes of their own: no hang out of them. */
+
 :is(td, th, .column) img.markdown-media {
   width: min(var(--w), 100%);
   margin-inline: auto;
 }
 
-/* The controls sit on the picture, not on the page, so they are light in both
-   themes. */
 .markdown-video {
   --video-control: rgb(255 255 255 / 70%);
   --video-control-hover: rgb(255 255 255);
@@ -713,13 +571,12 @@ img.markdown-media {
 .markdown-video:focus-visible {
   outline: 2px solid var(--ring);
 }
-/* `cover`, not the default `contain`: the box ratio counts the border, so a
-   contained clip leaves a sub-pixel strip of the box colour at two edges. */
+
+/* cover: contain leaves a sub-pixel strip at two edges. */
 .markdown-video:not(:fullscreen) video {
   object-fit: cover;
 }
-/* Full screen, the bars around a clip of another shape are the screen's own
-   edge, and a screen edge is black. */
+
 .markdown-video:fullscreen {
   border: 0;
   border-radius: 0;
@@ -738,17 +595,13 @@ img.markdown-media {
   pointer-events: none;
 }
 
-/* The blur's masks read this alpha (@jtche/progressive-blur). Registered as
-   a number so it can transition: the blur fades out with the controls. */
+/* Registered so that the blur fades with the controls through its mask alpha. */
 @property --progressive-blur-opacity {
   syntax: "<number>";
   inherits: true;
   initial-value: 1;
 }
 
-/* A sibling of the controls, not a child: the controls fade with `opacity`,
-   and an opacity below 1 on a parent leaves the blur nothing to blur. So the
-   blur fades through the alpha of its masks instead. */
 .video-blur {
   position: absolute;
   inset-inline: 0;
@@ -773,9 +626,8 @@ img.markdown-media {
   background: linear-gradient(to top, rgb(0 0 0 / 60%), rgb(0 0 0 / 0%));
   transition: opacity var(--duration-base) var(--ease-out-quint);
 }
-/* A playing clip hides its controls once the pointer rests. Focus from the
-   keyboard keeps them up. The blur fades with them, then stops drawing: a
-   hidden backdrop blur would still cost GPU work on every frame of video. */
+
+/* Idle playback hides the controls and stops the blur, which costs GPU work on each frame. */
 .markdown-video[data-idle]:not(:has(:focus-visible)) .video-controls {
   opacity: 0;
   pointer-events: none;
@@ -800,7 +652,7 @@ img.markdown-media {
   height: 1.5rem;
   padding-inline: 0.5rem;
 }
-/* The same black label as the button tooltips. */
+
 .video-seek-preview {
   position: absolute;
   bottom: 100%;
@@ -868,7 +720,7 @@ img.markdown-media {
 .video-button:focus-visible::after {
   opacity: 1;
 }
-/* The frame clips, so the tooltips at either end align to that end. */
+
 .video-bar > .video-button:first-child::after {
   left: 0;
   translate: none;
@@ -883,8 +735,8 @@ img.markdown-media {
   display: flex;
   align-items: center;
 }
-/* Folded to no width, and clipped there: WebKit draws the thumb of a range
-   with no width over the clock beside it. */
+
+/* Clipped at zero width: WebKit draws the thumb over the clock otherwise. */
 .video-volume input {
   width: 0;
   clip-path: inset(0);
@@ -906,8 +758,7 @@ img.markdown-media {
   opacity: 0.6;
 }
 
-/* Chromium (WebView2, Houdini's QtWebEngine) and WebKit (macOS, Linux)
-   both read the WebKit range parts, so those are the only ones to style. */
+/* Chromium and WebKit both read the WebKit range parts. */
 .markdown-video input[type="range"] {
   appearance: none;
   height: 100%;
@@ -948,12 +799,7 @@ img.markdown-media {
   margin-inline: -1rem;
 }
 
-/* Small comparison thumbnails SideFX groups side by side in the source
-   (consecutive lines of one paragraph) — see image_group in the parser's
-   markdown.rs. Every figure conforms to the
-   shortest image in the group (--image-group-height, measured in
-   ImageGroup.tsx) instead of stacking at its own height, which used to
-   give the row a "stairs" edge. */
+/* Thumbnails that SideFX groups on one line (image_group in markdown.rs). */
 .image-group {
   display: flex;
   flex-wrap: wrap;
@@ -961,16 +807,13 @@ img.markdown-media {
   gap: 0.75rem;
   margin-block: 1.5rem;
 }
-/* Exactly 2 images: space-evenly stretches the gap too wide — pin it instead. */
+
 .image-group:has(> figure:nth-child(2):last-child) {
   justify-content: center;
   gap: var(--spacing-xl);
 }
-/* The shared height sits on the figure, not on the row: a row of four on a
-   narrow window wraps to two lines, and a row with a fixed height would draw
-   the second line straight over the paragraph below it.
-   min() so the pictures shrink on a narrow window instead of holding their
-   desktop width. */
+
+/* The height is on the figure, so a wrapped row does not cover the text below. */
 .image-group figure {
   flex: 0 0 auto;
   height: min(var(--image-group-height, 260px), 26vw);
@@ -979,11 +822,7 @@ img.markdown-media {
 .image-group .markdown-media {
   height: 100%;
   width: auto;
-  /* `width: auto` needs the picture's own ratio to size itself. Before the
-     file arrives there is no ratio yet, and the row is lazy — most of these
-     pictures sit below the fold — so the browser had nothing to go on and
-     drew the figure at its fixed height and near-zero width. `auto 1` keeps
-     that square guess only until the real ratio is known, then swaps to it. */
+
   aspect-ratio: auto 1;
   max-width: none;
   margin: 0;
@@ -994,17 +833,16 @@ img.markdown-media {
   text-align: center;
 }
 
-/* A run of `:col:` blocks — see flush_columns in the parser's markdown.rs.
-   Side by side while each column has room to read, stacked on a narrow
-   window. */
+/* A run of :col: blocks (flush_columns in markdown.rs). */
 .columns {
   display: grid;
-  /* Narrow enough that SideFX's rows of three pictures stay one row. */
+
   grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
   gap: 1.5rem;
   margin-block: 1.5rem;
 }
-/* `:box: 50%`: the caption over a picture, as SideFX draws it. */
+
+/* The :box: caption over a picture. */
 .box-title {
   margin-bottom: 0.5rem;
   font-size: var(--text-meta);
@@ -1014,7 +852,7 @@ img.markdown-media {
 .box-title > p {
   margin: 0;
 }
-/* The text under a picture in a column is its caption, close under it. */
+
 .column p:has(> img) {
   margin-block: 0;
 }
@@ -1030,9 +868,7 @@ img.markdown-media {
 .column > :last-child {
   margin-bottom: 0;
 }
-/* A picture fills its column. Pictures on one line of a column stack: SideFX
-   draws the pyro divergence diagrams as two columns of three, not a row of
-   three in each column. */
+
 .column .markdown-media {
   margin: 0;
 }
@@ -1051,24 +887,19 @@ img.markdown-media {
   aspect-ratio: auto 16 / 9;
 }
 
-/* ── Syntax highlighting (hljs / rehype-highlight) ─────────────────────── */
-/* Shared by fenced examples and VEX signature cards. */
+/* Fenced examples and VEX signature cards. No vertical bar: the last row hangs under the horizontal one. */
 .code-panel {
   --code-copy-clearance: 3rem;
   background: oklch(0.13 0 0);
   border: 1px solid oklch(1 0 0 / 10%);
   border-radius: var(--radius-lg);
   overflow-x: auto;
-  /* Never a vertical bar. The last row hangs under the horizontal one (see
-     CodePanel), so its box sticks out of the panel by the bar's height; with
-     `auto` here that overflow drew a second bar down the right side. */
+
   overflow-y: hidden;
   scrollbar-color: oklch(1 0 0 / 22%) transparent;
 }
 
-/* With a pointer, a code panel shows its copy button and its scrollbar when
-   the pointer is on it. The code cut at the edge already says it scrolls. A
-   touch screen has no hover, so there both stay. */
+/* With a pointer, the copy button, the heading link and the section toggle show on hover. */
 @media (hover: hover) {
   .code-copy {
     opacity: 0;
@@ -1081,9 +912,7 @@ img.markdown-media {
   .group:not(:hover) .code-panel {
     scrollbar-color: transparent transparent;
   }
-  /* The same for the link beside a section heading, and for the toggle that
-     collapses the section under it. Both answer to the heading's hover. A
-     closed section keeps its toggle, so the reader can open it again. */
+
   .heading-copy {
     opacity: 0;
   }
@@ -1094,22 +923,21 @@ img.markdown-media {
   .section-toggle {
     opacity: 0;
   }
+  /* A closed section keeps its chevron, so the reader can open it again. */
   :hover > .section-toggle,
   .section-toggle:focus-visible,
-  /* A closed section keeps its chevron, pointing right: that is the state
-     the reader has to be able to leave. This one leaves the hover block's
-     siblings: it also holds without a pointer, so a touch screen sees it. */
+
   [data-collapsed] > .section-toggle {
     opacity: 1;
   }
-  /* A heading whose content wrapped into no group owns nothing to collapse. */
+
+  /* A heading with no section under it has nothing to collapse. */
   :where(h2, h3, h4):not(:has(+ [data-section])) > .section-toggle {
     display: none;
   }
   .section-toggle svg {
     transition: transform var(--duration-fast) var(--ease-out-quint);
-    /* Expanded aims down; a closed section's chevron aims right, at the
-       content it would open. */
+
     transform: rotate(90deg);
   }
   [data-collapsed] > .section-toggle svg {
@@ -1123,7 +951,7 @@ img.markdown-media {
   }
 }
 
-/* Reset: scoped to code elements our renderer outputs (always have a class attr, even if empty) */
+/* The code elements that the renderer outputs always have a class. */
 pre code[class] * {
   background: transparent !important;
   box-shadow: none !important;
@@ -1134,9 +962,7 @@ pre code[class] {
   display: block;
   background: transparent !important;
   border: none;
-  /* 1rem on all sides: the same step .vex-sig-row and .callout use, so the
-     panel's negative margin (see CodeBlock.tsx) stays a plain 1rem + border,
-     not an arbitrary decimal. */
+
   padding: 1rem;
   color: oklch(0.88 0 0);
   font-size: 0.84em;
@@ -1169,11 +995,10 @@ pre code[class] {
 .vex-tk-fn {
   color: oklch(0.71 0.13 308.92);
 }
+/* Not --foreground: the code panel is dark in both themes. */
 .hljs-params,
 .hljs-variable,
 .vex-tk-arg {
-  /* Not --foreground: the code panel is dark in both themes, so in the light
-     theme that colour drew the names black on black. */
   color: oklch(0.93 0 0);
 }
 .hljs-operator,
@@ -1186,7 +1011,6 @@ pre code[class] {
   color: oklch(0.74 0.12 148);
 }
 
-/* ── kbd / key icon badges ──────────────────────────────────────────────── */
 kbd {
   display: inline-flex;
   align-items: center;
@@ -1203,7 +1027,6 @@ kbd {
   line-height: 1.5;
 }
 
-/* ── UI kbd variants (SearchButton hint) ─────────────────────────────────── */
 kbd.kbd-button {
   transition:
     transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -1215,14 +1038,12 @@ button:active kbd.kbd-button {
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
-/* Hide ⌘K hint on touch/coarse pointer devices — CSS-only, no JS state, no layout shift */
 @media (pointer: coarse) {
   .search-kbd-hint {
     display: none;
   }
 }
 
-/* ── Skeleton shimmer ────────────────────────────────────────────────────── */
 @keyframes sk-shimmer {
   to {
     transform: translateX(150%);
@@ -1234,15 +1055,7 @@ button:active kbd.kbd-button {
   overflow: hidden;
 }
 
-/* currentColor-relative, not a fixed white: at 22% white over the near-white
-   light-mode --muted (L 0.97), the old sweep was nearly invisible. Mixing
-   against --foreground instead keeps it visible in both themes. --sk-delay
-   lets callers offset the loop per-element (see DocsSkeleton) so a row of
-   bars shimmers as a loose ripple instead of one mechanical wipe. Linear,
-   not the site's --easing-quint: that ease-out curve front-loads all the
-   visible motion into the first instant, then crawls off-screen for the
-   rest of the loop — reads as a burst followed by dead air. A constant-speed
-   sweep reads as one continuous pass. */
+/* Linear, and mixed against --foreground, so the sweep shows in both themes. */
 .sk::after {
   content: "";
   position: absolute;
@@ -1264,16 +1077,12 @@ button:active kbd.kbd-button {
   }
 }
 
-/* ── Print ──────────────────────────────────────────────────────────────── */
-/* The paper size is the printer's. The margin repeats on every sheet. The
-   window chrome is hidden where it is drawn (print:hidden), and theme.ts
-   prints the light theme. */
+/* Print. The printer sets the paper, and theme.ts prints the light theme. */
 @page {
   margin: 1.5cm 1.3cm;
 }
 
 @media print {
-  /* The margin is the sheet's, so the column takes the whole sheet. */
   .max-w-page {
     max-width: none;
   }
@@ -1299,15 +1108,12 @@ button:active kbd.kbd-button {
   .prose :where(h1, h2, h3, h4, h5, h6) {
     margin-top: 0.9em;
     margin-bottom: 0.4em;
-    /* A heading alone at the foot of a sheet goes to the next one with its
-       text. */
+
     break-after: avoid-page;
     break-inside: avoid;
   }
 
-  /* A long table runs over several sheets. A row can break too: a parameter
-     row with a long menu is most of a sheet, and kept whole it leaves the
-     sheet before it almost empty. */
+  /* A long table, and a long row, can break across sheets. */
   table {
     break-inside: auto;
   }
@@ -1318,7 +1124,7 @@ button:active kbd.kbd-button {
     break-inside: avoid;
   }
 
-  /* Paper does not scroll: what is wider than the sheet wraps. */
+  /* Paper does not scroll: wide content wraps. */
   .md-table-wrap,
   .code-panel {
     overflow: visible;
@@ -1333,7 +1139,8 @@ button:active kbd.kbd-button {
     width: auto;
     padding-right: 1rem;
   }
-  /* A code panel is dark in both themes, so it keeps its ground on paper. */
+
+  /* The code panel is dark in both themes, so it keeps its ground on paper. */
   .code-panel {
     print-color-adjust: exact;
   }
@@ -1343,23 +1150,16 @@ button:active kbd.kbd-button {
   }
 }
 
-/* ── Anchor scroll offset — compensate for the title bar ────────────────── */
-/* The window's own bar is a fixed height, so --header-h is that height. It
-   stays a variable because a floating pill and a toast measure from it too. */
 :root {
   --header-h: var(--spacing-titlebar);
 }
-/* Covers direct hash URLs and a jump from the search. In-page TOC clicks
-   scroll themselves (see scrollToHeading). The title bar is above the page's
-   scroller, not over it; the page's own bar stays at the top of the scroller,
-   so a heading lands clear of that bar (--page-bar-h, set on the scroller). */
+
+/* An anchor lands clear of the page bar. Page.tsx sets --page-bar-h on the scroller. */
 :is(h1, h2, h3, h4, h5, h6)[id] {
   scroll-margin-top: calc(var(--page-bar-h, 0px) + 1.5rem);
 }
 
-/* How a menu, the right-click menu and a modal open. A tooltip opens at
-   once and only uses pop-out (TooltipBox). `scale`, not `transform`, so it
-   composes with a tooltip's own translate. */
+/* How a menu and a modal open. scale, not transform, so it composes with a translate. */
 @keyframes pop-in {
   from {
     opacity: 0;
@@ -1371,10 +1171,7 @@ button:active kbd.kbd-button {
   }
 }
 
-/* The blur behind a modal (SCRIM in Modal.tsx). Off where the window draws in
-   software, which blurs it again on every keystroke: see lib/ui/blur. Black
-   text under a black dim stays black, so without the blur the dim is the
-   theme's --scrim-wash instead. */
+/* The modal blur. It is off where the window draws in software (lib/ui/blur). */
 @utility scrim-blur {
   backdrop-filter: blur(8px);
   :root[data-no-blur] & {
@@ -1394,7 +1191,6 @@ button:active kbd.kbd-button {
   animation: pop-in 120ms cubic-bezier(0.2, 0, 0, 1) reverse forwards;
 }
 
-/* ── Floating TOC — each section title rises into the pill as you pass it ── */
 @keyframes toc-label-in {
   from {
     opacity: 0;
@@ -1416,7 +1212,6 @@ button:active kbd.kbd-button {
   }
 }
 
-/* ── Prose overrides ────────────────────────────────────────────────────── */
 .prose :where(pre):not(:where([class~="not-prose"] *)) {
   background: oklch(0.13 0 0) !important;
   padding: 0;
@@ -1427,15 +1222,13 @@ button:active kbd.kbd-button {
   content: none;
 }
 
-/* Monospace font everywhere code appears */
 .prose code,
 .prose pre code,
 pre code.hljs {
   font-family: var(--font-mono) !important;
 }
 
-/* Tight paragraph spacing inside list items — keep the link/description pair
-   close together so the gap between li siblings reads as the real hierarchy */
+/* Keep a link and its description close inside a list item. */
 .prose :where(li > p) {
   margin-bottom: 0.2em !important;
 }
@@ -1444,14 +1237,13 @@ pre code.hljs {
   margin-top: 0.2em !important;
 }
 
-/* Line-break spacing in table cells — give second+ lines a small top margin */
 .not-prose table td br,
 .not-prose table th br {
   display: block;
   margin-top: 1em;
 }
 
-/* Lists inside not-prose table cells — restore bullet/number styling stripped by not-prose */
+/* not-prose strips list styles: table cells get them back. */
 .not-prose table td ul,
 .not-prose table th ul {
   list-style-type: disc;
@@ -1471,33 +1263,14 @@ pre code.hljs {
   margin-top: 0.5em;
 }
 
-/* Callouts: single source of truth. ONE element-agnostic component. A block
-   callout is a blockquote.callout; an in-cell callout is a span.callout emitted
-   by the converter (markdown table cells cannot hold a blockquote). Both are the
-   same component: same surface, rim, icon, title, accents. Type modifiers
-   (callout-note/-tip/-warning/-important/-caution) only set the callout-color
-   and callout-icon tokens; everything else is shared. */
+/* One callout for blockquote.callout and the in-cell span.callout. A type class sets the color, icon and surface.
+   Surfaces are literals of color-mix(color 4%, card): a var-based color-mix gets an unguarded build fallback. */
 .callout {
-  /* --callout-surface is the exact result of `color-mix(in oklab,
-     var(--callout-color) 4%, var(--card))` for this color, computed once
-     (see `agents/houdini-pane.md`) and written as a literal. Two fixed
-     colors blended 4% apart do not change at runtime, so there is nothing
-     "live" a `color-mix()` version would compute that this does not — an
-     engine with no `color-mix()` gets the identical pixel, not an
-     approximation. Writing it as `color-mix(in oklab, var(--callout-color)
-     4%, var(--card))` here instead reads correctly, but do not: the
-     fallback plugin cannot fold a `var()`-based `color-mix()` either, so it
-     inserts its OWN unguarded fallback — `var(--callout-color)`, the flat
-     brand color — which then wins the cascade over this one regardless of
-     `@supports`, since it isn't gated by anything. Every type modifier below
-     carries the same literal, for the same reason. default = note. */
   --callout-color: oklch(0.62 0.13 250);
   --callout-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E");
   --callout-surface: rgb(247, 250, 253);
   display: block;
-  /* Negative inline margin against the equal inline padding, so callout text
-     sits on the page's text axis and only the surface overhangs — matching
-     the code block and the VEX signature panel. */
+
   margin: 1.25rem -1rem;
   padding: 0.85rem 1rem;
   border: none;
@@ -1505,7 +1278,7 @@ pre code.hljs {
   background: var(--callout-surface);
   font-size: 0.9rem;
   color: var(--card-foreground);
-  /* Even rim: faint hairline all around + a whisper of top-left light. */
+
   box-shadow:
     inset 0 0 0 1px color-mix(in oklab, white 5%, transparent),
     inset 1px 1px 0 0 color-mix(in oklab, white 3%, transparent),
@@ -1547,9 +1320,8 @@ pre code.hljs {
 .callout p {
   margin: 0.4rem 0;
 }
-/* The code block's own page-axis overhang belongs outside callouts:
-   here the callout's rim is already the frame, so the panel sits flush inside
-   it instead of poking through. */
+
+/* The callout is the frame, so a code block sits flush inside it. */
 .callout > .not-prose {
   margin-inline: 0;
 }
@@ -1557,21 +1329,12 @@ pre code.hljs {
   color: var(--callout-color);
 }
 .callout code {
-  /* Same precomputed-literal approach as `--callout-surface` above, and the
-     same reason: a `color-mix()` written here instead would get its own
-     unguarded plugin fallback that wins the cascade regardless of any
-     `@supports`. */
   background: rgb(232, 241, 250);
 }
 :root[data-theme="dark"] .callout code {
   background: rgb(17, 23, 29);
 }
 
-/* Type modifiers — tokens only, element-agnostic. `--callout-surface` and
-   `.callout code`'s background are each that type's own static blend (see
-   the note on `.callout` above) — every modifier needs its own, since the
-   blend depends on `--callout-color`, which is what a modifier exists to
-   change. */
 .callout-tip {
   --callout-color: oklch(0.6 0.14 150);
   --callout-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5'/%3E%3Cpath d='M9 18h6'/%3E%3Cpath d='M10 22h4'/%3E%3C/svg%3E");
@@ -1629,7 +1392,7 @@ pre code.hljs {
   background: rgb(32, 18, 17);
 }
 
-/* In-cell variant: identical component, just tighter to fit a table cell. */
+/* In a table cell: the same callout, tighter. */
 .not-prose table .callout {
   margin: 0.5rem 0 0;
   padding: 0.5rem 0.65rem;
@@ -1639,17 +1402,7 @@ pre code.hljs {
   margin-top: 0;
 }
 
-/* ── VEX function signatures ─────────────────────────────────────────────
-   Built by lib/markdown/remark-vex.ts, which only runs on pages under
-   vex/functions/. Signature structure and fenced examples use the shared
-   code-panel surface and semantic colour rules above;
-   VALUES live in prose and keep the ordinary pink inline-code chip. A token
-   never changes meaning by moving between them. */
-
-/* Signature panel. The negative inline margin (plus 1px for its own border)
-   against the equal inline padding puts the code glyphs on the same vertical
-   axis as the body text, with the frame sitting proud of it. The callout
-   component gets the same treatment below so both line up. */
+/* VEX signatures (lib/markdown/remark-vex.ts). The negative margin puts the glyphs on the text axis. */
 .vex-sig {
   display: flex;
   flex-direction: column;
@@ -1665,10 +1418,10 @@ pre code.hljs {
   white-space: pre;
   color: oklch(0.88 0 0);
 }
+/* The copy button sits over the first row. The row is as wide as its text, so it scrolls clear. */
 .vex-sig-row:first-child {
   padding-top: 0.7rem;
-  /* The copy button sits over the first row. The row is as wide as its
-     text, so a long signature scrolls clear of the button. */
+
   width: max-content;
   min-width: 100%;
   padding-right: calc(1rem + var(--code-copy-clearance));
@@ -1689,8 +1442,7 @@ pre code.hljs {
   content: none;
 }
 
-/* A signature argument the page documents elsewhere links there, in the
-   token's own colors: the underline comes only on hover. */
+/* A documented argument links in the token's colors, with an underline on hover only. */
 .vex-sig-row a {
   color: inherit;
   text-decoration: none;
@@ -1701,9 +1453,7 @@ pre code.hljs {
   text-underline-offset: 0.2em;
 }
 
-/* The signature reads as one text. The tokens keep their kinds — the
-   argument links are found through them — but drop the syntax colours, so
-   the row reads calm and the link's underline is the only emphasis. */
+/* Tokens drop their syntax colors, so the link underline is the only emphasis. */
 .vex-sig-row code span {
   color: inherit;
 }
@@ -1732,18 +1482,18 @@ pre code.hljs {
 .hom-method:last-child > summary { border-radius: 0 0 var(--radius-md) var(--radius-md); }
 .hom-method:only-child > summary { border-radius: var(--radius-md); }
 .hom-method > summary::-webkit-details-marker { display: none; }
+/* Centered in the summary's left padding. */
 .hom-method-chevron {
   position: absolute;
-  /* Centered in the row's own gutter (the summary's left padding), so the
-     gap to the row edge equals the gap to the text. */
+
   left: calc((1rem + 1px - 0.75rem) / 2);
   top: 1.125rem;
   width: 0.75rem;
   height: 0.75rem;
   color: var(--muted-foreground);
 }
-/* Block: an inline svg adds baseline space under it, and the span's box
-   stops matching the icon. */
+
+/* Block: an inline svg adds space under its baseline. */
 .hom-method-chevron svg {
   display: block;
   width: 100%;
@@ -1751,9 +1501,7 @@ pre code.hljs {
 }
 .hom-method[open] > summary > .hom-method-chevron { transform: rotate(90deg); }
 @media (hover: hover) {
-  /* The chevron shows with the row's hover, the way a heading's does. The
-     pin inverts here: rows are closed by default, so an OPEN row keeps its
-     chevron and a closed one shows it only under the pointer. */
+  /* Rows start closed: an open row keeps its chevron, a closed row shows it on hover. */
   .hom-method > summary .hom-method-chevron {
     opacity: 0;
   }
@@ -1781,8 +1529,6 @@ pre code.hljs {
 .hom-method-body > .hom-signature { margin-inline: 0; }
 .hom-method-description { padding-inline: calc(1rem + 1px); }
 
-/* The words a search excerpt named, marked for a moment on the page it
-   opened. See lib/ui/flash-text.ts. */
 .flash-mark {
   position: absolute;
   pointer-events: none;
@@ -1810,12 +1556,8 @@ pre code.hljs {
   }
 }
 
-/* A caption binds to the overloads directly above it. Without this grouping,
-   a page like xyzdist shows six signatures and three descriptions in one
-   undifferentiated stack. */
+/* A caption binds to the overloads above it. Sticky, so its band follows a sideways scroll. */
 .vex-sig-caption {
-  /* The card scrolls sideways under a long signature. Sticky, the caption
-     stays over the visible part, so its band does not stop half way. */
   position: sticky;
   left: 0;
   margin: 0;
@@ -1834,10 +1576,7 @@ pre code.hljs {
   color: inherit;
 }
 
-/* GFM tables and the VEX arguments table below are the same component in two
-   shapes: row lines only (no outer frame, no column rules), no rule after the
-   last row, edge-to-edge via a negative margin against the cells' own inset.
-   One definition of that inset — --md — is what stops them drifting apart. */
+/* GFM tables and VEX arguments share one look: row lines only, edge to edge through a negative --md margin. */
 .md-table-wrap {
   overflow-x: auto;
   margin: 2rem calc(var(--md) * -1);
@@ -1864,7 +1603,8 @@ pre code.hljs {
 .md-table tr:last-child td {
   border-bottom: 0;
 }
-/* Headerless source table: the blank header cells markdown requires are hidden. */
+
+/* A headerless source table: hide the blank header row that markdown requires. */
 .md-table-noheader thead {
   display: none;
 }
@@ -1886,26 +1626,20 @@ pre code.hljs {
   width: 50%;
 }
 
-/* Section labels. One rule, so the gap above Arguments and above Returns is
-   identical by construction. */
+/* One rule, so the gap above Arguments and above Returns is the same. */
 .prose p.vex-section-label {
   margin: 2rem 0 0.75rem;
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--muted-foreground);
 }
-/* Returns is a single line rather than a ruled table: more air above it to
-   separate it from the arguments, less below because there is no table edge. */
+
 .prose p.vex-section-label-returns {
   margin-top: 2.5rem;
   margin-bottom: 0.25rem;
 }
 
-/* Arguments. Two nested grids: a fixed type column and a fixed name column,
-   so every type is left-aligned on one axis and every name on another —
-   the same rhythm the signature has. 6.5rem fits every VEX type up to 14
-   characters; the rare three-way union wraps inside its own cell instead of
-   pushing the name column out of alignment. */
+/* A fixed type column and a fixed name column, so types and names each align on one axis. */
 .vex-args {
   display: grid;
   grid-template-columns: 16.5rem 1fr;
@@ -1937,14 +1671,14 @@ pre code.hljs {
 }
 .vex-arg-name {
   color: var(--foreground);
-  /* font-weight: 600; */
+
   overflow-wrap: anywhere;
 }
 .vex-arg-amp {
   color: oklch(0.72 0.14 245);
 }
-/* The column names: prose type, so they read as labels and not as code. The
-   same look as the head of a parameter table. */
+
+/* The column names in prose type, as in the head of a parameter table. */
 .vex-args .vex-args-head {
   padding-block: 0.5rem;
   font-family: var(--font-sans);
@@ -1971,8 +1705,7 @@ pre code.hljs {
   margin-bottom: 0;
 }
 
-/* Deprecated stubs publish no signature, so there are no types to show.
-   Drop the column rather than pad it with placeholders. */
+/* Deprecated stubs have no types: drop the column. */
 .vex-args-untyped {
   grid-template-columns: 10rem 1fr;
 }
@@ -1980,10 +1713,7 @@ pre code.hljs {
   grid-template-columns: 1fr;
 }
 
-/* Returns. One statement, not a row in a table — losing the rules and the
-   columns is what tells it apart from Arguments at a glance. The arrow marks
-   it as the result; the type token matches the signature panel's return type
-   so the eye connects the two. */
+/* Returns is one statement, not a table row. */
 .vex-returns {
   display: flex;
   align-items: baseline;
@@ -2021,7 +1751,8 @@ pre code.hljs {
   .vex-args-untyped {
     grid-template-columns: 1fr;
   }
-  /* One column: the names of three columns label nothing. */
+
+  /* One column: the column names label nothing. */
   .vex-args-head {
     display: none;
   }
@@ -2036,7 +1767,6 @@ pre code.hljs {
   }
 }
 
-/* ── Code blocks inside table cells (raw <pre> from the scraper) ─────────── */
 .not-prose table td pre,
 .not-prose table th pre {
   margin: 0.25rem 0;
@@ -2046,7 +1776,6 @@ pre code.hljs {
   white-space: pre;
 }
 
-/* Inline icon images — override prose display:block and max-width:100% */
 span.doc-icon {
   display: inline-grid !important;
   width: 1em !important;
@@ -2059,8 +1788,7 @@ span.doc-icon > img {
   margin: 0;
 }
 
-/* `[Icon:…]` and `[Largeicon:…]` in running text. SideFX draws them at 24 and
-   32px against 16px text; `[Smallicon:…]` keeps the 1em above. */
+/* SideFX draws [Icon:] at 24px and [Largeicon:] at 32px against 16px text. */
 span.doc-icon.inline-icon-normal {
   width: 1.25em !important;
   height: 1.25em !important;
@@ -2072,13 +1800,6 @@ span.doc-icon.inline-icon-large {
   vertical-align: middle;
 }
 
-/* ── Card-grid list items ───────────────────────────────────────────────
-   Two SideFX source components render through this same markup: `.shelftab`
-   groups of `.shelftool` cards (shelf/index) and `.item_group` icon lists
-   (most node-category index pages, e.g. nodes/sop) — converted by the
-   `shelfCards` / `itemGroupCards` turndown rules into a plain markdown list
-   wrapped in one raw div, so a missing icon or summary just leaves out that
-   line — no empty box, no dangling separator. */
 .shelf-grid ul {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -2088,7 +1809,7 @@ span.doc-icon.inline-icon-large {
   list-style: none;
 }
 .shelf-grid li {
-  position: relative; /* anchor for the whole-card click overlay below */
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
@@ -2121,11 +1842,7 @@ span.doc-icon.inline-icon-large {
   height: 1.75rem !important;
   margin: 0 !important;
 }
-/* Stretch the title link over the whole card (a "stretched link"), so the
-   icon and summary text are clickable too, not just the title. DocLink wraps
-   every <a> in a positioned <span>; turn that positioning
-   off so the card <li> above (position: relative) becomes the ::after
-   overlay's containing block instead of that small inline span. */
+
 .shelf-grid li > p:first-child > span {
   position: static;
 }
@@ -2142,4 +1859,3 @@ span.doc-icon.inline-icon-large {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
-
