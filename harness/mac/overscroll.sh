@@ -1,8 +1,8 @@
 #!/bin/bash
 # A pull past the top of the window, as a trackpad makes it, must not move
 # the window's content: the title bar and the panel stay still (the root
-# `overscroll-behavior` in globals.css). Run on the macos-check runner:
-#   gh workflow run macos-check.yml -f run="bash harness/mac/overscroll.sh"
+# `overscroll-behavior` in globals.css). Run on the MacBook over SSH:
+#   bash harness/mac/overscroll.sh
 # The window is filmed still, then in the middle of the pull, which is held
 # open until the picture is taken. The two must match.
 set -euo pipefail

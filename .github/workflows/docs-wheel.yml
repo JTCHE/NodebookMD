@@ -1,8 +1,8 @@
 name: docs-wheel
 
 # Builds `houdinimd-docs` — the documentation engine, wrapped for Python by
-# `src-tauri/crates/pydocs` — for every platform Houdini runs on, and
-# publishes it. The HoudiniMCP bridge depends on it.
+# `src-tauri/crates/pydocs` — for Windows and Linux, and publishes it. The
+# macOS wheel is built on the Mac by hand: a GitHub macOS runner costs money. The HoudiniMCP bridge depends on it.
 #
 # Tag `docs-v0.1.0` (the version in pydocs/Cargo.toml) to publish to PyPI.
 # Run it by hand from the Actions tab to publish to TestPyPI first, or to
@@ -30,9 +30,6 @@ jobs:
         include:
           - os: windows-latest
             target: x86_64
-          # One wheel for Apple silicon and Intel Macs both.
-          - os: macos-14
-            target: universal2-apple-darwin
           - os: ubuntu-latest
             target: x86_64
     runs-on: ${{ matrix.os }}

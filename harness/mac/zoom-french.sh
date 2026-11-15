@@ -1,7 +1,7 @@
 #!/bin/bash
 # ⌘0 resets the zoom on a French keyboard, where the 0 key types "à" with no
-# Shift (src/lib/ui/zoom.ts). Run on the macos-check runner:
-#   gh workflow run macos-check.yml -f run="bash harness/mac/zoom-french.sh"
+# Shift (src/lib/ui/zoom.ts). Run on the MacBook over SSH:
+#   bash harness/mac/zoom-french.sh
 # The app window is filmed before, zoomed, and after ⌘0. The last picture
 # must match the first.
 set -euo pipefail

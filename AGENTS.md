@@ -15,6 +15,8 @@ Project information: @README.md
 
 ## Rules
 
+- Never run a job on a GitHub macOS runner (`macos-*` in `runs-on`), and never
+  add one to a workflow. Each minute costs money. Use the MacBook over SSH.
 - Read the documentation before you write code against a service, quote a rate,
   or state a limit. Do not answer from memory. Prefer the site's own `llms.txt`
   or `index.md`; otherwise prefix the link with `markdown.new/` for clean raw
