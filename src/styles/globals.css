@@ -64,10 +64,6 @@ a {
   color-scheme: light;
 }
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
-}
-
 @theme inline {
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, Menlo, Consolas, monospace;
@@ -245,6 +241,7 @@ a {
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   /* The ramp reverses. Elevation steps are stated, because a raised surface does not mirror. */
   --neutral-0: oklch(0.145 0 0);
   --neutral-50: oklch(0.175 0 0);
@@ -530,10 +527,12 @@ pre code[class] {
 }
 
 .hljs-keyword,
-.vex-token-output,
-.vex-argument-ampersand {
+.vex-token-output {
   color: oklch(0.72 0.14 245);
   font-weight: 600;
+}
+.vex-argument-ampersand {
+  color: oklch(0.72 0.14 245);
 }
 .hljs-type,
 .hljs-built_in,
@@ -723,29 +722,23 @@ pre code.hljs {
   margin-top: 0.2em;
 }
 
-.not-prose table td br,
-.not-prose table th br {
+.not-prose table :is(td, th) br {
   display: block;
   margin-top: 1em;
 }
 
 /* not-prose strips list styles: table cells get them back. */
-.not-prose table td ul,
-.not-prose table th ul {
+.not-prose table :is(td, th) :is(ul, ol) {
+  padding-left: 1.25em;
+  margin: 0.25em 0;
+}
+.not-prose table :is(td, th) ul {
   list-style-type: disc;
-  padding-left: 1.25em;
-  margin: 0.25em 0;
 }
-
-.not-prose table td ol,
-.not-prose table th ol {
+.not-prose table :is(td, th) ol {
   list-style-type: decimal;
-  padding-left: 1.25em;
-  margin: 0.25em 0;
 }
-
-.not-prose table td li + li,
-.not-prose table th li + li {
+.not-prose table :is(td, th) li + li {
   margin-top: 0.5em;
 }
 
@@ -1180,8 +1173,7 @@ pre code.hljs {
   }
 }
 
-.not-prose table td pre,
-.not-prose table th pre {
+.not-prose table :is(td, th) pre {
   margin: var(--xs) 0;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
