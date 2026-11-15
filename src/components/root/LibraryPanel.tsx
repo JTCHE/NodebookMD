@@ -22,8 +22,6 @@ import { Icons } from "@/lib/ui/icons";
 import { FadeList } from "@/components/ui/FadeList";
 import { forget, useLibrary } from "@/lib/store/library";
 import { ExploreColumns } from "@/components/root/ExploreColumns";
-import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
-import { COMMAND_KEY } from "@/lib/hotkeys";
 
 type Tab = "recents" | "bookmarks";
 
@@ -89,19 +87,8 @@ export function LibraryPanel({ className }: { className?: string }) {
           between the two tabs. */}
       <div className="h-list min-h-0">
         {entries.length === 0 ? (
-          // An empty tab: the shape of the cards it will hold, faint, under one short line.
+          // An empty tab: the shape of the cards it will hold, faint.
           <div className="flex h-full flex-col gap-sm">
-            <p className="flex h-[22px] items-center gap-[3px] text-meta text-neutral-500">
-              {tab === "recents" ? (
-                "Opened pages show here"
-              ) : (
-                <>
-                  <Keycap className={SMALL_KEY}>{COMMAND_KEY}</Keycap>
-                  <Keycap className={SMALL_KEY}>D</Keycap>
-                  <span className="ml-[3px]">to bookmark a page</span>
-                </>
-              )}
-            </p>
             <div aria-hidden="true" className="fade-out -mr-xs -ml-ms grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-sm [--fade-size:48px] lg:-ml-md">
               {[0, 1, 2].map((index) => (
                 <div key={index} className="flex h-[118px] flex-col gap-[7px] rounded-[14px] border-[0.5px] border-dashed border-neutral-300 p-ms [corner-shape:squircle] lg:p-md">

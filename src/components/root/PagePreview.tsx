@@ -49,7 +49,9 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
       >
         {/* The page's own breadcrumb line, so the window reads as the top of a page. */}
         <p className="m-0 mb-4 text-xs text-muted-foreground">{path.split("/").slice(0, -1).join("  ›  ")}</p>
-        <PageTitle name={page?.name ?? title} nodeType={pageKind(path, page?.nodeType)} icon={page?.icon} />
+        <div className="not-prose">
+          <PageTitle name={page?.name ?? title} nodeType={pageKind(path, page?.nodeType)} icon={page?.icon} />
+        </div>
         {page?.summary && <p className="m-0 mt-3 text-sm text-muted-foreground">{page.summary}</p>}
         {tree && <Body tree={tree} components={markdownComponents} whole />}
       </article>

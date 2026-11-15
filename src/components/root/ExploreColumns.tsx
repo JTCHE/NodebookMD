@@ -36,7 +36,6 @@ import { Link } from "react-router";
 import { cn } from "@/lib/utils";
 import { Icons, type IconComponent } from "@/lib/ui/icons";
 import { warm } from "@/lib/pages";
-import { WINDOW } from "@/components/root/LibraryCard";
 
 interface ColumnRow {
   label: string;
@@ -99,17 +98,20 @@ const COLUMNS: Column[] = [
 
 export function ExploreColumns({ className }: { className?: string }) {
   return (
-    // Three windows, in the surface the recents use, out like the search
-    // field so the text inside sits on its text axis.
-    <div className={cn("-mr-xs -ml-ms grid grid-cols-3 items-start gap-sm lg:-ml-md", className)}>
-      {COLUMNS.map((column) => {
+    <div className={cn("flex items-start justify-center", className)}>
+      {COLUMNS.map((column, i) => {
         const Mark = column.icon;
         return (
           <Fragment key={column.id}>
-            <div className={cn(WINDOW, "flex min-w-0 flex-col gap-xs p-ms lg:p-md")}>
+            {i > 0 && (
+              // 16px either side of the rule, not 8: the design's three
+              // columns sit 32px apart, not 17.
+              <div aria-hidden="true" className="mx-md w-px shrink-0 self-stretch bg-hairline" />
+            )}
+            <div className="flex min-w-0 flex-1 flex-col gap-sm">
               <div className="flex h-[20px] items-center gap-sm">
-                <Mark className="size-icon shrink-0 text-neutral-500" />
-                <span className="text-label font-medium tracking-[-0.012em] text-neutral-950">
+                <Mark className="size-icon shrink-0 text-brand" />
+                <span className="text-label font-semibold tracking-[-0.012em] text-neutral-950">
                   {column.label}
                 </span>
               </div>
@@ -121,10 +123,10 @@ export function ExploreColumns({ className }: { className?: string }) {
               <div className="-mx-sm flex flex-col">
                 {column.rows.map((row) => {
                   const rowClass = cn(
-                    "flex h-[30px] items-center rounded-md px-sm text-label tracking-[-0.01em] text-neutral-700 [corner-shape:squircle] ",
+                    "flex h-[32px] items-center rounded-md px-sm text-label tracking-[-0.01em] text-neutral-800 ",
                     "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-                    "pointer-hover:bg-foreground/[0.04] pointer-hover:text-neutral-950",
-                    "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
+                    "pointer-hover:bg-neutral-100",
+                    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                   );
                   // An external row opens in the reader's browser, the same
                   // way the reading view's own "SideFX" link does — this
