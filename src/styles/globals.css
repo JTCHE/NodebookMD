@@ -626,10 +626,10 @@ svg[stroke="currentColor"] * {
    `--fade-top` is the height of the headers a list pins over its top: the
    rows are hidden under them and fade in below them. See lib/ui/overflow. */
 .fade-out {
-  mask-image: linear-gradient(to bottom, black calc(100% - 40px), rgb(0 0 0 / 0.93) calc(100% - 32px), rgb(0 0 0 / 0.75) calc(100% - 24px), rgb(0 0 0 / 0.45) calc(100% - 16px), rgb(0 0 0 / 0.15) calc(100% - 8px), transparent 100%);
+  mask-image: linear-gradient(to bottom, black calc(100% - 72px), rgb(0 0 0 / 0.85) calc(100% - 54px), rgb(0 0 0 / 0.55) calc(100% - 36px), rgb(0 0 0 / 0.25) calc(100% - 18px), transparent 100%);
 }
 .fade-in {
-  mask-image: linear-gradient(to top, black calc(100% - 40px), rgb(0 0 0 / 0.93) calc(100% - 32px), rgb(0 0 0 / 0.75) calc(100% - 24px), rgb(0 0 0 / 0.45) calc(100% - 16px), rgb(0 0 0 / 0.15) calc(100% - 8px), transparent 100%);
+  mask-image: linear-gradient(to top, black calc(100% - 72px), rgb(0 0 0 / 0.85) calc(100% - 54px), rgb(0 0 0 / 0.55) calc(100% - 36px), rgb(0 0 0 / 0.25) calc(100% - 18px), transparent 100%);
 }
 .fade-both {
   --top: var(--fade-top, 0px);
