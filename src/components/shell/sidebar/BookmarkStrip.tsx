@@ -23,24 +23,17 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
 
   return (
     <section className={cn("flex flex-col gap-2xs", className)}>
-      {/* A heading that is also the way to the full list: the arrow comes
-          with the pointer, so at rest it reads as a label. */}
+      {/* The heading is also the way to the full list. */}
       <Link
         to="/?tab=bookmarks"
         className={cn(
-          "group/head flex h-[22px] cursor-interactive items-center gap-2xs self-start rounded-md px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-500",
+          "flex h-[22px] cursor-interactive items-center self-start rounded-md px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-500",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
           "pointer-hover:text-neutral-900",
           "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
         )}
       >
         Bookmarks
-        <Icons.collapsed
-          className={cn(
-            "size-[10px] translate-y-[0.5px] opacity-0 transition-[opacity,translate] duration-(--duration-fast) motion-reduce:transition-none",
-            "-translate-x-[2px] group-hover/head:translate-x-0 group-hover/head:opacity-100 group-focus-visible/head:opacity-100",
-          )}
-        />
       </Link>
 
       <div className="flex min-h-row flex-col">
@@ -64,7 +57,9 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
           <Link
             to="/?tab=bookmarks"
             className={cn(
-              "flex h-row cursor-interactive items-center rounded-md px-sm text-[12px] text-neutral-500",
+              // The count starts on the names' axis: arrow-less row padding, plus the
+              // 15px mark and its gap.
+              "flex h-row cursor-interactive items-center rounded-md pr-sm pl-[calc(var(--spacing-sm)*2+15px)] text-[12px] text-neutral-500",
               "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
               "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045] pointer-hover:text-neutral-900",
               "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
@@ -94,9 +89,9 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
         aria-label={`Remove ${entry.title} from bookmarks`}
         onClick={() => toggleBookmark(entry)}
         className={cn(
-          "absolute top-1/2 right-[6px] grid size-[20px] -translate-y-1/2 cursor-interactive place-items-center rounded-sm text-neutral-400",
+          "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[4px] text-neutral-500",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
-          "pointer-hover:bg-foreground/[0.08] pointer-hover:text-neutral-900",
+          "pointer-hover:bg-foreground/[0.07] dark:pointer-hover:bg-foreground/[0.1] pointer-hover:text-neutral-950",
           "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
         )}
       >
