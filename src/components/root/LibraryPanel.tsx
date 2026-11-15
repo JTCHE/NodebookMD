@@ -123,16 +123,21 @@ function LibraryRow({ entry, kept, onForget }: { entry: LibraryEntry; kept: bool
       </span>
       <span className="flex-1" />
       {tip}
-      <span className="pointer-events-none shrink-0 text-[11.5px] text-neutral-500 tabular-nums">
-        {shortAgo(entry.at)}
-      </span>
-
       {/* The trail is the reader's, so a page can be taken out of it. The
-          control holds its width whether it shows or not, so no row moves
-          when the pointer crosses it. */}
-      <span className="relative grid size-[15px] shrink-0 place-items-center">
+          control takes the date's place under the pointer, so the dates end
+          on the right edge of the field above. */}
+      <span className="relative shrink-0">
+        <span
+          className={cn(
+            "pointer-events-none text-[11.5px] text-neutral-500 tabular-nums",
+            onForget &&
+              "transition-opacity duration-(--duration-fast) group-hover:opacity-0 motion-reduce:transition-none",
+          )}
+        >
+          {shortAgo(entry.at)}
+        </span>
         {onForget && (
-          <Hint label="Remove from recents">
+          <Hint label="Remove from recents" className="absolute top-1/2 right-0 -translate-y-1/2">
           <button
             type="button"
             aria-label={`Remove ${entry.title} from recents`}
