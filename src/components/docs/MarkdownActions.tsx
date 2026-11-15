@@ -201,9 +201,10 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
         // In a tight column the button keeps its icon and gives its words to
         // the page title. The header is the container.
         aria-label={copied ? "Copied" : "Copy as Markdown"}
-        className={cn(ACTION, QUIET, "w-7 px-0 pointer-hover:bg-transparent")}
+        className={cn(ACTION, QUIET, "pr-1 pl-2.5 pointer-hover:bg-transparent")}
       >
-        {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
+        {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
+        <span className="hidden @min-[600px]:inline">{copied ? "Copied" : "Copy as Markdown"}</span>
       </button>
       </Hint>
       <Hint label="More">

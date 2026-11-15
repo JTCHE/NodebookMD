@@ -11,8 +11,8 @@
  * makes the Bookmarks tab fill up at all — a bookmark buried in a page menu
  * gets used by nobody.
  *
- * The list shows whole rows only: the panel is as tall as the window leaves
- * it, so the list is cut down to the rows that fit, and ends on one.
+ * The list fades out at the bottom rather than ending on a cut row: where it
+ * ends is an accident of the box size and should not read as the end of the list.
  *
  * A cold window — no recents and no bookmarks — has no trail to show, so it
  * shows `ExploreColumns` instead of an empty pair of tabs.
@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { Hint } from "@/components/ui/Hint";
 import { Icons } from "@/lib/ui/icons";
 import DocIconClient from "@/components/docs/markdown/DocIconClient";
-import { WholeRowList } from "@/components/ui/WholeRowList";
+import { FadeList } from "@/components/ui/FadeList";
 import { forget, shortAgo, toggleBookmark, useLibrary, type LibraryEntry } from "@/lib/store/library";
 import { warm } from "@/lib/pages";
 import { useRowTip } from "@/components/docs/Tooltip";
@@ -30,7 +30,7 @@ import { ExploreColumns } from "@/components/root/ExploreColumns";
 import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
 import { COMMAND_KEY } from "@/lib/hotkeys";
 
-/** Every row of the list is this tall; the list is cut to a whole number of them. */
+/** Every row of the list is this tall. */
 const ROW_HEIGHT = 32;
 
 type Tab = "recents" | "bookmarks";
@@ -210,11 +210,11 @@ export function LibraryPanel({ className }: { className?: string }) {
         })}
       </div>
 
-      {/* The list takes the height the page gives it, whichever tab is open
+      {/* The list holds a box of one size, whichever tab is open
           and however many rows it has. A box that grew with its content would
           move the greeting and the field every time the reader crossed
           between the two tabs. */}
-      <div className="min-h-0 flex-1">
+      <div className="h-list min-h-0">
         {entries.length === 0 ? (
           <p className="px-sm py-md text-meta text-neutral-500">
             {tab === "recents" ? (
@@ -231,8 +231,7 @@ export function LibraryPanel({ className }: { className?: string }) {
             )}
           </p>
         ) : (
-          <WholeRowList
-            rowHeight={ROW_HEIGHT}
+          <FadeList
             // An `overflow-y-auto` scroller clips X too, not only Y — the row's
             // bookmark flag hangs 13px left of the row (see LibraryRow), and
             // `-mx-sm` only pulled the scroller out 8px, so 5px of every flag
@@ -240,7 +239,8 @@ export function LibraryPanel({ className }: { className?: string }) {
             // where `-mx-sm` put it (21 - 13 = 8, the same cancel as before)
             // while moving the scroller's own clipped edge 13px further out —
             // enough for the flag to clear it.
-            className="-mr-sm -ml-[21px] pl-[13px]"
+            className="-mr-sm -ml-[21px] h-full pl-[13px]"
+            deps={[tab, entries.length]}
           >
             {entries.map((entry) => (
               <LibraryRow
@@ -253,7 +253,7 @@ export function LibraryPanel({ className }: { className?: string }) {
                 onForget={tab === "recents" && entry.id !== undefined ? () => forget(entry.id!) : undefined}
               />
             ))}
-          </WholeRowList>
+          </FadeList>
         )}
       </div>
     </section>
