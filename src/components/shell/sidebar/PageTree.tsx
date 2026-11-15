@@ -37,15 +37,29 @@ import { SidebarRow } from "./SidebarRow";
     windowing needs the same number in JavaScript. */
 const ROW = 30;
 
-/** A branch sits this far in from its group, and every level below it one step
-    further: the step that puts a row's mark under the name of the row above. */
-const BRANCH_INDENT = 19;
-const STEP = 23;
+/** One rule: a child starts under its parent's NAME. The arrow slot is 11px
+    plus an 8px gap; a mark adds 15px plus 8px. Groups (depth 0) and branches
+    (depth 1) draw a mark, folders below do not. */
+const ARROW = 19;
+const MARK = 23;
+
+function folderLeft(depth: number): number {
+  return (ARROW + MARK) * Math.min(depth, 2) + ARROW * Math.max(depth - 2, 0);
+}
+
+function place(left: number): React.CSSProperties | undefined {
+  if (left === 0) return undefined;
+  return { marginLeft: left, width: `calc(100% - ${left}px)` };
+}
 
 function indent(depth: number): React.CSSProperties | undefined {
-  if (depth === 0) return undefined;
-  const left = BRANCH_INDENT + STEP * (depth - 1);
-  return { marginLeft: left, width: `calc(100% - ${left}px)` };
+  return place(folderLeft(depth));
+}
+
+/** A page's arrow slot holds only its bookmark flag, so the page steps back
+    one arrow: its ICON then stands under its parent's name. */
+function pageIndent(depth: number): React.CSSProperties | undefined {
+  return place(folderLeft(depth) - ARROW);
 }
 
 interface PageTreeProps {
@@ -356,7 +370,7 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
               kept={bookmarked?.has(line.page.path)}
               // A page starts its ICON where the folder above it starts its
               // NAME, and its name where its sibling folders start theirs.
-              style={indent(line.depth)}
+              style={pageIndent(line.depth)}
             />
           )
         }
