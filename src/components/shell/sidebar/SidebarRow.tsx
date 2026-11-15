@@ -124,7 +124,9 @@ export function SidebarRow({
       // darker than the page to read at all.
       // A bare row, in Settings, sits in a panel with no other chip near
       // it, so its fill alone says it is chosen.
-      raised ? cn("bg-raised", !bare && "shadow-chip") : "pointer-hover:bg-raised/70",
+      // Hover is a tint of the panel, never the chip: a hovered row must not
+      // read as a second row you are on.
+      raised ? cn("bg-raised", !bare && "shadow-chip") : "pointer-hover:bg-foreground/[0.05]",
       "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
       className,
     ),

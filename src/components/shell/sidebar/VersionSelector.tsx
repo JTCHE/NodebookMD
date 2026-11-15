@@ -105,7 +105,7 @@ function Card({
         // 8px all round, the same 8px every row of the panel pads by, so the
         // build's name stands on the panel's axis.
         "group/card flex w-full items-center justify-between gap-sm rounded-lg p-sm text-left",
-        "pointer-hover:bg-raised/70 aria-expanded:bg-raised/70",
+        "pointer-hover:bg-foreground/[0.05] aria-expanded:bg-foreground/[0.05]",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
         onClick && "cursor-interactive",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
