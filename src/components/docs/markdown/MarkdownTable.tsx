@@ -30,13 +30,13 @@ function hasEmptyHeader(node: Element | undefined): boolean {
 /**
  * GFM table rendering. The visual rule — row lines only, no rule after the
  * last row, edge-to-edge via the wrap's negative margin against the cells'
- * own inset — is the `.md-table` component in globals.css, shared with the
+ * own inset — is the `.markdown-table` component in globals.css, shared with the
  * VEX arguments table so the two can't drift apart.
  */
 export const Table: Components["table"] = ({ children, node }) => (
-  <div className="not-prose md-table-wrap">
+  <div className="not-prose markdown-table-wrap">
     <table
-      className={`md-table ${/^TypeDeclaration(?:Description)?/.test(tableHeading(node)) ? "md-table-declarations" : ""} ${hasEmptyHeader(node) ? "md-table-noheader" : ""}`}
+      className={`markdown-table ${/^TypeDeclaration(?:Description)?/.test(tableHeading(node)) ? "markdown-table-declarations" : ""} ${hasEmptyHeader(node) ? "markdown-table-headerless" : ""}`}
     >
       {children}
     </table>

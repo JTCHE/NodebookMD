@@ -131,7 +131,7 @@ export function remarkVex({ enabled }: { enabled: boolean }) {
             if (!s) break;
             current.push(s);
             rows.push(
-              box('vexRow', 'vex-sig-row', tokenize(s).map((t) => span(`vex-tk-${t.kind}`, t.text)))
+              box('vexRow', 'vex-signature-row', tokenize(s).map((t) => span(`vex-token-${t.kind}`, t.text)))
             );
             i++;
           }
@@ -142,15 +142,15 @@ export function remarkVex({ enabled }: { enabled: boolean }) {
           if (isCaption(blocks[i])) {
             const caption = blocks[i];
             (caption.data ??= {}).hName = 'div';
-            caption.data.hProperties = { ...caption.data.hProperties, className: 'vex-sig-caption' };
+            caption.data.hProperties = { ...caption.data.hProperties, className: 'vex-signature-caption' };
             i++;
-            groups.push(box('vexGroup', 'vex-sig-card code-panel', [...rows, caption]));
+            groups.push(box('vexGroup', 'vex-signature-card code-panel', [...rows, caption]));
           } else {
-            groups.push(box('vexGroup', 'vex-sig-card code-panel', rows));
+            groups.push(box('vexGroup', 'vex-signature-card code-panel', rows));
           }
         }
         argIndex = indexArguments(current);
-        out.push(box('vexSig', 'vex-sig', groups));
+        out.push(box('vexSig', 'vex-signature', groups));
         continue;
       }
 
@@ -201,27 +201,27 @@ export function remarkVex({ enabled }: { enabled: boolean }) {
           // show. Drop the column rather than pad it with placeholders.
           const typed = rows.some((row) => row.type);
           const cells: MdNode[] = [
-            box('vexArgHead', 'vex-arg-sig vex-args-head', [
+            box('vexArgHead', 'vex-argument-signature vex-arguments-head', [
               ...(typed ? [span('', 'Type')] : []),
               span('', 'Name'),
             ]),
-            box('vexArgHead', 'vex-arg-desc vex-args-head', [span('', 'Description')]),
+            box('vexArgHead', 'vex-argument-description vex-arguments-head', [span('', 'Description')]),
           ];
           for (const row of rows) {
             const sigCell: MdNode[] = [];
             // A type the signature does not state is drawn as missing, so the
             // name never slides into the type column.
-            if (typed) sigCell.push(span('vex-arg-type', row.type ?? '—'));
+            if (typed) sigCell.push(span('vex-argument-type', row.type ?? '—'));
             sigCell.push(
               row.name.startsWith('&')
-                ? box('vexName', 'vex-arg-name', [span('vex-arg-amp', '&'), span('vex-arg-id', row.name.slice(1))])
-                : span('vex-arg-name', row.name)
+                ? box('vexName', 'vex-argument-name', [span('vex-argument-ampersand', '&'), span('vex-argument-id', row.name.slice(1))])
+                : span('vex-argument-name', row.name)
             );
-            cells.push(box('vexArgSig', 'vex-arg-sig', sigCell));
-            cells.push(box('vexArgDesc', 'vex-arg-desc', row.desc));
+            cells.push(box('vexArgSig', 'vex-argument-signature', sigCell));
+            cells.push(box('vexArgDesc', 'vex-argument-description', row.desc));
           }
           out.push({ type: 'heading', depth: 2, children: [{ type: 'text', value: 'Arguments' }] } as MdNode);
-          out.push(box('vexArgs', typed ? 'vex-args' : 'vex-args vex-args-untyped', cells));
+          out.push(box('vexArgs', typed ? 'vex-arguments' : 'vex-arguments vex-arguments-untyped', cells));
         }
         continue;
       }
@@ -237,11 +237,11 @@ export function remarkVex({ enabled }: { enabled: boolean }) {
         out.push(label('Returns', 'vex-section-label vex-section-label-returns'));
         out.push(
           box('vexReturns', 'vex-returns', [
-            box('vexRetSig', 'vex-ret-sig', [
-              span('vex-ret-arrow', '→'),
-              span('vex-ret-type', returnTypes(current).join('|')),
+            box('vexRetSig', 'vex-return-signature', [
+              span('vex-return-arrow', '→'),
+              span('vex-return-type', returnTypes(current).join('|')),
             ]),
-            box('vexRetDesc', 'vex-ret-desc', desc),
+            box('vexRetDesc', 'vex-return-description', desc),
           ])
         );
         continue;

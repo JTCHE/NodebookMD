@@ -75,7 +75,7 @@ export function FloatingPill({
       // itself over that panel instead of over the page. The wrapper carries
       // no height, so it lies over the text rather than pushing it down.
       // It rides just under the page's bar, which stays at the top.
-      className={`print:hidden @min-toc:hidden sticky top-[calc(var(--page-bar-h)+0.5rem)] z-20 h-0 transition-opacity duration-300 ease-out motion-reduce:transition-none ${
+      className={`print:hidden @min-toc:hidden sticky top-[calc(var(--page-bar-height)+0.5rem)] z-20 h-0 transition-opacity duration-300 ease-out motion-reduce:transition-none ${
         floating ? "opacity-100" : "pointer-events-none opacity-0"
       }`}
     >

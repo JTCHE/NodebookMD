@@ -394,8 +394,8 @@ export function useRowTip<T extends HTMLElement>(slug: string, side: Anchored["s
 function Skeleton() {
   return (
     <>
-      <span className="sk block h-3 w-28 rounded-lg bg-muted" />
-      <span className="sk block h-2.5 w-40 rounded-lg bg-muted mt-1.5" />
+      <span className="skeleton block h-3 w-28 rounded-lg bg-muted" />
+      <span className="skeleton block h-2.5 w-40 rounded-lg bg-muted mt-1.5" />
     </>
   );
 }

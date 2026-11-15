@@ -55,7 +55,7 @@ export function CodePanel({ children, language }: CodePanelProps) {
   const handleCopy = useCallback(async () => {
     const panel = panelRef.current;
     if (!panel) return;
-    const signatureRows = panel.querySelectorAll<HTMLElement>(".vex-sig-row");
+    const signatureRows = panel.querySelectorAll<HTMLElement>(".vex-signature-row");
     const targets = signatureRows.length ? signatureRows : panel.querySelectorAll<HTMLElement>("code");
     const text = Array.from(targets, (target) => target.innerText).join("\n");
 

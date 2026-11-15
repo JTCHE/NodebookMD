@@ -146,39 +146,39 @@ export function returnTypes(signatures: VexSignature[]): string[] {
   return [...new Set(signatures.map((s) => s.returnType))];
 }
 
-export type Token = { text: string; kind: 'type' | 'fn' | 'arg' | 'punct' | 'out' };
+export type Token = { text: string; kind: 'type' | 'function' | 'argument' | 'punctuation' | 'output' };
 
 /** Break a signature into coloured tokens for rendering. */
 export function tokenize(sig: VexSignature): Token[] {
   const out: Token[] = [
     { text: sig.returnType, kind: 'type' },
-    { text: ' ', kind: 'punct' },
-    { text: sig.name, kind: 'fn' },
-    { text: '(', kind: 'punct' },
+    { text: ' ', kind: 'punctuation' },
+    { text: sig.name, kind: 'function' },
+    { text: '(', kind: 'punctuation' },
   ];
 
   sig.args.forEach((arg, i) => {
-    if (i > 0) out.push({ text: ', ', kind: 'punct' });
+    if (i > 0) out.push({ text: ', ', kind: 'punctuation' });
     if (arg.variadic) {
-      out.push({ text: '...', kind: 'punct' });
+      out.push({ text: '...', kind: 'punctuation' });
       return;
     }
     if (arg.type) {
       out.push({ text: arg.type, kind: 'type' });
-      out.push({ text: ' ', kind: 'punct' });
+      out.push({ text: ' ', kind: 'punctuation' });
     }
     if (arg.name.startsWith('&')) {
-      out.push({ text: '&', kind: 'out' });
-      out.push({ text: arg.name.slice(1), kind: 'arg' });
+      out.push({ text: '&', kind: 'output' });
+      out.push({ text: arg.name.slice(1), kind: 'argument' });
     } else {
-      out.push({ text: arg.name, kind: 'arg' });
+      out.push({ text: arg.name, kind: 'argument' });
     }
     if (arg.defaultValue) {
-      out.push({ text: '=', kind: 'punct' });
-      out.push({ text: arg.defaultValue, kind: 'arg' });
+      out.push({ text: '=', kind: 'punctuation' });
+      out.push({ text: arg.defaultValue, kind: 'argument' });
     }
   });
 
-  out.push({ text: ')', kind: 'punct' });
+  out.push({ text: ')', kind: 'punctuation' });
   return out;
 }

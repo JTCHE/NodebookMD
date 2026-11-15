@@ -129,7 +129,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
           aria-label="On this page"
           className="sticky top-0 flex max-h-[calc(100dvh-var(--spacing-titlebar))] flex-col"
         >
-          <p className="flex h-(--page-bar-h) shrink-0 items-center text-sm font-medium text-foreground">On this page</p>
+          <p className="flex h-(--page-bar-height) shrink-0 items-center text-sm font-medium text-foreground">On this page</p>
           <div
             ref={sidebarList}
             className={cn("-mt-2 min-h-0", sidebarOverflows ? `thin-scroll overflow-y-auto pb-lg ${FADE_OUT}` : "overflow-hidden")}

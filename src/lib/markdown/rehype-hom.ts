@@ -48,11 +48,11 @@ function highlight(code: Element) {
     const after = source.slice(match.index! + token.length);
     const kind = /^(?:[rubf]{0,2})?["']/.test(token) ? "hljs-string"
       : /^(?:None|True|False)$/.test(token) || /^\d/.test(token) ? "hljs-literal"
-      : token.startsWith("hou.") ? "vex-tk-type"
-      : /^\s*\(/.test(after) && /^\w/.test(token) ? "vex-tk-fn"
+      : token.startsWith("hou.") ? "vex-token-type"
+      : /^\s*\(/.test(after) && /^\w/.test(token) ? "vex-token-function"
       : token === "self" || token === "cls" ? "hljs-built_in"
-      : /^\w/.test(token) ? "vex-tk-arg"
-      : /^\s+$/.test(token) ? "" : "vex-tk-punct";
+      : /^\w/.test(token) ? "vex-token-argument"
+      : /^\s+$/.test(token) ? "" : "vex-token-punctuation";
     return kind ? { type: "element", tagName: "span", properties: { className: [kind] }, children: [{ type: "text", value: token }] } : { type: "text", value: token };
   });
 }
@@ -106,7 +106,7 @@ export function rehypeHom({ enabled }: { enabled: boolean }) {
             };
             const returns: ElementContent[] = (JSON.parse(JSON.stringify((strong as Element).children.slice(1))) as ElementContent[]).map(plain);
             for (const node of (strong as Element).children) if (node.type === "element" && node.tagName === "code") highlight(node);
-            const panel = div("vex-sig hom-signature", [div("vex-sig-card code-panel", [div("vex-sig-row", (strong as Element).children)])]);
+            const panel = div("vex-signature hom-signature", [div("vex-signature-card code-panel", [div("vex-signature-row", (strong as Element).children)])]);
             summaries.set(panel, [...leading, { type: "element", tagName: "span", properties: { className: ["hom-method-name"] }, children: [{ type: "text", value: compact }] }, ...returns]);
             out.push(panel);
             const rest = child.children.slice(at + 1);
@@ -136,16 +136,16 @@ export function rehypeHom({ enabled }: { enabled: boolean }) {
         if (documented.size > 0) {
           const card = (panel as Element).children[0];
           const row = card?.type === "element"
-            ? card.children.find((child: ElementContent): child is Element => child.type === "element" && (child.properties.className as string[] | undefined)?.includes("vex-sig-row") === true)
+            ? card.children.find((child: ElementContent): child is Element => child.type === "element" && (child.properties.className as string[] | undefined)?.includes("vex-signature-row") === true)
             : undefined;
           const wrap = (element: Element) => {
             element.children = element.children.map((token: ElementContent) => {
               if (token.type !== "element") return token;
               const classes = token.properties.className as string[] | undefined;
-              const href = classes?.includes("vex-tk-arg") === true ? documented.get(fold(text(token))) : undefined;
+              const href = classes?.includes("vex-token-argument") === true ? documented.get(fold(text(token))) : undefined;
               // The class tells the renderer this link carries no page mark:
               // a page icon in front of every argument is noise.
-              return href ? { type: "element", tagName: "a", properties: { href, className: ["vex-sig-arg"] }, children: [token] } : token;
+              return href ? { type: "element", tagName: "a", properties: { href, className: ["vex-signature-argument"] }, children: [token] } : token;
             });
           };
           if (row?.type === "element") {

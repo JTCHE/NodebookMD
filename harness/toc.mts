@@ -36,7 +36,7 @@ const read = () =>
   page.evaluate((rows) => {
     const box = document.querySelector<HTMLElement>(".docs-shell")!;
     const links = [...document.querySelectorAll(rows)];
-    const bar = parseFloat(getComputedStyle(box).getPropertyValue("--page-bar-h")) * 16 || 0;
+    const bar = parseFloat(getComputedStyle(box).getPropertyValue("--page-bar-height")) * 16 || 0;
     const atBottom = box.scrollTop > 0 && box.scrollTop + box.clientHeight >= box.scrollHeight - 1;
     const line = atBottom ? box.getBoundingClientRect().bottom : box.getBoundingClientRect().top + bar + 24 + 8;
     let under = -1;

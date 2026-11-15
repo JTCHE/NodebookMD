@@ -425,14 +425,14 @@ svg[stroke="currentColor"] * {
 
 /* A picture keeps its own width (--natural). A wide one hangs into the gutter as far as a video. */
 img.markdown-media {
-  --w: var(--natural, 100%);
-  width: min(var(--w), calc(100% + 2rem));
+  --image-width: var(--natural, 100%);
+  width: min(var(--image-width), calc(100% + 2rem));
   max-width: none;
-  margin-inline: max(-1rem, calc((100% - var(--w)) / 2));
+  margin-inline: max(-1rem, calc((100% - var(--image-width)) / 2));
 }
 
 :is(td, th, .column) img.markdown-media {
-  width: min(var(--w), 100%);
+  width: min(var(--image-width), 100%);
   margin-inline: auto;
 }
 
@@ -845,13 +845,13 @@ pre code[class] {
 }
 
 .hljs-keyword,
-.vex-tk-out {
+.vex-token-output {
   color: oklch(0.72 0.14 245);
   font-weight: 600;
 }
 .hljs-type,
 .hljs-built_in,
-.vex-tk-type {
+.vex-token-type {
   color: oklch(0.66 0.08 242.84);
 }
 .hljs-number,
@@ -867,18 +867,18 @@ pre code[class] {
 }
 .hljs-function .hljs-title,
 .hljs-title.function_,
-.vex-tk-fn {
+.vex-token-function {
   color: oklch(0.71 0.13 308.92);
 }
 /* Not --foreground: the code panel is dark in both themes. */
 .hljs-params,
 .hljs-variable,
-.vex-tk-arg {
+.vex-token-argument {
   color: oklch(0.93 0 0);
 }
 .hljs-operator,
 .hljs-punctuation,
-.vex-tk-punct {
+.vex-token-punctuation {
   color: oklch(0.75 0 0);
 }
 .hljs-attr,
@@ -902,19 +902,19 @@ kbd {
   line-height: 1.5;
 }
 
-@keyframes sk-shimmer {
+@keyframes skeleton-shimmer {
   to {
     transform: translateX(150%);
   }
 }
 
-.sk {
+.skeleton {
   position: relative;
   overflow: hidden;
 }
 
 /* Linear, and mixed against --foreground, so the sweep shows in both themes. */
-.sk::after {
+.skeleton::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -925,12 +925,11 @@ kbd {
     color-mix(in oklch, var(--foreground) 14%, transparent) 50%,
     transparent 100%
   );
-  animation: sk-shimmer 2.6s linear infinite;
-  animation-delay: var(--sk-delay, 0s);
+  animation: skeleton-shimmer 2.6s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sk::after {
+  .skeleton::after {
     animation: none;
   }
 }
@@ -978,22 +977,22 @@ kbd {
   figure,
   img,
   .callout,
-  .vex-sig-card {
+  .vex-signature-card {
     break-inside: avoid;
   }
 
   /* Paper does not scroll: wide content wraps. */
-  .md-table-wrap,
+  .markdown-table-wrap,
   .code-panel {
     overflow: visible;
   }
   .code-panel,
   .code-panel code,
-  .vex-sig-row {
+  .vex-signature-row {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
-  .vex-sig-row:first-child {
+  .vex-signature-row:first-child {
     width: auto;
     padding-right: 1rem;
   }
@@ -1008,9 +1007,9 @@ kbd {
   }
 }
 
-/* An anchor lands clear of the page bar. Page.tsx sets --page-bar-h on the scroller. */
+/* An anchor lands clear of the page bar. Page.tsx sets --page-bar-height on the scroller. */
 :is(h1, h2, h3, h4, h5, h6)[id] {
-  scroll-margin-top: calc(var(--page-bar-h, 0px) + 1.5rem);
+  scroll-margin-top: calc(var(--page-bar-height, 0px) + 1.5rem);
 }
 
 /* How a menu and a modal open. scale, not transform, so it composes with a translate. */
@@ -1257,14 +1256,14 @@ pre code.hljs {
 }
 
 /* VEX signatures (lib/markdown/remark-vex.ts). The negative margin puts the glyphs on the text axis. */
-.vex-sig {
+.vex-signature {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin: 0 calc(-1rem - 1px) 1.5rem;
 }
 
-.vex-sig-row {
+.vex-signature-row {
   padding: 0.4rem 1rem;
   font-family: var(--font-mono);
   font-size: 0.82rem;
@@ -1273,46 +1272,46 @@ pre code.hljs {
   color: oklch(0.88 0 0);
 }
 /* The copy button sits over the first row. The row is as wide as its text, so it scrolls clear. */
-.vex-sig-row:first-child {
+.vex-signature-row:first-child {
   padding-top: 0.7rem;
 
   width: max-content;
   min-width: 100%;
   padding-right: calc(1rem + var(--code-copy-clearance));
 }
-.vex-sig-row:last-child {
+.vex-signature-row:last-child {
   padding-bottom: 0.7rem;
 }
 
-.vex-sig-row code {
+.vex-signature-row code {
   padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
   font: inherit;
 }
-.vex-sig-row code::before,
-.vex-sig-row code::after {
+.vex-signature-row code::before,
+.vex-signature-row code::after {
   content: none;
 }
 
 /* A documented argument links in the token's colors, with an underline on hover only. */
-.vex-sig-row a {
+.vex-signature-row a {
   color: inherit;
   text-decoration: none;
   cursor: var(--cursor-interactive);
 }
-.vex-sig-row a:hover {
+.vex-signature-row a:hover {
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
 
 /* Tokens drop their syntax colors, so the link underline is the only emphasis. */
-.vex-sig-row code span {
+.vex-signature-row code span {
   color: inherit;
 }
 
-.hom-signature .vex-sig-row {
+.hom-signature .vex-signature-row {
   width: auto;
   min-width: 0;
   white-space: pre-wrap;
@@ -1404,14 +1403,14 @@ pre code.hljs {
     width: max-content;
     padding-right: calc(1rem + var(--code-copy-clearance));
   }
-  .vex-sig-row {
+  .vex-signature-row {
     width: max-content;
     padding-right: calc(1rem + var(--code-copy-clearance));
   }
 }
 
 /* A caption binds to the overloads above it. Sticky, so its band follows a sideways scroll. */
-.vex-sig-caption {
+.vex-signature-caption {
   position: sticky;
   left: 0;
   margin: 0;
@@ -1422,61 +1421,61 @@ pre code.hljs {
   background: oklch(1 0 0 / 3%);
   border-top: 1px solid oklch(1 0 0 / 7%);
 }
-.vex-sig-caption strong {
+.vex-signature-caption strong {
   color: oklch(0.92 0 0);
   font-weight: 600;
 }
-.vex-sig-caption a {
+.vex-signature-caption a {
   color: inherit;
 }
 
 /* GFM tables and VEX arguments share one look: row lines only, edge to edge through a negative --md margin. */
-.md-table-wrap {
+.markdown-table-wrap {
   overflow-x: auto;
   margin: 2rem calc(var(--md) * -1);
 }
-.md-table {
+.markdown-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
-.md-table th {
+.markdown-table th {
   padding: 0.75rem var(--md);
   border-bottom: 1px solid var(--border);
   text-align: left;
   font-weight: 500;
   color: var(--muted-foreground);
 }
-.md-table td {
+.markdown-table td {
   padding: 0.75rem var(--md);
   border-bottom: 1px solid var(--border);
   vertical-align: top;
   color: var(--foreground);
 }
-.md-table tr:last-child td {
+.markdown-table tr:last-child td {
   border-bottom: 0;
 }
 
 /* A headerless source table: hide the blank header row that markdown requires. */
-.md-table-noheader thead {
+.markdown-table-headerless thead {
   display: none;
 }
-.md-table td code {
+.markdown-table td code {
   white-space: nowrap;
 }
-.md-table-declarations {
+.markdown-table-declarations {
   table-layout: fixed;
 }
-.md-table-declarations td code {
+.markdown-table-declarations td code {
   overflow-wrap: anywhere;
   white-space: normal;
 }
-.md-table tr > :first-child {
+.markdown-table tr > :first-child {
   width: 20%;
   color: var(--muted-foreground);
 }
-.md-table-declarations tr > :nth-child(2):not(:last-child) {
+.markdown-table-declarations tr > :nth-child(2):not(:last-child) {
   width: 50%;
 }
 
@@ -1494,21 +1493,21 @@ pre code.hljs {
 }
 
 /* A fixed type column and a fixed name column, so types and names each align on one axis. */
-.vex-args {
+.vex-arguments {
   display: grid;
   grid-template-columns: 16.5rem 1fr;
   margin: 0 calc(var(--md) * -1);
 }
-.vex-arg-sig,
-.vex-arg-desc {
+.vex-argument-signature,
+.vex-argument-description {
   padding: 0.75rem 0;
   border-bottom: 1px solid var(--border);
 }
-.vex-arg-sig:nth-last-child(-n + 2),
-.vex-arg-desc:nth-last-child(-n + 2) {
+.vex-argument-signature:nth-last-child(-n + 2),
+.vex-argument-description:nth-last-child(-n + 2) {
   border-bottom: 0;
 }
-.vex-arg-sig {
+.vex-argument-signature {
   display: grid;
   grid-template-columns: 6.5rem 1fr;
   align-items: start;
@@ -1519,21 +1518,21 @@ pre code.hljs {
   font-size: 0.82rem;
   line-height: 1.6;
 }
-.vex-arg-type {
+.vex-argument-type {
   color: oklch(0.66 0.08 242.84);
   overflow-wrap: anywhere;
 }
-.vex-arg-name {
+.vex-argument-name {
   color: var(--foreground);
 
   overflow-wrap: anywhere;
 }
-.vex-arg-amp {
+.vex-argument-ampersand {
   color: oklch(0.72 0.14 245);
 }
 
 /* The column names in prose type, as in the head of a parameter table. */
-.vex-args .vex-args-head {
+.vex-arguments .vex-arguments-head {
   padding-block: 0.5rem;
   font-family: var(--font-sans);
   font-size: 0.75rem;
@@ -1541,29 +1540,29 @@ pre code.hljs {
   font-weight: 500;
   color: var(--muted-foreground);
 }
-.vex-arg-desc {
+.vex-argument-description {
   padding-right: var(--md);
   font-size: 0.9rem;
   color: var(--muted-foreground);
 }
-.vex-arg-desc > :first-child {
+.vex-argument-description > :first-child {
   margin-top: 0;
 }
-.vex-arg-desc > :last-child {
+.vex-argument-description > :last-child {
   margin-bottom: 0;
 }
-.prose .vex-arg-desc p {
+.prose .vex-argument-description p {
   margin: 0 0 0.5rem;
 }
-.prose .vex-arg-desc p:last-child {
+.prose .vex-argument-description p:last-child {
   margin-bottom: 0;
 }
 
 /* Deprecated stubs have no types: drop the column. */
-.vex-args-untyped {
+.vex-arguments-untyped {
   grid-template-columns: 10rem 1fr;
 }
-.vex-args-untyped .vex-arg-sig {
+.vex-arguments-untyped .vex-argument-signature {
   grid-template-columns: 1fr;
 }
 
@@ -1574,7 +1573,7 @@ pre code.hljs {
   flex-wrap: wrap;
   gap: 0.75rem;
 }
-.vex-ret-sig {
+.vex-return-signature {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
@@ -1583,39 +1582,39 @@ pre code.hljs {
   font-size: 0.95rem;
   line-height: 1.6;
 }
-.vex-ret-arrow {
+.vex-return-arrow {
   color: oklch(0.66 0.08 242.84);
   opacity: 0.7;
 }
-.vex-ret-type {
+.vex-return-type {
   color: oklch(0.66 0.08 242.84);
   overflow-wrap: anywhere;
 }
-.vex-ret-desc {
+.vex-return-description {
   flex: 1 1 18rem;
   font-size: 0.9rem;
   color: var(--foreground);
 }
-.prose .vex-ret-desc p {
+.prose .vex-return-description p {
   margin: 0;
 }
 
 @media (max-width: 640px) {
-  .vex-args,
-  .vex-args-untyped {
+  .vex-arguments,
+  .vex-arguments-untyped {
     grid-template-columns: 1fr;
   }
 
   /* One column: the column names label nothing. */
-  .vex-args-head {
+  .vex-arguments-head {
     display: none;
   }
-  .vex-arg-sig {
+  .vex-argument-signature {
     padding-right: 0;
     padding-bottom: 0.25rem;
     border-bottom: 0;
   }
-  .vex-arg-desc {
+  .vex-argument-description {
     padding-top: 0;
     padding-left: var(--md);
   }
