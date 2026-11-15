@@ -14,7 +14,7 @@ const CONTROL =
   "grid size-[22px] cursor-interactive place-items-center rounded-md text-neutral-500 " +
   "transition-[opacity,background-color,color] duration-(--duration-fast) motion-reduce:transition-none " +
   "pointer-hover:bg-foreground/[0.06] pointer-hover:text-neutral-900 active:bg-foreground/[0.1] " +
-  "focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none";
+  "focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-500 focus-visible:outline-none";
 
 export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; kept: boolean; onForget?: () => void }) {
   return (
@@ -24,11 +24,11 @@ export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; ke
         aria-label={entry.title}
         onPointerEnter={() => warm(entry.path)}
         className={cn(
-          // Open at the foot: the page fades out as if it goes on under the window.
-          "fade-out relative block h-[118px] cursor-interactive overflow-hidden rounded-lg border-[0.5px] border-hairline bg-background [--fade-size:32px]",
+          // Closed frame; the page inside fades out at the foot, as if it goes on.
+          "relative block h-[118px] cursor-interactive overflow-hidden rounded-lg border-[0.5px] border-hairline bg-background",
           "transition-[border-color,translate] duration-(--duration-fast) motion-reduce:transition-none",
-          "pointer-hover:border-neutral-300 active:translate-y-px dark:bg-neutral-100",
-          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
+          "pointer-hover:border-neutral-300 dark:pointer-hover:border-neutral-400 active:translate-y-px",
+          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-500 focus-visible:outline-none",
         )}
       >
         <PagePreview path={entry.path} title={entry.title} />

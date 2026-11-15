@@ -42,24 +42,16 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
 
   const tree = page?.tree && { ...page.tree, children: page.tree.children.slice(0, BLOCKS) };
   return (
-    <div ref={box} inert aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden select-none">
+    <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-hidden select-none [--fade-size:32px]">
       <article
         className="prose prose-neutral dark:prose-invert max-w-none px-[calc(var(--spacing-ms)/0.42)] pt-[calc(var(--spacing-ms)/0.42)] lg:px-[calc(var(--spacing-md)/0.42)]"
         style={{ width: width || undefined, zoom: SCALE }}
       >
+        {/* The page's own breadcrumb line, so the window reads as the top of a page. */}
+        <p className="m-0 mb-4 text-xs text-muted-foreground">{path.split("/").slice(0, -1).join("  ›  ")}</p>
         <PageTitle name={page?.name ?? title} nodeType={pageKind(path, page?.nodeType)} icon={page?.icon} />
         {page?.summary && <p className="m-0 mt-3 text-sm text-muted-foreground">{page.summary}</p>}
-        {tree ? (
-          <Body tree={tree} components={markdownComponents} whole />
-        ) : (
-          // While the page loads: the shape of its summary and first paragraph,
-          // under the real title above.
-          <div className="mt-5 flex flex-col gap-3">
-            {["w-full", "w-11/12", "w-4/5", "w-full", "w-2/3"].map((width, index) => (
-              <div key={index} className={`h-2.5 rounded-sm bg-neutral-100 ${width}`} />
-            ))}
-          </div>
-        )}
+        {tree && <Body tree={tree} components={markdownComponents} whole />}
       </article>
     </div>
   );
