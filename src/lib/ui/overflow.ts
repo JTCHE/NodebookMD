@@ -8,7 +8,7 @@ import { useEffect, useState, type RefObject } from "react";
  * second row and reads as a rendering fault — so every list that fades asks
  * this first.
  */
-export function useOverflow(node: RefObject<HTMLElement | null>, deps: unknown[] = []): boolean {
+export function useOverflow(node: RefObject<HTMLElement | null>, deps: unknown[] = [], reverse = false): boolean {
   const [overflows, setOverflows] = useState(false);
 
   useEffect(() => {
@@ -18,12 +18,23 @@ export function useOverflow(node: RefObject<HTMLElement | null>, deps: unknown[]
     // the pixel independently, which can leave a list a couple of px taller
     // than its box with no extra row behind it. 4px clears that without
     // hiding a real one, which is always at least one row's worth more.
-    const measure = () => setOverflows(element.scrollHeight > element.clientHeight + 4);
+    // "More" is measured from where the reader is, not from the top: a list
+    // scrolled to its last row has nothing left below it, and drops the fade.
+    const measure = () =>
+      setOverflows(
+        reverse
+          ? element.scrollTop > 4
+          : element.scrollHeight - element.scrollTop > element.clientHeight + 4,
+      );
     measure();
+    element.addEventListener("scroll", measure, { passive: true });
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     for (const child of element.children) observer.observe(child);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      element.removeEventListener("scroll", measure);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
