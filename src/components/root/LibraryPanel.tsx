@@ -177,8 +177,7 @@ export function LibraryPanel({ className }: { className?: string }) {
         role="tablist"
         aria-label="Pages you have read"
         // The row overhangs the column by its own padding, so a tab's label
-        // sits on the same left axis as the heading above it and only the
-        // chip reaches past.
+        // sits on the same left axis as the heading above it.
         className="-ml-sm flex items-center gap-xs"
       >
         {TABS.map(({ id, label, icon: Mark }) => {
@@ -194,8 +193,8 @@ export function LibraryPanel({ className }: { className?: string }) {
                 "flex cursor-interactive items-center gap-sm rounded-lg px-sm py-[6px] text-[13.5px] font-medium tracking-[-0.012em]",
                 "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
                 active
-                  ? "border border-hairline bg-raised text-neutral-950 shadow-chip"
-                  : "border border-transparent text-neutral-500 pointer-hover:text-neutral-800",
+                  ? "text-neutral-950"
+                  : "text-neutral-500 pointer-hover:text-neutral-800",
                 "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
               )}
             >
