@@ -7,7 +7,7 @@
  * so the first bookmark does not move the tree below it.
  */
 import { useState } from "react";
-import { Link, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import { COMMAND_KEY } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
@@ -24,19 +24,8 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
   const { pathname } = useLocation();
 
   return (
-    <section className={cn("flex flex-col gap-2xs", className)}>
-      {/* The heading is also the way to the full list. */}
-      <Link
-        to="/?tab=bookmarks"
-        className={cn(
-          "flex h-[22px] cursor-interactive items-center self-start rounded-md px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-500",
-          "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-          "pointer-hover:text-neutral-900",
-          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-500/60 focus-visible:outline-none",
-        )}
-      >
-        Bookmarks
-      </Link>
+    <section className={cn("flex flex-col gap-2xs pb-xs", className)}>
+      <h2 className="flex h-[22px] items-center px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-600">Bookmarks</h2>
 
       <div className="flex min-h-row flex-col">
         {shown.length === 0 ? (
@@ -44,8 +33,8 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
           // tiles: the strip must not grow the first time a page is kept, or
           // the whole tree below it steps down.
           <p className="flex h-row w-full items-center gap-[3px] px-sm text-[13px] tracking-[-0.01em] text-neutral-500">
-            <Keycap flat>{COMMAND_KEY}</Keycap>
-            <Keycap flat>D</Keycap>
+            <Keycap flat className="translate-y-[0.5px]">{COMMAND_KEY}</Keycap>
+            <Keycap flat className="translate-y-[0.5px]">D</Keycap>
             <span className="ml-xs">to keep a page</span>
           </p>
         ) : (
@@ -72,7 +61,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
             <span className="grid size-[15px] shrink-0 place-items-center">
               <Icons.expanded className={cn("size-[11px]", whole && "rotate-180")} />
             </span>
-            {whole ? "Show less" : `${entries.length - SHOWN} more`}
+            {whole ? "Show less" : `Show ${entries.length - SHOWN} more`}
           </button>
         )}
       </div>
@@ -98,7 +87,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
         className={cn(
           "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[4px] text-neutral-500",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
-          "pointer-hover:bg-foreground/[0.07] dark:pointer-hover:bg-foreground/[0.1] pointer-hover:text-neutral-950",
+          "pointer-hover:bg-foreground/[0.06] dark:pointer-hover:bg-foreground/[0.09] pointer-hover:text-neutral-950",
           "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-500/60 focus-visible:outline-none",
         )}
       >
