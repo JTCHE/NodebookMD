@@ -19,7 +19,7 @@ import { IS_MAC } from "@/lib/hotkeys";
 
 /* Windows' own caption button: a wide, short target with no radius, reaching
    the full height of the bar so the pointer catches it at the screen corner. */
-const CAPTION_BUTTON =
+export const CAPTION_BUTTON =
   "grid h-full w-caption-w shrink-0 cursor-interactive place-items-center text-neutral-700 " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none " +
   "pointer-hover:bg-neutral-200 active:bg-neutral-300 " +

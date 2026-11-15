@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useTrail } from "@/lib/nav";
-import { WindowControls, useWindowFlag } from "./WindowControls";
+import { CAPTION_BUTTON, WindowControls, useWindowFlag } from "./WindowControls";
 import { TitleBarMenu } from "./TitleBarMenu";
 import { TabStrip, useTabKeys } from "./TabStrip";
 import { appWindow, inTauri, invoke } from "@/lib/backend";
@@ -197,7 +197,7 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
       />
 
       <PinButton corner={nativeFrame && !fullscreen} />
-      <WindowControls className="ml-[4px]" />
+      <WindowControls />
 
       {menuAt && <TitleBarMenu at={menuAt} port={port} onClose={() => setMenuAt(null)} />}
     </header>
@@ -230,10 +230,12 @@ function PinButton({ corner }: { corner: boolean }) {
       tabIndex={-1}
       aria-label={pinned ? "Stop keeping on top" : "Keep on top"}
       aria-pressed={pinned}
-      className={cn(BAR_BUTTON, corner && "rounded-tr-[12px]", pinned && "text-brand")}
+      className={cn(CAPTION_BUTTON, corner && "rounded-tr-[12px]", pinned && "text-brand")}
       onClick={toggle}
     >
-      <Icons.pin className={cn("size-[13px]", pinned && "fill-current")} />
+      {/* Drawn as a caption button: the same box, ink and glyph size as the
+          three beside it, so the four read as one set. */}
+      <Icons.pin className={cn("size-[11px]", pinned && "fill-current")} />
     </button>
     </Hint>
   );
