@@ -73,9 +73,7 @@ a {
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, Menlo, Consolas, monospace;
 
-
   /* The spacing ladder. Only the large steps grow on a wide window. */
-  --spacing-thin: var(--thin);
   --spacing-light: var(--light);
   --spacing-2xs: var(--2xs);
   --spacing-xs: var(--xs);
@@ -88,11 +86,8 @@ a {
 
   /* Window chrome sizes. They do not grow on a wide window. */
   --spacing-titlebar: 36px;
-  --spacing-caption-w: 46px;
 
   --spacing-row: 30px;
-
-  --spacing-setting: 52px;
 
   /* What a row draws outside its box (flag, shadow). A scrolling list keeps this slack inside its clip. */
   --spacing-slack: 13px;
@@ -111,9 +106,6 @@ a {
   /* Widths have their own names: the spacing ladder shadows Tailwind's max-w-sm to max-w-2xl.
      The measure cap. In Geist, 72ch is about 105 characters of prose. */
   --container-page: calc(72ch + 2 * var(--page-x));
-  --container-overlay: 32rem;
-
-  --container-hero: 41.25rem;
 
   /* The type ladder. Tailwind's text-xs to text-xl stay for the docs pages. */
   --text-display: var(--type-display);
@@ -150,20 +142,10 @@ a {
   --color-brand-bright: var(--brand-bright);
   --color-brand-700: var(--brand-700);
 
-  --color-surface-sunken: var(--surface-sunken);
-  --color-elevated-top: var(--elevated-top);
-  --color-elevated-bottom: var(--elevated-bottom);
-  --color-elevated-edge: var(--elevated-edge);
-  --color-control-top: var(--control-top);
-  --color-control-bottom: var(--control-bottom);
-  --color-control-edge: var(--control-edge);
-  --color-control-foreground: var(--control-foreground);
   --color-hairline: var(--hairline);
   --color-chrome: var(--chrome);
 
   --shadow-field: var(--elevation-field);
-  --shadow-keycap: var(--elevation-keycap);
-  --shadow-control: var(--elevation-control);
   --shadow-pane: var(--elevation-pane);
   --shadow-chip: var(--elevation-chip);
 
@@ -193,8 +175,8 @@ a {
 :root {
   --page-x: 1.5rem;
   --radius: 8px;
+  --icon-stroke: 1px;
 
-  --thin: 0.25px;
   --light: 0.5px;
   --2xs: 2px;
   --xs: 4px;
@@ -236,29 +218,14 @@ a {
   --brand-700: oklch(0.575 0.147 52);
   --brand-foreground: oklch(0.985 0 0);
 
-
   /* A chip on the panel: one step lighter than its ground. */
   --raised: var(--neutral-0);
-  --surface-sunken: var(--neutral-100);
   --hairline: oklch(0 0 0 / 9%);
 
   /* The ground of the title bar and the panel, one step under the page. */
   --chrome: var(--neutral-100);
 
-  --elevated-top: var(--neutral-0);
-  --elevated-bottom: var(--neutral-100);
-  --elevated-edge: var(--neutral-300);
-
-  --control-top: var(--neutral-800);
-  --control-bottom: var(--neutral-900);
-  --control-edge: var(--neutral-800);
-  --control-foreground: var(--neutral-50);
-
-  --control-sheen: oklch(1 0 0 / 12%);
-
   --elevation-field: 0 1px 2px 0 oklch(0 0 0 / 5%), 0 6px 16px -4px oklch(0 0 0 / 6%);
-  --elevation-keycap: 0 2px 0 0 var(--elevated-edge), 0 1px 1.5px 0 oklch(0 0 0 / 10%);
-  --elevation-control: 0 1px 0.75px 0 oklch(0 0 0 / 28%), 0 1px 2px 0 oklch(0 0 0 / 16%);
   --elevation-pane: 0 4px 12px 0 oklch(0 0 0 / 8%);
 
   --elevation-chip: 0 1px 0.75px 0 oklch(0 0 0 / 8%);
@@ -311,21 +278,10 @@ a {
 
   --raised: var(--neutral-200);
 
-  --surface-sunken: var(--neutral-0);
   --hairline: oklch(1 0 0 / 10%);
 
   --chrome: oklch(0.118 0 0);
   --scrim-wash: oklch(0 0 0 / 80%);
-
-  --elevated-top: var(--neutral-200);
-  --elevated-bottom: var(--neutral-100);
-  --elevated-edge: var(--neutral-0);
-
-  --control-top: var(--neutral-900);
-  --control-bottom: var(--neutral-700);
-  --control-edge: oklch(1 0 0 / 18%);
-
-  --control-sheen: oklch(0 0 0 / 10%);
 
   --elevation-field: 0 12px 28px 0 oklch(0 0 0 / 45%);
   --elevation-pane: 0 4px 12px 0 oklch(0 0 0 / 45%);
@@ -354,9 +310,6 @@ a {
   }
 }
 
-:root {
-  --icon-stroke: 1px;
-}
 /* One line weight for every line icon at any size. lib/ui/icon-stroke.ts keeps it on whole pixels. */
 svg[stroke="currentColor"] {
   stroke-width: var(--icon-stroke);
@@ -1053,10 +1006,6 @@ kbd {
   .heading-copy {
     display: none;
   }
-}
-
-:root {
-  --header-h: var(--spacing-titlebar);
 }
 
 /* An anchor lands clear of the page bar. Page.tsx sets --page-bar-h on the scroller. */

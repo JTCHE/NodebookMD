@@ -108,7 +108,7 @@ export function FloatingPill({
             // address bar hidden, so a panel sized against it runs off the
             // bottom of the screen under Safari's bottom bar. svh is the
             // smallest state — the panel fits with every bar on screen.
-            style={{ maxHeight: "calc(100svh - var(--header-h, 3.5rem) - 6rem)" }}
+            style={{ maxHeight: "calc(100svh - var(--spacing-titlebar) - 6rem)" }}
             className={`-ml-[15px] absolute left-0 top-full mt-2 w-[min(20rem,calc(100vw-3rem))] overflow-y-auto overscroll-contain border border-border bg-background rounded-2xl shadow-xl shadow-black/20 p-1.5 origin-top-left transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${expanded ? "opacity-100 scale-100" : "pointer-events-none opacity-0 scale-[0.98]"}`}
           >
             <TocList headings={headings} top={top} active={active} padded onNavigate={() => setOpen(false)} />

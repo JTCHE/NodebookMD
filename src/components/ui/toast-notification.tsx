@@ -18,7 +18,7 @@ export function ToastNotification({ message, type, visible }: { message: string;
     // px only — inline style: the comma inside an arbitrary value stops the
     // class from ever being generated.
     <div
-      style={{ top: "calc(var(--header-h, 3.5rem) + 0.5rem)" }}
+      style={{ top: "calc(var(--spacing-titlebar) + 0.5rem)" }}
       className="fixed inset-x-0 z-100 flex justify-center pointer-events-none"
     >
       <div

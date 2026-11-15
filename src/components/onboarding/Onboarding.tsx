@@ -159,7 +159,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         body={
           <>
             A blazing fast, local alternative to Houdini’s docs. Made for power-users. This setup will take less than a minute.
-            Repeatedly press <Keycap className="px-xs py-thin text-caption">Enter</Keycap> to skip.
+            Repeatedly press <Keycap className="px-xs py-[0.25px] text-caption">Enter</Keycap> to skip.
           </>
         }
       />

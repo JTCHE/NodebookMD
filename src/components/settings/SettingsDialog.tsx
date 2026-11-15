@@ -154,7 +154,7 @@ function Row({ label, fact, children }: { label: string; fact?: ReactNode; child
   return (
     <div
       className={cn(
-        "box-content flex h-setting shrink-0 items-center gap-md border-b border-hairline last:border-b-0",
+        "box-content flex h-[52px] shrink-0 items-center gap-md border-b border-hairline last:border-b-0",
         fact && "first:mt-[calc((var(--text-meta)*var(--text-meta--line-height)+1px)/2)]",
       )}
     >

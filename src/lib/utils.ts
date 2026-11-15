@@ -10,7 +10,7 @@ const twMerge = extendTailwindMerge({
   extend: {
     theme: {
       text: ["display", "title", "label", "meta", "caption", "row"],
-      spacing: ["thin", "light", "2xs", "xs", "sm", "ms", "md", "lg", "xl", "2xl", "icon", "glyph"],
+      spacing: ["light", "2xs", "xs", "sm", "ms", "md", "lg", "xl", "2xl", "icon", "glyph"],
     },
   },
 })

@@ -23,7 +23,11 @@ export function Keycap({ children, flat = false, className }: KeycapProps) {
         "inline-flex items-center justify-center rounded-lg px-ms py-sm text-label select-none",
         flat
           ? cn("border border-hairline text-neutral-500", FLAT_KEY)
-          : "bg-linear-to-b from-elevated-top to-elevated-bottom border border-elevated-edge shadow-keycap text-foreground",
+          : cn(
+              "bg-linear-to-b from-neutral-0 to-neutral-100 text-foreground dark:from-neutral-200",
+              "border border-(--keycap-edge) [--keycap-edge:var(--neutral-300)] dark:[--keycap-edge:var(--neutral-0)]",
+              "shadow-[0_2px_0_0_var(--keycap-edge),0_1px_1.5px_0_oklch(0_0_0/10%)]",
+            ),
         className,
       )}
     >
