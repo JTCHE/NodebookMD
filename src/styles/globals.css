@@ -629,7 +629,7 @@ svg[stroke="currentColor"] * {
   /* Depth is the list's own (`--fade-size`); lib/ui/overflow turns each edge
      on only while rows hide past it (`--fade-below`, `--fade-above`). */
   --depth: calc(var(--fade-size, 72px) * var(--fade-below, 1));
-  --head: calc(26px * var(--fade-above, 0));
+  --head: calc(var(--fade-head-size, 18px) * var(--fade-above, 0));
   mask-image: linear-gradient(
     to bottom,
     rgb(0 0 0 / calc(1 - var(--fade-above, 0))) 0,
