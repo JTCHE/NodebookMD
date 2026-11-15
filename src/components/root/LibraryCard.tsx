@@ -1,62 +1,49 @@
 /**
- * One remembered page as a card: its name, the first lines of what it is
- * about, and when it was read. The whole card is the link; the bookmark and
- * remove controls sit on it and take their own clicks.
+ * One remembered page, drawn as a small window onto the page itself. Its name
+ * and the time read sit under the window, so the window holds only the page.
  */
 import { Link } from "react-router";
 import { cn } from "@/lib/utils";
 import { Hint } from "@/components/ui/Hint";
 import { Icons } from "@/lib/ui/icons";
-import DocIconClient from "@/components/docs/markdown/DocIconClient";
 import { shortAgo, toggleBookmark, type LibraryEntry } from "@/lib/store/library";
 import { warm } from "@/lib/pages";
-import { usePageMark } from "@/components/docs/Tooltip";
+import { PagePreview } from "@/components/root/PagePreview";
 
 const CONTROL =
-  "grid size-[24px] cursor-interactive place-items-center rounded-md text-neutral-500 " +
-  "transition-[opacity,background-color] duration-(--duration-fast) motion-reduce:transition-none " +
-  "pointer-hover:bg-foreground/[0.08] pointer-hover:text-neutral-900 " +
-  "focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-neutral-400 focus-visible:outline-none";
+  "grid size-[22px] cursor-interactive place-items-center rounded-md text-neutral-500 " +
+  "transition-[opacity,background-color,color] duration-(--duration-fast) motion-reduce:transition-none " +
+  "pointer-hover:bg-foreground/[0.06] pointer-hover:text-neutral-900 active:bg-foreground/[0.1] " +
+  "focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none";
 
 export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; kept: boolean; onForget?: () => void }) {
-  const mark = usePageMark(entry.path);
-  const summary = mark?.summary;
-  const pageGlyph = <Icons.page className="size-icon shrink-0 text-neutral-400" />;
   return (
-    <div
-      className={cn(
-        "group relative flex h-[124px] flex-col gap-xs rounded-lg border border-hairline bg-raised p-md dark:bg-foreground/[0.045]",
-        "transition-[border-color,background-color] duration-(--duration-fast) motion-reduce:transition-none",
-        "pointer-hover:border-neutral-300 dark:pointer-hover:bg-foreground/[0.05] has-[a:focus-visible]:ring-1 has-[a:focus-visible]:ring-neutral-400",
-      )}
-    >
+    <div className="group relative flex flex-col gap-xs">
       <Link
         to={`/${entry.path}`}
         aria-label={entry.title}
         onPointerEnter={() => warm(entry.path)}
-        className="absolute inset-0 cursor-interactive rounded-lg focus-visible:outline-none"
-      />
-      <div className="pointer-events-none flex min-w-0 items-center gap-sm">
-        {entry.icon ? (
-          <DocIconClient src={entry.icon} alt="" className="size-icon shrink-0" fallback={pageGlyph} />
-        ) : (
-          pageGlyph
+        className={cn(
+          "fade-out relative block h-[102px] cursor-interactive overflow-hidden rounded-lg border border-hairline bg-background",
+          "[--fade-size:28px] transition-[border-color,translate] duration-(--duration-fast) motion-reduce:transition-none",
+          "pointer-hover:border-neutral-300 dark:pointer-hover:border-neutral-400 active:translate-y-px",
+          "focus-visible:ring-1 focus-visible:ring-neutral-400 focus-visible:outline-none",
         )}
-        <span className="min-w-0 truncate text-label tracking-[-0.01em] text-neutral-900">{entry.title}</span>
-      </div>
-      <p className="pointer-events-none line-clamp-3 text-caption leading-[1.45] text-neutral-500">
-        {summary || entry.path.replaceAll("/", " / ")}
-      </p>
-      <span className="pointer-events-none mt-auto text-caption text-neutral-500 tabular-nums">{shortAgo(entry.at)}</span>
+      >
+        <PagePreview path={entry.path} title={entry.title} />
+      </Link>
 
-      <div className="absolute right-[8px] bottom-[8px] flex items-center gap-2xs">
+      {/* The window already names the page, so only the time sits under it. */}
+      <span className="px-[2px] text-caption text-neutral-500 tabular-nums">{shortAgo(entry.at)}</span>
+
+      <span className="absolute top-[6px] right-[6px] flex items-center gap-[2px] rounded-md bg-background p-[2px] shadow-chip opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 has-[:focus-visible]:opacity-100 has-[[aria-pressed=true]]:opacity-100 motion-reduce:transition-none">
         <Hint label={kept ? "Remove the bookmark" : "Bookmark"}>
           <button
             type="button"
             aria-label={kept ? `Remove ${entry.title} from bookmarks` : `Bookmark ${entry.title}`}
             aria-pressed={kept}
             onClick={() => toggleBookmark(entry)}
-            className={cn(CONTROL, kept ? "text-neutral-700" : "opacity-0 group-hover:opacity-100")}
+            className={CONTROL}
           >
             <Icons.bookmark className="size-glyph" fill={kept ? "currentColor" : "none"} />
           </button>
@@ -67,13 +54,13 @@ export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; ke
               type="button"
               aria-label={`Remove ${entry.title} from recents`}
               onClick={onForget}
-              className={cn(CONTROL, "opacity-0 group-hover:opacity-100")}
+              className={CONTROL}
             >
               <Icons.dismiss className="size-glyph" />
             </button>
           </Hint>
         )}
-      </div>
+      </span>
     </div>
   );
 }

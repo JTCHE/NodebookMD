@@ -104,9 +104,8 @@ export function LibraryPanel({ className }: { className?: string }) {
             )}
           </p>
         ) : (
-          // Room past the cards on each side, so a card's ring is not cut by the scroller.
-          <FadeList className="-mx-[3px] h-full px-[3px] pt-[3px] [--fade-size:40px]" deps={[tab, entries.length]}>
-            <div className="grid shrink-0 grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-sm pb-[3px]">
+          <FadeList className="h-full [--fade-size:40px]" deps={[tab, entries.length]}>
+            <div className="grid shrink-0 grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-x-md gap-y-md">
               {entries.map((entry) => (
                 <LibraryCard
                   // A page read twice is two cards, so the path is not a key.
