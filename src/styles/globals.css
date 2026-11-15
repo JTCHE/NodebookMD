@@ -633,6 +633,7 @@ svg[stroke="currentColor"] * {
   mask-image: linear-gradient(
     to bottom,
     rgb(0 0 0 / calc(1 - var(--fade-above, 0))) 0,
+    rgb(0 0 0 / calc(1 - var(--fade-above, 0))) calc(var(--head) * 0.4),
     black var(--head),
     black calc(100% - var(--depth)),
     rgb(0 0 0 / 0.85) calc(100% - var(--depth) * 0.75),

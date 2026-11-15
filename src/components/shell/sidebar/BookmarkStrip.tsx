@@ -20,7 +20,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
 
   return (
     <section className={cn("flex flex-col gap-2xs pb-sm", className)}>
-      <h2 className="flex h-[22px] items-center px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-600">Bookmarks</h2>
+      <h2 className="mb-[2px] flex h-[22px] items-center px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-600">Bookmarks</h2>
 
       {entries.length === 0 ? (
         // The same height and inset as a row of the tree: the strip must not
@@ -33,7 +33,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
       ) : (
         // Every kept page, in a box that stops at six and a half rows and
         // scrolls: the half row and the fade say there is more below.
-        <FadeList className="max-h-[calc(var(--spacing-row)*6.6)] [scrollbar-gutter:auto]! [--fade-size:8px] [--fade-head-size:16px]" deps={[entries.length]}>
+        <FadeList className="max-h-[calc(var(--spacing-row)*6.5)] [scrollbar-gutter:auto]! [--fade-size:8px] [--fade-head-size:16px]" deps={[entries.length]}>
           {entries.map((entry) => (
             <BookmarkRow key={entry.path} entry={entry} open={pathname === `/${entry.path}`} />
           ))}
@@ -62,7 +62,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
           "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600 dark:text-neutral-700",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
           "pointer-hover:bg-foreground/[0.09] dark:pointer-hover:bg-foreground/[0.13] pointer-hover:text-neutral-950",
-          "focus-visible:bg-foreground/[0.09] dark:focus-visible:bg-foreground/[0.13] focus-visible:text-neutral-950 focus-visible:ring-[1.5px] focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
+          "focus-visible:bg-foreground/[0.09] dark:focus-visible:bg-foreground/[0.13] focus-visible:text-neutral-950 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
         )}
       >
         <Icons.dismiss className="size-[11px]" />
