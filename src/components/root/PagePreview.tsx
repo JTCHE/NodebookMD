@@ -44,7 +44,7 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
 
   const tree = page?.tree && { ...page.tree, children: page.tree.children.slice(0, BLOCKS) };
   return (
-    <div ref={box} inert aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden select-none">
+    <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-hidden select-none [--fade-size:28px]">
       <article
         className="prose prose-neutral dark:prose-invert max-w-none pt-[20px]"
         style={{ width: width || undefined, zoom: SCALE, paddingInline: PAGE_PADDING }}
@@ -54,10 +54,11 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
         {tree ? (
           <Body tree={tree} components={markdownComponents} whole />
         ) : (
-          // While the page loads: the shape of a summary and a first paragraph.
+          // While the page loads: the shape of its summary and first paragraph,
+          // under the real title above.
           <div className="mt-5 flex flex-col gap-3">
-            {["w-4/5", "w-full", "w-11/12", "w-3/5"].map((width) => (
-              <div key={width} className={`h-3 rounded-sm bg-neutral-100 ${width}`} />
+            {["w-full", "w-11/12", "w-4/5", "w-full", "w-2/3"].map((width, index) => (
+              <div key={index} className={`h-2.5 rounded-sm bg-neutral-100 ${width}`} />
             ))}
           </div>
         )}
