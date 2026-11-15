@@ -524,13 +524,30 @@ export function LinkTooltip({ url, ...anchored }: Anchored & { url: string }) {
 
 const HEADING = /^H([1-6])$/;
 
+const BLOCK = "p,li,dt,dd,th,td,tr,div,h1,h2,h3,h4,h5,h6,pre,blockquote";
+
+/** The text of an element, with a space where one block or table cell ends
+    and the next begins. `textContent` runs cells together ("ParameterDescription"). */
+function wordsOf(root: Element): string {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let text = "";
+  let lastBlock: Element | null = null;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const block = node.parentElement?.closest(BLOCK) ?? root;
+    if (lastBlock && block !== lastBlock) text += " ";
+    text += node.textContent ?? "";
+    lastBlock = block;
+  }
+  return text.replace(/\s+/g, " ").trim();
+}
+
 /** The words of the section an anchor lands on, read off the page on screen.
     A heading owns what follows it down to the next heading of its rank or
     above; a parameter row owns its own cells. */
 function section(id: string): { title: string; text: string } | null {
   const target = document.getElementById(id);
   if (!target) return null;
-  const words = (el: Element) => (el.textContent ?? "").replace(/\s+/g, " ").trim();
+  const words = (el: Element) => wordsOf(el);
   const block = target.closest<HTMLElement>("h1,h2,h3,h4,h5,h6,dt,tr,li,p") ?? target;
   if (block.tagName === "TR") {
     const [head, ...rest] = [...block.children];
