@@ -25,7 +25,7 @@ export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; ke
         onPointerEnter={() => warm(entry.path)}
         className={cn(
           // Closed frame; the page inside fades out at the foot, as if it goes on.
-          "relative block h-[118px] cursor-interactive overflow-hidden rounded-lg border-[0.5px] border-hairline bg-background",
+          "relative block h-[118px] cursor-interactive overflow-hidden rounded-[14px] border-[0.5px] border-hairline bg-linear-to-b from-background to-neutral-50 shadow-chip [corner-shape:squircle] dark:to-neutral-100",
           "transition-[border-color,translate] duration-(--duration-fast) motion-reduce:transition-none",
           "pointer-hover:border-neutral-300 dark:pointer-hover:border-neutral-500 active:translate-y-px",
           "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 focus-visible:outline-none",
