@@ -96,7 +96,7 @@ export function SidebarRow({
   // What stands in where the help ships no icon. A row that opens holds pages,
   // so the page glyph would say the row IS a page.
   const opens = disclosure === "expanded" || disclosure === "collapsed";
-  const Stand = Icons.page;
+  const Stand = opens ? Icons.section : Icons.page;
   const raised = selected || active;
   // A page row names its page the way a link in the page does: the panel
   // cuts long names short, and the tooltip gives the whole name and what the
@@ -158,8 +158,6 @@ export function SidebarRow({
       {/* The mark sits in a box of a stated size whatever fills it. A help
           icon carries its own aspect ratio and an app glyph does not, and
           without the box the two draw rows of different heights. */}
-      {/* A row that opens already says so with its arrow, so it draws no folder
-          glyph. The slot stays, so a name never lands left of its parent's. */}
       {(mark !== undefined || icon !== undefined) && (
         <span className="grid size-[15px] shrink-0 place-items-center" aria-hidden="true">
           {mark === undefined && icon !== undefined ? (
@@ -176,7 +174,7 @@ export function SidebarRow({
                 // the page glyph reads as a page.
                 fallback={<Stand className="size-[15px] text-neutral-400" />}
               />
-            ) : opens ? null : (
+            ) : (
               <Stand className="size-[15px] text-neutral-400" />
             )
           ) : (

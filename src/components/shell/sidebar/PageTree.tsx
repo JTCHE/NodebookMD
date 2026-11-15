@@ -35,16 +35,16 @@ import { SidebarRow } from "./SidebarRow";
 
 /** Every row in the panel is this tall. `--spacing-row` states it in CSS; the
     windowing needs the same number in JavaScript. */
-const ROW = 28;
+const ROW = 30;
 
-/** Each level sits one step in from the one above: the step that puts a
-    row's mark under the name of its parent. Every row holds the arrow slot
-    and the mark slot, so all names at one depth stand on one axis. */
-const STEP = 16;
+/** A branch sits this far in from its group, and every level below it one step
+    further: the step that puts a row's mark under the name of the row above. */
+const BRANCH_INDENT = 19;
+const STEP = 23;
 
 function indent(depth: number): React.CSSProperties | undefined {
   if (depth === 0) return undefined;
-  const left = STEP * depth;
+  const left = BRANCH_INDENT + STEP * (depth - 1);
   return { marginLeft: left, width: `calc(100% - ${left}px)` };
 }
 
@@ -288,17 +288,23 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
         />
       );
     }
-    return (
-      <SidebarRow
-        key={folder.id}
-        {...shared}
-        // `null`, not `undefined`: a folder the install ships no icon for
-        // draws the folder glyph, so its name stays on the axis of the
-        // pages beside it.
-        icon={folder.icon ?? null}
-        quietDisclosure={depth === 1 && !isOpen}
-      />
-    );
+    if (depth === 1) {
+      return (
+        <SidebarRow
+          key={folder.id}
+          {...shared}
+          // `null`, not `undefined`: a branch the install ships no icon for
+          // still holds the mark's column open, so the names under one group
+          // stay on one axis.
+          icon={folder.icon ?? null}
+          quietDisclosure={!isOpen}
+        />
+      );
+    }
+    // No mark at all. A folder is a place inside the branch, not a page.
+    // Leaving the slot out puts the folder NAME on the axis the pages under it
+    // put their ICONS on.
+    return <SidebarRow key={folder.id} {...shared} />;
   };
 
   return (
