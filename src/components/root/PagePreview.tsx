@@ -44,7 +44,7 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
   return (
     <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-hidden select-none [--fade-size:32px]">
       <article
-        className="prose prose-neutral dark:prose-invert max-w-none px-[calc(var(--spacing-ms)/0.42)] pt-[calc(var(--spacing-ms)/0.42)] lg:px-[calc(var(--spacing-md)/0.42)]"
+        className="prose prose-neutral dark:prose-invert max-w-none px-[calc(var(--spacing-ms)/0.42)] pt-[calc(var(--spacing-ms)/0.42)] lg:px-[calc(var(--spacing-md)/0.42)] lg:pt-[calc(var(--spacing-md)/0.42)]"
         style={{ width: width || undefined, zoom: SCALE }}
       >
         {/* The page's own breadcrumb line, so the window reads as the top of a page. */}
