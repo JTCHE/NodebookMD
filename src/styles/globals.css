@@ -588,77 +588,6 @@ kbd {
   line-height: 1.5;
 }
 
-/* Print. The printer sets the paper, and theme.ts prints the light theme. */
-@page {
-  margin: 1.5cm 1.3cm;
-}
-
-@media print {
-  .max-w-page {
-    max-width: none;
-  }
-  :root {
-    --page-x: 0px;
-  }
-
-  .prose :where(li) {
-    margin-top: 0.15em;
-    margin-bottom: 0.15em;
-    break-inside: avoid;
-  }
-  .prose :where(li > p) {
-    margin-bottom: 0.1em;
-  }
-  .prose :where(li > p + p) {
-    margin-top: 0.1em;
-  }
-  .prose :where(ul, ol, p) {
-    margin-top: 0.4em;
-    margin-bottom: 0.4em;
-  }
-  .prose :where(h1, h2, h3, h4, h5, h6) {
-    margin-top: 0.9em;
-    margin-bottom: 0.4em;
-    break-after: avoid-page;
-    break-inside: avoid;
-  }
-
-  /* A long table, and a long row, can break across sheets. */
-  table {
-    break-inside: auto;
-  }
-  figure,
-  img,
-  .callout,
-  .vex-signature-card {
-    break-inside: avoid;
-  }
-
-  /* Paper does not scroll: wide content wraps. */
-  .markdown-table-wrap,
-  .code-panel {
-    overflow: visible;
-  }
-  .code-panel,
-  .code-panel code,
-  .vex-signature-row {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-  }
-  .vex-signature-row:first-child {
-    width: auto;
-    padding-right: var(--md);
-  }
-
-  /* The code panel is dark in both themes, so it keeps its ground on paper. */
-  .code-panel {
-    print-color-adjust: exact;
-  }
-  .code-copy,
-  .heading-copy {
-    display: none;
-  }
-}
 
 /* An anchor lands clear of the page bar. Page.tsx sets --page-bar-height on the scroller. */
 :is(h1, h2, h3, h4, h5, h6)[id] {
@@ -1201,4 +1130,76 @@ span.doc-icon.inline-icon-large {
   width: 2em;
   height: 2em;
   vertical-align: middle;
+}
+
+/* Print, last, so it overrides the screen rules above. The printer sets the paper, and theme.ts prints the light theme. */
+@page {
+  margin: 1.5cm 1.3cm;
+}
+
+@media print {
+  .max-w-page {
+    max-width: none;
+  }
+  :root {
+    --page-x: 0px;
+  }
+
+  .prose :where(li) {
+    margin-top: 0.15em;
+    margin-bottom: 0.15em;
+    break-inside: avoid;
+  }
+  .prose :where(li > p) {
+    margin-bottom: 0.1em;
+  }
+  .prose :where(li > p + p) {
+    margin-top: 0.1em;
+  }
+  .prose :where(ul, ol, p) {
+    margin-top: 0.4em;
+    margin-bottom: 0.4em;
+  }
+  .prose :where(h1, h2, h3, h4, h5, h6) {
+    margin-top: 0.9em;
+    margin-bottom: 0.4em;
+    break-after: avoid-page;
+    break-inside: avoid;
+  }
+
+  /* A long table, and a long row, can break across sheets. */
+  table {
+    break-inside: auto;
+  }
+  figure,
+  img,
+  .callout,
+  .vex-signature-card {
+    break-inside: avoid;
+  }
+
+  /* Paper does not scroll: wide content wraps. */
+  .markdown-table-wrap,
+  .code-panel {
+    overflow: visible;
+  }
+  .code-panel,
+  .code-panel code,
+  .vex-signature-row {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .vex-signature-row:first-child {
+    width: auto;
+    padding-right: var(--md);
+  }
+
+  /* The code panel is dark in both themes, so it keeps its ground on paper. */
+  .code-panel {
+    print-color-adjust: exact;
+  }
+  .code-copy,
+  .heading-copy {
+    display: none;
+  }
 }
