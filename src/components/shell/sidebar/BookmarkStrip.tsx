@@ -30,7 +30,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
           "group/head flex h-[22px] cursor-interactive items-center gap-2xs self-start rounded-md px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-500",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
           "pointer-hover:text-neutral-900",
-          "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+          "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand/60 focus-visible:outline-none",
         )}
       >
         Bookmarks
@@ -56,6 +56,21 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
           shown.map((entry) => (
             <SidebarRow key={entry.path} label={entry.title} icon={entry.icon ?? null} to={`/${entry.path}`} />
           ))
+        )}
+        {/* The strip shows the newest few; a cut list says how much is cut,
+            and the rest is one click away on the home page. */}
+        {entries.length > SHOWN && (
+          <Link
+            to="/?tab=bookmarks"
+            className={cn(
+              "flex h-row cursor-interactive items-center rounded-md px-sm text-[12px] text-neutral-500",
+              "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
+              "pointer-hover:bg-foreground/[0.035] pointer-hover:text-neutral-900",
+              "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand/60 focus-visible:outline-none",
+            )}
+          >
+            {entries.length - SHOWN} more
+          </Link>
         )}
       </div>
     </section>
