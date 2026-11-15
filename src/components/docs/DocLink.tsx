@@ -37,8 +37,8 @@ function getLinkObserver() {
 // themes and a colour that suits the light theme goes wrong in the dark one.
 // Weight and offset never change, so a paragraph never reflows under the pointer.
 const LINK =
-  "text-brand font-medium no-underline decoration-[0.5px] " +
-  "hover:opacity-75 hover:underline transition-opacity transition-colors motion-reduce:transition-none " +
+  "text-foreground font-medium underline decoration-foreground/30 underline-offset-[3px] decoration-1 " +
+  "hover:decoration-foreground transition-opacity transition-colors motion-reduce:transition-none " +
   "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
 /**

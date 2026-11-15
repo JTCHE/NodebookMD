@@ -1,4 +1,3 @@
-import { AsciiBackground } from "@/components/root/AsciiBackground";
 import { SearchField } from "@/components/root/search-field/SearchField";
 import { LibraryPanel } from "@/components/root/LibraryPanel";
 import { UpdatedPill } from "@/components/root/UpdatedPill";
@@ -22,14 +21,6 @@ export default function Home() {
 
   return (
     <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden @container">
-      {/* The field is a watermark in the top corner rather than a full-bleed
-          backdrop: the window already carries a panel and two bars, and a
-          pattern behind all of it would be one texture too many. */}
-      <AsciiBackground
-        glow={false}
-        className="absolute top-[-30px] right-[-280px] left-auto h-[374px] w-[660px] [mask-image:radial-gradient(ellipse_at_center,black_10%,transparent_70%)]"
-      />
-
       <UpdatedPill />
 
       <div className="relative flex min-h-0 flex-1 flex-col justify-center px-lg py-lg">

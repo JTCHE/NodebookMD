@@ -1,4 +1,5 @@
-import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { ACTION, QUIET } from "@/lib/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
  * The one control beside the search input.
@@ -23,13 +24,13 @@ export function PasteSearchButton({
   className?: string;
 }) {
   return (
-    <PrimaryButton
+    <button
       type={mode === "paste" ? "button" : "submit"}
       onClick={mode === "paste" ? onPaste : undefined}
       disabled={disabled}
-      className={className}
+      className={cn(ACTION, QUIET, "text-sm", className)}
     >
       {label}
-    </PrimaryButton>
+    </button>
   );
 }

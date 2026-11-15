@@ -198,7 +198,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
         role="search"
         className={cn(
           "relative isolate flex items-center gap-sm overflow-hidden rounded-xl",
-          "bg-surface-sunken shadow-field",
+          "bg-transparent",
           // Two edge lines, one bevel. Call `d` the step the fill sits below
           // the page. The OUTER line is a further `d` down — the page falling
           // away — and the INNER line is the page value itself, the lit lip of
@@ -206,48 +206,12 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
           // cannot: below its page there is only black, and a 1px line the
           // strict rule's width disappears on an emissive screen, so the lip
           // takes the next step up the ramp instead of the page step.
-          "border border-hairline dark:border-black",
-          "ring-1 ring-inset ring-neutral-0 dark:ring-neutral-100",
+          "border border-hairline",
           // The focus ring the field takes on behalf of the input it holds.
           "has-[input:focus-visible]:ring-1 has-[input:focus-visible]:ring-neutral-200",
           "py-xs pr-xs pl-md",
         )}
       >
-        {/* Depth across the fill, straight off the design: the two ends and a
-            flat plateau between 38% and 60%. The plateau is what keeps it a
-            shallow band rather than a sweep. The geometry is one shape in both
-            themes — only the ink and the blend differ, and both are local to
-            this element. The two variables name POSITIONS, not roles: `ends` is
-            the pair at 10.9% and 89.5%, `plateau` is the flat run between them.
-            Which of the two carries the light is what each theme decides, so
-            inverting a theme is a swap of ink and never a second gradient.
-
-            Light lights the ends and sinks the plateau. Dark does the reverse —
-            light glancing along the floor of the well — and stops carrying ink
-            at the ends at all.
-
-            Light mode blends: on a near-white fill soft-light is well behaved
-            and gives the shading for free. On the near-black dark fill it is
-            not — the curve is close to vertical there, so the layer either does
-            nothing or blows out, with nothing in between. Dark mode therefore
-            paints instead, lifting by a stated 2%.
-
-            The gradient is a style rather than gradient utilities because
-            Tailwind carries one `via` and this needs two middle stops. */}
-        <div
-          aria-hidden="true"
-          className={cn(
-            "pointer-events-none absolute inset-0 rounded-xl",
-            "mix-blend-soft-light dark:mix-blend-normal",
-            "[--sheen-ends:oklch(1_0_0/50%)] [--sheen-plateau:oklch(0_0_0/50%)]",
-            "dark:[--sheen-ends:transparent] dark:[--sheen-plateau:oklch(1_0_0/2%)]",
-          )}
-          style={{
-            backgroundImage:
-              "linear-gradient(97.19deg, var(--sheen-ends) 10.9%, var(--sheen-plateau) 38.2%, var(--sheen-plateau) 60.2%, var(--sheen-ends) 89.5%)",
-          }}
-        />
-
         <div className="relative flex min-w-0 flex-1 items-center gap-2">
           {field.scope && <ScopeChip scope={field.scope} />}
           <input

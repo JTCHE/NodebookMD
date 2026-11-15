@@ -1481,11 +1481,7 @@ pre code.hljs {
   font-size: 0.9rem;
   color: var(--card-foreground);
   /* Even rim: faint hairline all around + a whisper of top-left light. */
-  box-shadow:
-    inset 0 0 0 1px color-mix(in oklab, white 5%, transparent),
-    inset 1px 1px 0 0 color-mix(in oklab, white 3%, transparent),
-    inset -1px -1px 0 0 color-mix(in oklab, black 3%, transparent),
-    0 1px 2px 0 color-mix(in oklab, black 4%, transparent);
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
 :root[data-theme="dark"] .callout {
@@ -1529,7 +1525,7 @@ pre code.hljs {
   margin-inline: 0;
 }
 .callout a {
-  color: var(--callout-color);
+  color: inherit;
 }
 .callout code {
   /* Same precomputed-literal approach as `--callout-surface` above, and the
@@ -1548,18 +1544,18 @@ pre code.hljs {
    blend depends on `--callout-color`, which is what a modifier exists to
    change. */
 .callout-tip {
-  --callout-color: oklch(0.6 0.14 150);
+  --callout-color: oklch(0.45 0 0);
   --callout-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5'/%3E%3Cpath d='M9 18h6'/%3E%3Cpath d='M10 22h4'/%3E%3C/svg%3E");
-  --callout-surface: rgb(247, 251, 248);
+  --callout-surface: rgb(247, 247, 247);
 }
 :root[data-theme="dark"] .callout-tip {
-  --callout-surface: rgb(25, 28, 25);
+  --callout-surface: rgb(27, 27, 27);
 }
 .callout-tip code {
-  background: rgb(232, 243, 233);
+  background: rgb(236, 236, 236);
 }
 :root[data-theme="dark"] .callout-tip code {
-  background: rgb(17, 24, 18);
+  background: rgb(20, 20, 20);
 }
 .callout-warning {
   --callout-color: oklch(0.7 0.15 75);
