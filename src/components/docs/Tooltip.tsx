@@ -158,6 +158,21 @@ interface Anchored {
   side?: "above" | "below" | "right";
 }
 
+// A press puts every tooltip away at once, with no fade: a click opens a
+// page, and a box fading over the next page reads as a web page, not an app.
+let pressed = false;
+function press() {
+  pressed = true;
+  for (const ghost of document.querySelectorAll("[data-tooltip-ghost]")) ghost.remove();
+  setTimeout(() => {
+    pressed = false;
+  }, 400);
+}
+if (typeof document !== "undefined") {
+  document.addEventListener("pointerdown", press, true);
+  document.addEventListener("keydown", (event) => event.key === "Enter" && press(), true);
+}
+
 /** The box every tooltip sits in. Fixed, so it escapes any ancestor's
     `overflow: clip` (e.g. the carousel). Over the link, or under it where the
     box does not fit above, and pushed in from the side of the window. */
@@ -236,7 +251,7 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
     for (const ghost of document.querySelectorAll("[data-tooltip-ghost]")) ghost.remove();
     return () => {
       const el = tooltipRef.current;
-      if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (!el || pressed || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const ghost = el.cloneNode(true) as HTMLElement;
       ghost.classList.add("pop-out");
       ghost.setAttribute("data-tooltip-ghost", "");
