@@ -6,7 +6,7 @@ interface KeycapProps {
 }
 
 /** The small key of a hint row: the status bar and the search overlay's footer. */
-export const SMALL_KEY = "rounded-md px-sm py-xs text-caption leading-none";
+export const SMALL_KEY = "rounded-md [corner-shape:squircle] px-sm py-xs text-caption leading-none";
 
 /** A physically-raised key. The one source of truth for a key in the landing page. */
 export function Keycap({ children, className }: KeycapProps) {

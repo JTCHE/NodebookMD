@@ -30,7 +30,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
   }
 
   return (
-    <div ref={container} onKeyDown={onKeyDown} className="relative -mx-2 inline-flex print:hidden">
+    <div ref={container} onKeyDown={onKeyDown} className="relative -ml-2 inline-flex print:hidden">
       <button
         ref={trigger}
         type="button"

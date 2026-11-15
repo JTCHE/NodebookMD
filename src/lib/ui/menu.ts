@@ -7,11 +7,11 @@ import { ROW_INTERACTION } from "./interactive";
 
 /** Panel corner = item corner (md, 6px) + panel padding (4px), so the corners nest. */
 export const MENU_PANEL =
-  "absolute top-[calc(100%+4px)] right-0 z-50 origin-top-right rounded-[10px] border border-hairline bg-raised p-1 " +
+  "absolute top-[calc(100%+4px)] right-0 z-50 origin-top-right rounded-[10px] [corner-shape:squircle] border border-hairline bg-raised p-1 " +
   "shadow-xl shadow-black/10 pop-in";
 
 export const MENU_ITEM =
-  "flex w-full items-center gap-2.5 rounded-md px-sm py-[7px] text-left text-row text-neutral-800 " + ROW_INTERACTION;
+  "flex w-full items-center gap-2.5 rounded-md [corner-shape:squircle] px-sm py-[7px] text-left text-row text-neutral-800 " + ROW_INTERACTION;
 
 export const MENU_ICON = "size-3.5 shrink-0 text-neutral-500";
 
