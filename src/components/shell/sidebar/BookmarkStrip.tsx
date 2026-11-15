@@ -31,9 +31,9 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
           <span className="ml-xs">to keep a page</span>
         </p>
       ) : (
-        // Every kept page, in a box that stops at six and a half rows and
+        // Every kept page, in a box that stops short of seven rows and
         // scrolls: the half row and the fade say there is more below.
-        <FadeList className="max-h-[calc(var(--spacing-row)*6.5)] [scrollbar-gutter:auto]! [--fade-size:40px]" deps={[entries.length]}>
+        <FadeList className="max-h-[calc(var(--spacing-row)*6.75)] [scrollbar-gutter:auto]! [--fade-size:30px]" deps={[entries.length]}>
           {entries.map((entry) => (
             <BookmarkRow key={entry.path} entry={entry} open={pathname === `/${entry.path}`} />
           ))}
@@ -59,7 +59,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
         aria-label={`Remove ${entry.title} from bookmarks`}
         onClick={() => toggleBookmark(entry)}
         className={cn(
-          "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600",
+          "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600 dark:text-neutral-700",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
           "pointer-hover:bg-foreground/[0.05] dark:pointer-hover:bg-foreground/[0.07] pointer-hover:text-neutral-950",
           "focus-visible:bg-foreground/[0.08] focus-visible:text-neutral-950 focus-visible:outline-none",
