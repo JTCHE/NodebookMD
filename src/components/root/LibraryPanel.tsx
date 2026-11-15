@@ -104,8 +104,9 @@ export function LibraryPanel({ className }: { className?: string }) {
             )}
           </p>
         ) : (
-          <FadeList className="h-full [--fade-size:40px]" deps={[tab, entries.length]}>
-            <div className="grid shrink-0 grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-x-md gap-y-md">
+          // Out like the search field, so text inside a window sits on its text axis.
+          <FadeList className="-mr-xs -ml-ms h-full snap-y lg:-ml-md snap-mandatory [--fade-size:24px] [--fade-head-size:24px]" deps={[tab, entries.length]}>
+            <div className="grid shrink-0 grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-sm">
               {entries.map((entry) => (
                 <LibraryCard
                   // A page read twice is two cards, so the path is not a key.

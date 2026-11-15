@@ -1,12 +1,12 @@
 /**
- * One remembered page, drawn as a small window onto the page itself. Its name
- * and the time read sit under the window, so the window holds only the page.
+ * One remembered page, drawn as a small window onto the page itself. The
+ * bookmark and remove controls float on it in a pill, under the pointer.
  */
 import { Link } from "react-router";
 import { cn } from "@/lib/utils";
 import { Hint } from "@/components/ui/Hint";
 import { Icons } from "@/lib/ui/icons";
-import { shortAgo, toggleBookmark, type LibraryEntry } from "@/lib/store/library";
+import { toggleBookmark, type LibraryEntry } from "@/lib/store/library";
 import { warm } from "@/lib/pages";
 import { PagePreview } from "@/components/root/PagePreview";
 
@@ -18,26 +18,23 @@ const CONTROL =
 
 export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; kept: boolean; onForget?: () => void }) {
   return (
-    <div className="group relative flex flex-col gap-2xs">
+    <div className="group relative snap-start">
       <Link
         to={`/${entry.path}`}
         aria-label={entry.title}
         onPointerEnter={() => warm(entry.path)}
         className={cn(
-          "relative block h-[102px] cursor-interactive overflow-hidden rounded-lg border border-hairline bg-background dark:border-neutral-400/70",
+          // Open at the foot: the page fades out as if it goes on under the window.
+          "fade-out relative block h-[118px] cursor-interactive overflow-hidden rounded-lg border-[0.5px] border-hairline bg-background [--fade-size:32px]",
           "transition-[border-color,translate] duration-(--duration-fast) motion-reduce:transition-none",
-          "pointer-hover:border-neutral-300 dark:pointer-hover:border-neutral-400 active:translate-y-px",
-          "focus-visible:border-neutral-500 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-500 focus-visible:outline-none",
+          "pointer-hover:border-neutral-300 active:translate-y-px dark:bg-neutral-100",
+          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
         )}
       >
         <PagePreview path={entry.path} title={entry.title} />
       </Link>
 
-      {/* The window already names the page, so only the time sits under it,
-          on the axis of the text inside the window, with the controls at its end. */}
-      <div className="flex h-[22px] items-center justify-between pl-[10px]">
-        <span className="text-caption text-neutral-500 tabular-nums">{shortAgo(entry.at)}</span>
-      <span className="-mr-[4px] flex items-center opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 has-[:focus-visible]:opacity-100 has-[[aria-pressed=true]]:opacity-100 motion-reduce:transition-none">
+      <span className="absolute top-[6px] right-[6px] flex items-center gap-[2px] rounded-md bg-background p-[2px] shadow-chip opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 has-[:focus-visible]:opacity-100 motion-reduce:transition-none dark:bg-neutral-200">
         <Hint label={kept ? "Remove the bookmark" : "Bookmark"}>
           <button
             type="button"
@@ -62,7 +59,6 @@ export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; ke
           </Hint>
         )}
       </span>
-      </div>
     </div>
   );
 }

@@ -12,9 +12,7 @@ import { pageKind } from "@/lib/ranking";
 
 /** The page is drawn at this fraction of its size, the same in every window
     width, so a wider card shows more of the page and never bigger type. */
-const SCALE = 0.42;
-/** The page's own side padding, before the scale. */
-const PAGE_PADDING = 24;
+const SCALE = 0.42; // also in the padding classes below: text inside sits on the search text axis
 /** Enough blocks to fill the window; the rest is never seen. */
 const BLOCKS = 8;
 
@@ -44,10 +42,10 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
 
   const tree = page?.tree && { ...page.tree, children: page.tree.children.slice(0, BLOCKS) };
   return (
-    <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-hidden select-none [--fade-size:28px]">
+    <div ref={box} inert aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden select-none">
       <article
-        className="prose prose-neutral dark:prose-invert max-w-none pt-[20px]"
-        style={{ width: width || undefined, zoom: SCALE, paddingInline: PAGE_PADDING }}
+        className="prose prose-neutral dark:prose-invert max-w-none px-[calc(var(--spacing-ms)/0.42)] pt-[calc(var(--spacing-ms)/0.42)] lg:px-[calc(var(--spacing-md)/0.42)]"
+        style={{ width: width || undefined, zoom: SCALE }}
       >
         <PageTitle name={page?.name ?? title} nodeType={pageKind(path, page?.nodeType)} icon={page?.icon} />
         {page?.summary && <p className="m-0 mt-3 text-sm text-muted-foreground">{page.summary}</p>}
