@@ -798,7 +798,8 @@ pre code.hljs {
   display: flex;
   flex-direction: column;
   gap: var(--sm);
-  margin: 0 calc(var(--md) * -1 - 1px) var(--lg);
+  /* The top gap matches a heading's, so the header ends at one distance on every page type. */
+  margin: var(--xl) calc(var(--md) * -1 - 1px) var(--lg);
 }
 
 .vex-signature-row {

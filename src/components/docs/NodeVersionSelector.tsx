@@ -39,10 +39,11 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
         title={onLatest ? "The latest version of this node" : `An older version. The latest is ${latest.label}.`}
         onClick={() => setOpen((was) => !was)}
         className={cn(
-          "inline-flex cursor-interactive items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium transition-colors",
-          "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+          // A ghost picker like Copy; only an older version is marked.
+          "-mx-2 inline-flex cursor-interactive items-center gap-1 rounded-md border px-2 py-0.5 text-xs transition-colors",
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400",
           onLatest
-            ? "border-border text-neutral-700 hover:bg-muted hover:text-foreground"
+            ? "border-transparent text-neutral-600 hover:bg-muted hover:text-foreground"
             : "border-brand/40 bg-brand/10 text-brand-700 dark:text-brand-bright",
         )}
       >
