@@ -6,11 +6,11 @@
  * With nothing kept the strip is one row tall, the height of one kept page,
  * so the first bookmark does not move the tree below it.
  */
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { COMMAND_KEY } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
-import type { LibraryEntry } from "@/lib/store/library";
+import { toggleBookmark, type LibraryEntry } from "@/lib/store/library";
 import { Keycap } from "@/components/ui/Keycap";
 import { SidebarRow } from "./SidebarRow";
 
@@ -19,6 +19,7 @@ const SHOWN = 4;
 
 export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[]; className?: string }) {
   const shown = entries.slice(0, SHOWN);
+  const { pathname } = useLocation();
 
   return (
     <section className={cn("flex flex-col gap-2xs", className)}>
@@ -30,7 +31,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
           "group/head flex h-[22px] cursor-interactive items-center gap-2xs self-start rounded-md px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-500",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
           "pointer-hover:text-neutral-900",
-          "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand/60 focus-visible:outline-none",
+          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
         )}
       >
         Bookmarks
@@ -54,7 +55,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
           </p>
         ) : (
           shown.map((entry) => (
-            <SidebarRow key={entry.path} label={entry.title} icon={entry.icon ?? null} to={`/${entry.path}`} />
+            <BookmarkRow key={entry.path} entry={entry} open={pathname === `/${entry.path}`} />
           ))
         )}
         {/* The strip shows the newest few; a cut list says how much is cut,
@@ -65,8 +66,8 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
             className={cn(
               "flex h-row cursor-interactive items-center rounded-md px-sm text-[12px] text-neutral-500",
               "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-              "pointer-hover:bg-foreground/[0.035] pointer-hover:text-neutral-900",
-              "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand/60 focus-visible:outline-none",
+              "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045] pointer-hover:text-neutral-900",
+              "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
             )}
           >
             {entries.length - SHOWN} more
@@ -74,5 +75,29 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
         )}
       </div>
     </section>
+  );
+}
+
+/** One kept page: the panel's row, marked when it is the open page, and a
+    remove control that comes with the pointer or the keyboard. The control
+    sits over the row, not in it: a link cannot hold a button. */
+function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
+  return (
+    <div className="group/bookmark relative">
+      <SidebarRow label={entry.title} icon={entry.icon ?? null} to={`/${entry.path}`} selected={open} className="pr-[28px]" />
+      <button
+        type="button"
+        aria-label={`Remove ${entry.title} from bookmarks`}
+        onClick={() => toggleBookmark(entry)}
+        className={cn(
+          "absolute top-1/2 right-[6px] grid size-[20px] -translate-y-1/2 cursor-interactive place-items-center rounded-sm text-neutral-400",
+          "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
+          "pointer-hover:text-neutral-900",
+          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
+        )}
+      >
+        <Icons.dismiss className="size-[11px]" />
+      </button>
+    </div>
   );
 }
