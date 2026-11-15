@@ -126,7 +126,7 @@ export function SidebarRow({
       // it, so its fill alone says it is chosen.
       // Hover is a tint of the panel, never the chip: a hovered row must not
       // read as a second row you are on.
-      raised ? cn("bg-raised", !bare && "shadow-chip") : "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045]",
+      raised ? cn("bg-raised dark:bg-neutral-300", !bare && "shadow-chip") : "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045]",
       // Focus is an accent ring inside the row's own shape: plain to see,
       // and never mistaken for hover or the chip.
       "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",

@@ -84,7 +84,11 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
 function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
   return (
     <div className="group/bookmark relative">
-      <SidebarRow label={entry.title} icon={entry.icon ?? null} to={`/${entry.path}`} selected={open} className="pr-[28px]" />
+      <SidebarRow label={entry.title} icon={entry.icon ?? null} to={`/${entry.path}`} selected={open}
+        // The remove control covers the row's end, so the row keeps its hover
+        // while the pointer is on the control.
+        className={cn("pr-[28px]", !open && "group-hover/bookmark:bg-foreground/[0.035] dark:group-hover/bookmark:bg-foreground/[0.045]")}
+      />
       <button
         type="button"
         aria-label={`Remove ${entry.title} from bookmarks`}
@@ -92,7 +96,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
         className={cn(
           "absolute top-1/2 right-[6px] grid size-[20px] -translate-y-1/2 cursor-interactive place-items-center rounded-sm text-neutral-400",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
-          "pointer-hover:text-neutral-900",
+          "pointer-hover:bg-foreground/[0.08] pointer-hover:text-neutral-900",
           "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-brand/70 focus-visible:outline-none",
         )}
       >
