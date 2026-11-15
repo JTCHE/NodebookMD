@@ -375,13 +375,15 @@ export default function Page() {
   const hasToc = headings.length >= 2;
   const name = useMemo(() => (page ? nameOf(page, path) : ""), [page, path]);
 
-  // A new page settles in: a short fade and a 4px rise, so a click lands as a
-  // change of page, not a cut. Once per path, not on each re-render of the tree.
+  // A new page settles in with a short fade, so a click lands as a change of
+  // page, not a cut. Once per path, not on each re-render of the tree.
+  // Opacity only: a translate makes the article the containing block of the
+  // absolute ToC, which then draws off its place until the animation ends.
   const article = useRef<HTMLElement>(null);
   const shown = Boolean(page);
   useLayoutEffect(() => {
     if (!shown || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    article.current?.animate([{ opacity: 0, translate: "0 4px" }, { opacity: 1, translate: "0 0" }], { duration: 180, easing: "cubic-bezier(0.2, 0, 0, 1)" });
+    article.current?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: "cubic-bezier(0.2, 0, 0, 1)" });
   }, [path, shown]);
 
   // The tree comes parsed from `read` (a worker). The components are made once
