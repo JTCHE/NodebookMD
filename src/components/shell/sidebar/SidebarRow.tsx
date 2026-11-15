@@ -126,10 +126,10 @@ export function SidebarRow({
       // it, so its fill alone says it is chosen.
       // Hover is a tint of the panel, never the chip: a hovered row must not
       // read as a second row you are on.
-      raised ? cn("bg-raised dark:bg-neutral-300", !bare && "shadow-chip") : "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.055]",
+      raised ? cn("bg-raised dark:bg-neutral-300", !bare && "shadow-chip ring-1 ring-inset ring-foreground/[0.1] dark:ring-0", "pointer-hover:bg-neutral-50 dark:pointer-hover:brightness-110") : "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.055]",
       // Focus is an accent ring inside the row's own shape: plain to see,
       // and never mistaken for hover or the chip.
-      "focus-visible:ring-[1.5px] focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
+      "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-300 dark:focus-visible:ring-neutral-500 focus-visible:outline-none",
       className,
     ),
   };
@@ -143,10 +143,8 @@ export function SidebarRow({
           <Disclosure
             className={cn(
               "size-glyph",
-              // Open reads as a darker arrow, not as the raised chip: the chip
-              // means "the row you are on", and an open branch is a place you
-              // are inside, not the row itself.
-              disclosure === "expanded" ? "text-neutral-600" : "text-neutral-400",
+              // One ink for both directions: the turn of the arrow says open or closed.
+              "text-neutral-600",
               quietDisclosure &&
                 "opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none",
             )}
@@ -186,7 +184,7 @@ export function SidebarRow({
         data-label=""
         className={cn(
           "min-w-0 flex-1 truncate text-row tracking-[-0.01em]",
-          (header || selected) && "font-medium",
+          header && "font-medium",
           raised ? "text-neutral-950" : header ? "text-neutral-700 group-hover:text-neutral-950" : "text-neutral-600 group-hover:text-neutral-950",
         )}
       >
@@ -196,10 +194,10 @@ export function SidebarRow({
       {/* A page row has no arrow and no slot for one, so its chip pads its
           icon like any row. Its flag stands at the end, where a kept page
           says so without moving its name. */}
-      {kept && <Icons.bookmark className="size-[9px] shrink-0 text-brand" fill="currentColor" aria-hidden="true" />}
+      {kept && <Icons.bookmark className="ml-2xs size-glyph shrink-0 text-neutral-500" strokeWidth={2} aria-hidden="true" />}
 
       {count !== undefined && (
-        <span className="shrink-0 text-[11px] text-neutral-400 tabular-nums opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none">
+        <span className="shrink-0 text-[11px] text-neutral-500 tabular-nums opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none">
           {count.toLocaleString()}
         </span>
       )}
