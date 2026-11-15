@@ -20,7 +20,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
 
   return (
     <section className={cn("flex flex-col gap-2xs pb-xs", className)}>
-      <h2 className="mb-[2px] flex h-[22px] items-center px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-600">Bookmarks</h2>
+      <h2 className="mt-xs mb-[2px] flex h-[22px] items-center px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-700">Bookmarks</h2>
 
       {entries.length === 0 ? (
         // The same height and inset as a row of the tree: the strip must not
@@ -34,7 +34,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
         // Every kept page, in a box of six whole rows that scrolls. The last
         // row fades across its height while more hide below it, so the box
         // ends on a row and the gap to the tree never changes.
-        <FadeList className="max-h-[calc(var(--spacing-row)*6)] [scrollbar-gutter:auto]! [--fade-size:12px] [--fade-head-size:16px]" deps={[entries.length]}>
+        <FadeList className="max-h-[calc(var(--spacing-row)*6)] [scrollbar-gutter:auto]! [--fade-size:16px] [--fade-head-size:16px]" deps={[entries.length]}>
           {entries.map((entry) => (
             <BookmarkRow key={entry.path} entry={entry} open={pathname === `/${entry.path}`} />
           ))}
@@ -53,14 +53,14 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
       <SidebarRow label={entry.title} icon={entry.icon ?? null} to={`/${entry.path}`} selected={open}
         // The remove control covers the row's end, so the row keeps its hover
         // while the pointer is on the control.
-        className={cn("pr-[32px]", !open && "group-hover/bookmark:bg-foreground/[0.035] dark:group-hover/bookmark:bg-foreground/[0.055]")}
+        className={cn("pr-[32px]", !open && "group-hover/bookmark:bg-foreground/[0.035] dark:group-hover/bookmark:bg-foreground/[0.08]")}
       />
       <button
         type="button"
         aria-label={`Remove ${entry.title} from bookmarks`}
         onClick={() => toggleBookmark(entry)}
         className={cn(
-          "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600 dark:text-neutral-700",
+          "absolute top-1/2 right-[8px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600 dark:text-neutral-700",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 group-focus-within/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
           "pointer-hover:bg-foreground/[0.15] dark:pointer-hover:bg-foreground/[0.2] pointer-hover:text-neutral-950",
           "focus-visible:bg-foreground/[0.12] dark:focus-visible:bg-foreground/[0.2] focus-visible:text-neutral-950 focus-visible:ring-[1.5px] focus-visible:ring-neutral-700 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent focus-visible:outline-none",
