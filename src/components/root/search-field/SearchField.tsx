@@ -183,9 +183,12 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
   const buttonLabel = "Search";
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
+    // The field overhangs its column by exactly its own padding, so the input
+    // text sits on the same left axis as the text above it and only the
+    // surface reaches past.
+    <div ref={containerRef} className={cn("relative -mr-xs -ml-ms lg:-ml-md", className)}>
       {error && (
-        <p id={errorId} className="mb-sm text-meta text-destructive">
+        <p id={errorId} className="mb-sm ml-ms text-meta text-destructive lg:ml-md">
           {error}
         </p>
       )}
@@ -194,7 +197,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
         onSubmit={handleSubmit}
         role="search"
         className={cn(
-          "relative isolate flex items-center gap-sm overflow-hidden",
+          "relative isolate flex items-center gap-sm overflow-hidden rounded-xl",
           "bg-transparent",
           // Two edge lines, one bevel. Call `d` the step the fill sits below
           // the page. The OUTER line is a further `d` down — the page falling
@@ -203,10 +206,10 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
           // cannot: below its page there is only black, and a 1px line the
           // strict rule's width disappears on an emissive screen, so the lip
           // takes the next step up the ramp instead of the page step.
-          "border-b border-hairline",
-          // The focus shows as a darker rule: the field is open on arrival.
-          "has-[input:focus-visible]:border-neutral-400",
-          "py-sm",
+          "border border-hairline",
+          // The focus ring the field takes on behalf of the input it holds.
+          "has-[input:focus-visible]:ring-1 has-[input:focus-visible]:ring-neutral-200",
+          "py-xs pr-xs pl-md",
         )}
       >
         <div className="relative flex min-w-0 flex-1 items-center gap-2">
