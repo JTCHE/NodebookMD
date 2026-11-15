@@ -24,7 +24,7 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
   const { pathname } = useLocation();
 
   return (
-    <section className={cn("flex flex-col gap-2xs pb-xs", className)}>
+    <section className={cn("flex flex-col gap-2xs pb-sm", className)}>
       <h2 className="flex h-[22px] items-center px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-600">Bookmarks</h2>
 
       <div className="flex min-h-row flex-col">
@@ -85,7 +85,7 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
         aria-label={`Remove ${entry.title} from bookmarks`}
         onClick={() => toggleBookmark(entry)}
         className={cn(
-          "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-full text-neutral-500",
+          "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-full text-neutral-600",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
           "pointer-hover:bg-foreground/[0.05] dark:pointer-hover:bg-foreground/[0.07] pointer-hover:text-neutral-950",
           "focus-visible:ring-[1.5px] focus-visible:ring-inset focus-visible:ring-neutral-500/80 focus-visible:outline-none",
