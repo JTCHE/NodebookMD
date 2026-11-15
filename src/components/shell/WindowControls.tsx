@@ -74,7 +74,7 @@ export function WindowControls({ className }: { className?: string }) {
         className={CAPTION_BUTTON}
         onClick={(() => void appWindow()?.minimize())}
       >
-        <Icons.captionMinimize className="size-[11px]" />
+        <Icons.captionMinimize className="size-glyph" />
       </button>
       <button
         type="button"
@@ -83,7 +83,7 @@ export function WindowControls({ className }: { className?: string }) {
         className={CAPTION_BUTTON}
         onClick={(() => void appWindow()?.toggleMaximize())}
       >
-        <MaximizeGlyph className="size-[11px]" />
+        <MaximizeGlyph className="size-glyph" />
       </button>
       <button
         type="button"
@@ -97,7 +97,7 @@ export function WindowControls({ className }: { className?: string }) {
         )}
         onClick={(() => void appWindow()?.close())}
       >
-        <Icons.captionClose className="size-[11px]" />
+        <Icons.captionClose className="size-glyph" />
       </button>
     </div>
   );

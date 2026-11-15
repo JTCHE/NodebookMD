@@ -139,10 +139,10 @@ export function SidebarRow({
       {bare || disclosure === "none" ? null : (
         // The arrow sits in a slot as wide as a mark, so its centre stands on
         // the icon column of the rows above and below.
-        <span className="grid size-[15px] shrink-0 place-items-center" aria-hidden="true">
+        <span className="grid size-icon shrink-0 place-items-center" aria-hidden="true">
           <Disclosure
             className={cn(
-              "size-[11px]",
+              "size-glyph",
               // Open reads as a darker arrow, not as the raised chip: the chip
               // means "the row you are on", and an open branch is a place you
               // are inside, not the row itself.
@@ -158,23 +158,23 @@ export function SidebarRow({
           icon carries its own aspect ratio and an app glyph does not, and
           without the box the two draw rows of different heights. */}
       {(mark !== undefined || icon !== undefined) && (
-        <span className="grid size-[15px] shrink-0 place-items-center" aria-hidden="true">
+        <span className="grid size-icon shrink-0 place-items-center" aria-hidden="true">
           {mark === undefined && icon !== undefined ? (
             icon ? (
               <DocIconClient
                 src={icon}
                 alt=""
-                className="size-[15px]"
+                className="size-icon"
                 // The list only mounts the rows on screen, so a lazy load only
                 // adds a frame between a row and its icon.
                 priority
                 // The install ships a few pages whose icon file is not in it.
                 // A blank where every neighbour has a mark reads as a fault;
                 // the page glyph reads as a page.
-                fallback={<Stand className="size-[15px] text-neutral-400" />}
+                fallback={<Stand className="size-icon text-neutral-400" />}
               />
             ) : (
-              <Stand className="size-[15px] text-neutral-400" />
+              <Stand className="size-icon text-neutral-400" />
             )
           ) : (
             mark
@@ -185,7 +185,7 @@ export function SidebarRow({
       <span
         data-label=""
         className={cn(
-          "min-w-0 flex-1 truncate text-[13px] tracking-[-0.01em]",
+          "min-w-0 flex-1 truncate text-row tracking-[-0.01em]",
           (header || selected) && "font-medium",
           raised ? "text-neutral-950" : header ? "text-neutral-700 group-hover:text-neutral-950" : "text-neutral-600 group-hover:text-neutral-950",
         )}

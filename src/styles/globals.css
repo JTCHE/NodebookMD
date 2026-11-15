@@ -161,6 +161,13 @@ a {
      not grow with the list: the greeting and the field would move every time
      the reader crossed between Recents and Bookmarks. */
   --spacing-list: 268px;
+  /* The box of a row's mark or icon, and of a small glyph (a chevron, a close X). */
+  --spacing-icon: 15px;
+  --spacing-glyph: 11px;
+  /* The text of a panel or menu row. Chrome, so it does not grow on a wide window. */
+  --text-row: 13px;
+  /* The page width where the contents list gets its own gutter. */
+  --container-toc: 780px;
 
   /* ── Content widths ───────────────────────────────────────────────────
      Named, because the spacing ladder above shares its names with Tailwind's

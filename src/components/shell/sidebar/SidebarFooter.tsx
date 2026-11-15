@@ -42,7 +42,7 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
           to go and not a label over a list. */}
       <SidebarRow
         label="Recents"
-        mark={<Icons.recent className={cn("size-[15px]", recentsOpen ? "text-neutral-800" : "text-neutral-500")} />}
+        mark={<Icons.recent className={cn("size-icon", recentsOpen ? "text-neutral-800" : "text-neutral-500")} />}
         disclosure={recentsOpen ? "expanded" : "collapsed"}
         active={recentsOpen}
         count={recentCount}
@@ -53,7 +53,7 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
           the right. The theme lives in Settings. */}
       {/* A short rule, inset like the rows, between the trail and the app's own controls. */}
       <div className="mx-sm mt-xs h-px bg-hairline/60" />
-      <div className="mt-xs flex items-center gap-[2px] pt-xs">
+      <div className="mt-xs flex items-center gap-2xs pt-xs">
         <Hint label="Settings" keys={SETTINGS_KEYS}>
           <button type="button" aria-label="Settings" className={FOOTER_BUTTON} onClick={openSettings}>
             <Icons.settings className="size-4" />

@@ -295,7 +295,7 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
           // together read as two selections.
           mark={
             Mark ? (
-              <Mark className={cn("size-[15px]", isOpen ? "text-neutral-800" : "text-neutral-500")} />
+              <Mark className={cn("size-icon", isOpen ? "text-neutral-800" : "text-neutral-500")} />
             ) : null
           }
         />

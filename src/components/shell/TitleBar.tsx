@@ -86,7 +86,7 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
         "relative z-20 flex h-titlebar shrink-0 items-center bg-chrome select-none print:hidden",
         // macOS draws its traffic lights over the left of the bar, and no
         // caption buttons sit at the right edge.
-        nativeFrame && (fullscreen ? "pr-xs" : "pr-[4px]"),
+        nativeFrame && "pr-xs",
       )}
     >
       {/* The panel's part of the bar. Docked, it is exactly as wide as the
@@ -136,16 +136,16 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
             // Same plate as BAR_BUTTON: 28px tall, same radius, same hover.
             // Its padding is given back, so the logo sits 8px after the toggle.
             "flex h-[28px] shrink-0 cursor-interactive items-center gap-[7px] rounded-md px-sm",
-            bare ? "-ml-[2px]" : "ml-2xs",
+            bare ? "-ml-2xs" : "ml-2xs",
             "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
             "pointer-hover:bg-neutral-200 active:bg-neutral-300",
             "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
           )}
         >
-          <BrandLogo className="h-[15px] w-auto shrink-0" />
+          <BrandLogo className="h-icon w-auto shrink-0" />
           {/* A narrow panel keeps the logo and gives the word's room to the
               arrows. */}
-          <span className={cn("translate-y-[0.5px] text-[12.5px] font-semibold tracking-[-0.015em] text-neutral-900", !bare && "@max-[236px]:hidden")}>
+          <span className={cn("translate-y-light text-meta font-semibold tracking-[-0.015em] text-neutral-900", !bare && "@max-[236px]:hidden")}>
             {APP_NAME}
           </span>
         </Link>
@@ -157,7 +157,7 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
             this one", and it never moves, so the bar does not reflow as the
             reader walks. */}
         {showArrows && (
-          <span className={cn("flex shrink-0 items-center", docked ? "mr-[4px] ml-auto" : "mx-xs")}>
+          <span className={cn("flex shrink-0 items-center", docked ? "mr-xs ml-auto" : "mx-xs")}>
             <Hint label="Back" keys={BACK_KEYS}>
               <button
                 type="button"
@@ -230,12 +230,12 @@ function PinButton({ corner }: { corner: boolean }) {
       tabIndex={-1}
       aria-label={pinned ? "Stop keeping on top" : "Keep on top"}
       aria-pressed={pinned}
-      className={cn(CAPTION_BUTTON, corner && "rounded-tr-[12px]", pinned && "text-brand")}
+      className={cn(CAPTION_BUTTON, corner && "rounded-tr-xl", pinned && "text-brand")}
       onClick={toggle}
     >
       {/* Drawn as a caption button: the same box, ink and glyph size as the
           three beside it, so the four read as one set. */}
-      <Icons.pin className={cn("size-[11px]", pinned && "fill-current")} />
+      <Icons.pin className={cn("size-glyph", pinned && "fill-current")} />
     </button>
     </Hint>
   );

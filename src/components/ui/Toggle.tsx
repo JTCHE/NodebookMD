@@ -55,7 +55,7 @@ export function Toggle({
         className={cn(
           // The knob is the ground's own colour on an ink track, and white on
           // the pale one, so it stands out of the track in both themes.
-          "absolute top-[2px] left-[2px] size-[16px] rounded-full shadow-chip",
+          "absolute top-2xs left-2xs size-md rounded-full shadow-chip",
           "transition-transform duration-(--duration-base) motion-reduce:transition-none",
           checked ? "translate-x-[14px] bg-neutral-0" : "bg-white",
         )}

@@ -38,7 +38,7 @@ interface BuildRow {
 
 /** Every row of the popover, so the folder row cannot drift from the builds. */
 const ROW =
-  "flex w-full cursor-interactive items-center justify-between gap-sm rounded-md px-[6px] py-[7px] text-left text-[13px] " +
+  "flex w-full cursor-interactive items-center justify-between gap-sm rounded-md px-[6px] py-[7px] text-left text-row " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none disabled:cursor-default " +
   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
@@ -47,7 +47,7 @@ const PICK = "\0pick";
 
 /** A key cap, small enough to sit at the end of a row. */
 const CHIP =
-  "mr-xs inline-flex h-4 shrink-0 items-center rounded-[4px] border px-1 text-[10px] font-semibold leading-none " +
+  "mr-xs inline-flex h-4 shrink-0 items-center rounded-sm border px-1 text-[10px] font-semibold leading-none " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none " +
   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
@@ -113,13 +113,13 @@ function Card({
       )}
     >
       <span className="flex min-w-0 flex-col gap-[3px]">
-        <span className="flex min-w-0 items-center gap-[3px] text-[13px] leading-4 font-medium tracking-[-0.012em] text-neutral-950">
+        <span className="flex min-w-0 items-center gap-[3px] text-row leading-4 font-medium tracking-[-0.012em] text-neutral-950">
           {/* `null` is not read yet, which is not the same as no install. */}
           <span className="truncate">
             {version ? `Houdini ${version}` : version === null ? "Houdini" : "No Houdini install found"}
           </span>
           {/* The chevron stands on the name it opens, so the name reads as the control. */}
-          <Icons.expanded className="size-[11px] shrink-0 text-neutral-400 transition-colors duration-(--duration-fast) group-hover/card:text-neutral-700 motion-reduce:transition-none" />
+          <Icons.expanded className="size-glyph shrink-0 text-neutral-400 transition-colors duration-(--duration-fast) group-hover/card:text-neutral-700 motion-reduce:transition-none" />
         </span>
         <span className="truncate text-caption leading-[14px] text-neutral-500 tabular-nums">
           {pageCount === null ? "Reading the install…" : pagesLabel(pageCount, status)}
@@ -311,7 +311,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
         // cannot hold a button. It shows under the pointer or the keyboard
         // only: at rest an unlabelled key at the panel's edge reads as debris,
         // and the version list names it for every install.
-        <div className="absolute top-[16px] right-sm flex -translate-y-1/2 opacity-0 transition-opacity duration-(--duration-fast) group-hover/version:opacity-100 focus-within:opacity-100 motion-reduce:transition-none">
+        <div className="absolute top-md right-sm flex -translate-y-1/2 opacity-0 transition-opacity duration-(--duration-fast) group-hover/version:opacity-100 focus-within:opacity-100 motion-reduce:transition-none">
           <F1Chip release={currentSeries} hooked={currentHooked} onToggle={() => toggleF1(currentSeries, currentHooked)} />
         </div>
       )}
@@ -320,7 +320,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
         aria-label="Houdini installs on this machine"
         className={cn(
           "absolute left-0 top-full z-10 mt-xs w-full origin-top overflow-hidden rounded-lg",
-          "bg-raised p-[2px] shadow-pane ring-1 ring-hairline",
+          "bg-raised p-2xs shadow-pane ring-1 ring-hairline",
           "transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-none",
           open ? "opacity-100 scale-100" : "pointer-events-none opacity-0 scale-[0.98]",
         )}

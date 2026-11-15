@@ -98,7 +98,7 @@ export function SettingsDialog() {
             bare
             selected={shown === one.key}
             mark={
-              <one.icon className={cn("size-[15px]", shown === one.key ? "text-neutral-900" : "text-neutral-500")} />
+              <one.icon className={cn("size-icon", shown === one.key ? "text-neutral-900" : "text-neutral-500")} />
             }
             onClick={() => setShown(one.key)}
           />

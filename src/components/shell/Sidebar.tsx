@@ -198,7 +198,7 @@ export function Sidebar({
         onPointerDown={startDrag}
         onDoubleClick={() => setWidth(DEFAULT_WIDTH)}
         className={cn(
-          "absolute inset-y-0 -right-[2px] w-[5px] cursor-col-resize",
+          "absolute inset-y-0 -right-2xs w-[5px] cursor-col-resize",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
           "pointer-hover:bg-neutral-300",
         )}

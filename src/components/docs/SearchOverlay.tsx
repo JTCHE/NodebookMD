@@ -381,7 +381,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
               })}
               className="flex items-center justify-center size-6 rounded text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Icons.dismiss className="size-[15px]" />
+              <Icons.dismiss className="size-icon" />
             </button>
             </Hint>
           )}

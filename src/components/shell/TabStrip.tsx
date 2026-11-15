@@ -198,7 +198,7 @@ export function TabStrip() {
       className={cn(
         // Relative: each tab's `offsetLeft` is then its place in the strip.
         // The first chip starts on the sheet's left edge.
-        "relative -mb-px flex h-[calc(100%+1px)] min-w-0 items-end gap-[2px] overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
+        "relative -mb-px flex h-[calc(100%+1px)] min-w-0 items-end gap-2xs overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
         "transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none",
       )}
     >
@@ -215,9 +215,9 @@ export function TabStrip() {
         />
       ))}
       {/* It stays at the end of the window when the tabs scroll under it. */}
-      <Hint label="New tab" keys={NEW_TAB_KEYS} className="sticky right-0 mb-[5px] ml-[2px] rounded-md bg-chrome shadow-[0_0_0_2px_var(--color-chrome)]">
+      <Hint label="New tab" keys={NEW_TAB_KEYS} className="sticky right-0 mb-[5px] ml-2xs rounded-md bg-chrome shadow-[0_0_0_2px_var(--color-chrome)]">
         <button type="button" tabIndex={-1} aria-label="New tab" onClick={newTab} className={BAR_BUTTON}>
-          <Icons.newTab className="size-[15px]" />
+          <Icons.newTab className="size-icon" />
         </button>
       </Hint>
       {menu && <TabMenu {...menu} count={tabs.length} onClose={() => setMenu(null)} />}
@@ -372,7 +372,7 @@ function TabChip({
     >
       {/* Narrow, a tab shows one thing, centred: its icon, or its close
           when it is the active one. */}
-      <span className="flex size-full items-center gap-[7px] pr-[4px] pb-[6px] pl-sm @max-[72px]:justify-center @max-[72px]:px-0">
+      <span className="flex size-full items-center gap-[7px] pr-xs pb-[6px] pl-sm @max-[72px]:justify-center @max-[72px]:px-0">
         <span className={cn("grid shrink-0 place-items-center", active && "@max-[72px]:hidden")}>
           {icon ? (
             <DocIconClient src={icon} alt="" className="size-[14px]" fallback={<Icons.page className="size-[14px]" />} />
@@ -382,7 +382,7 @@ function TabChip({
             <Icons.page className="size-[14px]" />
           )}
         </span>
-        <span className="min-w-0 flex-1 translate-y-[0.5px] truncate text-[12.5px] leading-none tracking-[-0.01em] @max-[72px]:hidden">{title}</span>
+        <span className="min-w-0 flex-1 translate-y-light truncate text-meta leading-none tracking-[-0.01em] @max-[72px]:hidden">{title}</span>
         <button
           type="button"
           tabIndex={-1}
@@ -391,7 +391,7 @@ function TabChip({
           onPointerDown={(event) => event.stopPropagation()}
           onClick={onClose}
           className={cn(
-            "grid size-[20px] shrink-0 place-items-center rounded-[4px] text-neutral-500",
+            "grid size-[20px] shrink-0 place-items-center rounded-sm text-neutral-500",
             "transition-[opacity,background-color,color] duration-(--duration-fast) motion-reduce:transition-none",
             "pointer-hover:bg-neutral-200 pointer-hover:text-neutral-950",
             // The active tab always shows its close; another only under the
@@ -399,7 +399,7 @@ function TabChip({
             active ? "opacity-100" : "opacity-0 group-hover/tab:opacity-100 @max-[72px]:hidden",
           )}
         >
-          <Icons.dismiss className="size-[12px]" />
+          <Icons.dismiss className="size-ms" />
         </button>
       </span>
     </div>

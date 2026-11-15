@@ -63,9 +63,9 @@ export function UpdatedPill() {
         type="button"
         aria-label="Close"
         onClick={close}
-        className="grid size-[24px] cursor-interactive place-items-center rounded-full text-neutral-500 transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200 pointer-hover:text-neutral-800 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        className="grid size-lg cursor-interactive place-items-center rounded-full text-neutral-500 transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200 pointer-hover:text-neutral-800 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
-        <Icons.dismiss className="size-[12px]" />
+        <Icons.dismiss className="size-ms" />
       </button>
     </div>
   );

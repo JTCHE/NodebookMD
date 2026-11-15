@@ -40,7 +40,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
         onClick={() => setOpen((was) => !was)}
         className={cn(
           "inline-flex cursor-interactive items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium transition-colors",
-          "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+          "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
           onLatest
             ? "border-border text-neutral-700 hover:bg-muted hover:text-foreground"
             : "border-brand/40 bg-brand/10 text-brand-700 dark:text-brand-bright",

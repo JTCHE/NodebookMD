@@ -411,7 +411,7 @@ export default function Page() {
           page moves left by half of it — breadcrumbs and article together —
           so the column stays centred on what is left, and the list is not
           paid for by the text's own width. */}
-      <div className={cn("flex min-h-0 flex-1 flex-col", hasToc && "@min-[780px]:pr-[200px]")}>
+      <div className={cn("flex min-h-0 flex-1 flex-col", hasToc && "@min-toc:pr-[200px]")}>
         {/* The column: the bar, then the page. It is the box the list of
             contents hangs off, from the top of the bar, so "On this page"
             sits on the same line as the breadcrumbs. */}

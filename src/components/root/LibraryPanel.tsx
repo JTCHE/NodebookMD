@@ -79,14 +79,14 @@ function LibraryRow({ entry, kept, onForget }: { entry: LibraryEntry; kept: bool
         className="absolute inset-0 cursor-interactive rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       />
 
-      <Hint label={kept ? "Remove the bookmark" : "Bookmark"} className="absolute -left-[13px] top-1/2 -translate-y-1/2">
+      <Hint label={kept ? "Remove the bookmark" : "Bookmark"} className="absolute -left-slack top-1/2 -translate-y-1/2">
       <button
         type="button"
         aria-label={kept ? `Remove ${entry.title} from bookmarks` : `Bookmark ${entry.title}`}
         aria-pressed={kept}
         onClick={(() => toggleBookmark(entry))}
         className={cn(
-          "grid size-[15px] cursor-interactive place-items-center rounded-sm",
+          "grid size-icon cursor-interactive place-items-center rounded-sm",
           // An unkept row shows its flag only under the pointer or the
           // keyboard, so a list of unkept pages is a list of pages and not a
           // column of empty outlines.
@@ -98,7 +98,7 @@ function LibraryRow({ entry, kept, onForget }: { entry: LibraryEntry; kept: bool
         )}
       >
         <Icons.bookmark
-          className="size-[11px]"
+          className="size-glyph"
           fill={kept ? "currentColor" : "none"}
         />
       </button>
@@ -108,17 +108,17 @@ function LibraryRow({ entry, kept, onForget }: { entry: LibraryEntry; kept: bool
         <DocIconClient
           src={entry.icon}
           alt=""
-          className="pointer-events-none size-[15px] shrink-0"
+          className="pointer-events-none size-icon shrink-0"
           // The install ships a few pages whose icon file is not in it. A
           // blank where every neighbour has a mark reads as a fault.
-          fallback={<Icons.page className="pointer-events-none size-[15px] shrink-0 text-neutral-400" />}
+          fallback={<Icons.page className="pointer-events-none size-icon shrink-0 text-neutral-400" />}
         />
       ) : (
-        <Icons.page className="pointer-events-none size-[15px] shrink-0 text-neutral-400" />
+        <Icons.page className="pointer-events-none size-icon shrink-0 text-neutral-400" />
       )}
       {/* As wide as the name, with the space after it apart, so the tooltip
           measures the words and not the row. */}
-      <span ref={anchorRef} className="pointer-events-none min-w-0 truncate text-[13.5px] tracking-[-0.01em] text-neutral-800">
+      <span ref={anchorRef} className="pointer-events-none min-w-0 truncate text-label tracking-[-0.01em] text-neutral-800">
         {entry.title}
       </span>
       <span className="flex-1" />
@@ -129,7 +129,7 @@ function LibraryRow({ entry, kept, onForget }: { entry: LibraryEntry; kept: bool
       <span className="relative shrink-0">
         <span
           className={cn(
-            "pointer-events-none text-[11.5px] text-neutral-500 tabular-nums",
+            "pointer-events-none text-caption text-neutral-500 tabular-nums",
             onForget &&
               "transition-opacity duration-(--duration-fast) group-hover:opacity-0 motion-reduce:transition-none",
           )}
@@ -143,14 +143,14 @@ function LibraryRow({ entry, kept, onForget }: { entry: LibraryEntry; kept: bool
             aria-label={`Remove ${entry.title} from recents`}
             onClick={(onForget)}
             className={cn(
-              "grid size-[15px] cursor-interactive place-items-center rounded-sm text-neutral-400",
+              "grid size-icon cursor-interactive place-items-center rounded-sm text-neutral-400",
               "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
               "transition-opacity duration-(--duration-fast) motion-reduce:transition-none",
               "pointer-hover:text-neutral-800",
               "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
             )}
           >
-            <Icons.dismiss className="size-[11px]" />
+            <Icons.dismiss className="size-glyph" />
           </button>
           </Hint>
         )}
@@ -195,7 +195,7 @@ export function LibraryPanel({ className }: { className?: string }) {
               aria-selected={active}
               onClick={(() => setTab(id))}
               className={cn(
-                "flex cursor-interactive items-center gap-sm rounded-lg px-sm py-[6px] text-[13.5px] font-medium tracking-[-0.012em]",
+                "flex cursor-interactive items-center gap-sm rounded-lg px-sm py-[6px] text-label font-medium tracking-[-0.012em]",
                 "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
                 active
                   ? "text-neutral-950"
@@ -203,7 +203,7 @@ export function LibraryPanel({ className }: { className?: string }) {
                 "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
               )}
             >
-              <Mark className="size-[13px] shrink-0 translate-y-[0.5px]" />
+              <Mark className="size-[13px] shrink-0 translate-y-light" />
               {label}
             </button>
           );
@@ -239,7 +239,7 @@ export function LibraryPanel({ className }: { className?: string }) {
             // where `-mx-sm` put it (21 - 13 = 8, the same cancel as before)
             // while moving the scroller's own clipped edge 13px further out —
             // enough for the flag to clear it.
-            className="-mr-sm -ml-[21px] h-full pl-[13px]"
+            className="-mr-sm -ml-[21px] h-full pl-slack"
             deps={[tab, entries.length]}
           >
             {entries.map((entry) => (

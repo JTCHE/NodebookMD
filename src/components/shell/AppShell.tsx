@@ -44,7 +44,7 @@ function SkipToContent() {
         (main?.querySelector<HTMLElement>("input") ?? main)?.focus({ preventScroll: true });
       }}
       className={cn(
-        "sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-[4px] focus-visible:left-sm focus-visible:z-50",
+        "sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-xs focus-visible:left-sm focus-visible:z-50",
         "rounded-md bg-raised text-meta font-medium text-neutral-950 shadow-chip focus-visible:px-ms focus-visible:py-xs",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
       )}

@@ -8,7 +8,7 @@ export const ACTION = "flex h-8 shrink-0 cursor-interactive items-center justify
 /** The quiet look most of them take. The primary one is `PrimaryButton`. */
 export const QUIET =
   "text-muted-foreground transition-colors " +
-  "hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+  "hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none";
 
 export const ACTION_ICON = "size-4 shrink-0";
 

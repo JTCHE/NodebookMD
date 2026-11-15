@@ -20,14 +20,14 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
 
   return (
     <section className={cn("flex flex-col gap-2xs pb-xs", className)}>
-      <h2 className="mt-xs mb-[2px] flex h-[22px] items-center px-sm text-[11.5px] font-medium tracking-[-0.005em] text-neutral-700">Bookmarks</h2>
+      <h2 className="mt-xs mb-2xs flex h-[22px] items-center px-sm text-[11.5px] tracking-[-0.005em] text-neutral-500">Bookmarks</h2>
 
       {entries.length === 0 ? (
         // The same height and inset as a row of the tree: the strip must not
         // grow the first time a page is kept, or the whole tree steps down.
-        <p className="flex h-row w-full items-center gap-[3px] px-sm text-[13px] tracking-[-0.01em] text-neutral-500">
-          <Keycap flat className="translate-y-[0.5px] border-neutral-300 text-neutral-600">{COMMAND_KEY}</Keycap>
-          <Keycap flat className="translate-y-[0.5px] border-neutral-300 text-neutral-600">D</Keycap>
+        <p className="flex h-row w-full items-center gap-[3px] px-sm text-row tracking-[-0.01em] text-neutral-500">
+          <Keycap flat className="translate-y-light border-neutral-300 text-neutral-600">{COMMAND_KEY}</Keycap>
+          <Keycap flat className="translate-y-light border-neutral-300 text-neutral-600">D</Keycap>
           <span className="ml-xs">to keep a page</span>
         </p>
       ) : (
@@ -60,13 +60,13 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
         aria-label={`Remove ${entry.title} from bookmarks`}
         onClick={() => toggleBookmark(entry)}
         className={cn(
-          "absolute top-1/2 right-[8px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600 dark:text-neutral-700",
+          "absolute top-1/2 right-sm grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600 dark:text-neutral-700",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 group-focus-within/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
           "pointer-hover:bg-foreground/[0.15] dark:pointer-hover:bg-foreground/[0.2] pointer-hover:text-neutral-950",
           "focus-visible:bg-foreground/[0.12] dark:focus-visible:bg-foreground/[0.2] focus-visible:text-neutral-950 focus-visible:ring-[1.5px] focus-visible:ring-neutral-700 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent focus-visible:outline-none",
         )}
       >
-        <Icons.dismiss className="size-[11px]" strokeWidth={2.4} />
+        <Icons.dismiss className="size-glyph" strokeWidth={2.4} />
       </button>
     </div>
   );

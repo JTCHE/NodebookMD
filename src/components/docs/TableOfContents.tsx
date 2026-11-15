@@ -124,7 +124,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
           title is centred in a box as tall as the bar, so "On this page" is
           always on the breadcrumbs' line. The list under the title scrolls on
           its own and is never taller than the scroller. */}
-      <div className="not-prose print:hidden hidden @min-[780px]:block absolute top-0 left-full ml-lg h-full w-44">
+      <div className="not-prose print:hidden hidden @min-toc:block absolute top-0 left-full ml-lg h-full w-44">
         <nav
           aria-label="On this page"
           className="sticky top-0 flex max-h-[calc(100dvh-var(--spacing-titlebar))] flex-col"
@@ -145,7 +145,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
           the space every heading has, and a margin here would add a second
           gap on top of it. */}
       {/* On paper it is the only list, and it is printed whole. */}
-      <nav ref={inline} aria-label="On this page" className="not-prose @min-[780px]:hidden print:block! -mt-2 print:mt-0 print:mb-6">
+      <nav ref={inline} aria-label="On this page" className="not-prose @min-toc:hidden print:block! -mt-2 print:mt-0 print:mb-6">
         {title}
         <div className={collapsed ? "relative max-h-32 overflow-hidden print:max-h-none" : undefined}>
           <TocList headings={headings} top={top} active={active} />

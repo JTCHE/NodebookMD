@@ -10,7 +10,7 @@ export const MENU_PANEL =
   "shadow-xl shadow-black/10 pop-in";
 
 export const MENU_ITEM =
-  "flex w-full items-center gap-2.5 rounded-md px-sm py-[7px] text-left text-[13px] text-neutral-800 " + ROW_INTERACTION;
+  "flex w-full items-center gap-2.5 rounded-md px-sm py-[7px] text-left text-row text-neutral-800 " + ROW_INTERACTION;
 
 export const MENU_ICON = "size-3.5 shrink-0 text-neutral-500";
 
