@@ -26,14 +26,14 @@ export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[];
         // The same height and inset as a row of the tree: the strip must not
         // grow the first time a page is kept, or the whole tree steps down.
         <p className="flex h-row w-full items-center gap-[3px] px-sm text-[13px] tracking-[-0.01em] text-neutral-500">
-          <Keycap flat className="translate-y-[0.5px]">{COMMAND_KEY}</Keycap>
-          <Keycap flat className="translate-y-[0.5px]">D</Keycap>
+          <Keycap flat className="translate-y-[0.5px] border-neutral-300 text-neutral-600">{COMMAND_KEY}</Keycap>
+          <Keycap flat className="translate-y-[0.5px] border-neutral-300 text-neutral-600">D</Keycap>
           <span className="ml-xs">to keep a page</span>
         </p>
       ) : (
         // Every kept page, in a box that stops at six and a half rows and
         // scrolls: the half row and the fade say there is more below.
-        <FadeList className="max-h-[calc(var(--spacing-row)*6.5)] [scrollbar-gutter:auto]! [--fade-size:14px] [--fade-head-size:12px]" deps={[entries.length]}>
+        <FadeList className="max-h-[calc(var(--spacing-row)*6.6)] [scrollbar-gutter:auto]! [--fade-size:8px] [--fade-head-size:16px]" deps={[entries.length]}>
           {entries.map((entry) => (
             <BookmarkRow key={entry.path} entry={entry} open={pathname === `/${entry.path}`} />
           ))}
@@ -61,8 +61,8 @@ function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
         className={cn(
           "absolute top-1/2 right-[6px] grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600 dark:text-neutral-700",
           "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
-          "pointer-hover:bg-foreground/[0.05] dark:pointer-hover:bg-foreground/[0.07] pointer-hover:text-neutral-950",
-          "focus-visible:bg-foreground/[0.08] focus-visible:text-neutral-950 focus-visible:ring-[1.5px] focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
+          "pointer-hover:bg-foreground/[0.09] dark:pointer-hover:bg-foreground/[0.13] pointer-hover:text-neutral-950",
+          "focus-visible:bg-foreground/[0.09] dark:focus-visible:bg-foreground/[0.13] focus-visible:text-neutral-950 focus-visible:ring-[1.5px] focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
         )}
       >
         <Icons.dismiss className="size-[11px]" />
