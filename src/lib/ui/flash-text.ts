@@ -143,7 +143,8 @@ export function flashText(
     while (marks.length > lines.length) marks.pop()!.remove();
     while (marks.length < lines.length) {
       const mark = document.createElement("div");
-      mark.className = "flash-mark";
+      mark.className =
+        "pointer-events-none absolute rounded-[3px] bg-brand/26 transition-opacity duration-900 ease-[ease-out] data-fading:opacity-0 motion-reduce:transition-none";
       layer.append(mark);
       marks.push(mark);
     }

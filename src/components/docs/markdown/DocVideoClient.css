@@ -1,0 +1,211 @@
+/* The video player of DocVideoClient. The controls sit on the picture, so they are light in both themes. */
+.markdown-video {
+  --video-control: rgb(255 255 255 / 70%);
+  --video-control-hover: rgb(255 255 255);
+  --video-track: rgb(255 255 255 / 30%);
+  --video-controls-height: 4.5rem;
+  outline-offset: 2px;
+}
+.markdown-video:focus-visible {
+  outline: 2px solid var(--ring);
+}
+
+/* cover: contain leaves a sub-pixel strip at two edges. */
+.markdown-video:not(:fullscreen) video {
+  object-fit: cover;
+}
+
+.markdown-video:fullscreen {
+  border: 0;
+  border-radius: 0;
+  background-color: black;
+}
+
+/* Registered so that the blur fades with the controls through its mask alpha. */
+@property --progressive-blur-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+.video-blur {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 1;
+  height: calc(var(--video-controls-height) + 1rem);
+  --progressive-blur-opacity: 1;
+  transition:
+    --progressive-blur-opacity var(--duration-base) var(--ease-out-quint),
+    visibility 0s;
+}
+.video-controls {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 2;
+  height: var(--video-controls-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 0.5rem 0.25rem;
+  background: linear-gradient(to top, rgb(0 0 0 / 60%), rgb(0 0 0 / 0%));
+  transition: opacity var(--duration-base) var(--ease-out-quint);
+}
+
+/* Idle playback hides the controls and stops the blur, which costs GPU work on each frame. */
+.markdown-video[data-idle]:not(:has(:focus-visible)) .video-controls {
+  opacity: 0;
+  pointer-events: none;
+}
+.markdown-video[data-idle]:not(:has(:focus-visible)) .video-blur {
+  --progressive-blur-opacity: 0;
+  visibility: hidden;
+  transition:
+    --progressive-blur-opacity var(--duration-base) var(--ease-out-quint),
+    visibility 0s var(--duration-base);
+}
+@media (prefers-reduced-motion: reduce) {
+  .video-controls,
+  .video-blur {
+    transition: none;
+  }
+}
+
+.video-seek-preview {
+  position: absolute;
+  bottom: 100%;
+  translate: -50% 0;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  background-color: black;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--video-control-hover);
+  pointer-events: none;
+}
+
+.video-bar {
+  display: flex;
+  align-items: center;
+}
+
+.video-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  color: var(--video-control);
+  transition-property: color, scale;
+  transition-duration: var(--duration-fast);
+}
+.video-button:hover {
+  color: var(--video-control-hover);
+}
+.video-button:active {
+  scale: 0.96;
+}
+.video-button:focus-visible {
+  outline: 2px solid var(--video-control);
+  outline-offset: -2px;
+}
+.video-button svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+.video-button::after {
+  content: attr(aria-label);
+  position: absolute;
+  bottom: calc(100% + 0.25rem);
+  left: 50%;
+  translate: -50% 0;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background-color: black;
+  color: var(--video-control-hover);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast);
+}
+.video-button:hover::after {
+  opacity: 1;
+  transition-delay: 700ms;
+}
+.video-button:focus-visible::after {
+  opacity: 1;
+}
+
+.video-bar > .video-button:first-child::after {
+  left: 0;
+  translate: none;
+}
+.video-bar > .video-button:last-child::after {
+  left: auto;
+  right: 0;
+  translate: none;
+}
+
+.video-volume {
+  display: flex;
+  align-items: center;
+}
+
+/* Clipped at zero width: WebKit draws the thumb over the clock otherwise. */
+.video-volume input {
+  width: 0;
+  clip-path: inset(0);
+}
+.video-volume:is(:hover, :focus-within) input {
+  width: 4.5rem;
+  margin-inline: 0.25rem 0.5rem;
+  clip-path: none;
+}
+
+.video-time {
+  padding-inline: 0.375rem;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--video-control);
+}
+
+/* Chromium and WebKit both read the WebKit range parts. */
+.markdown-video input[type="range"] {
+  appearance: none;
+  height: 100%;
+  margin: 0;
+  flex: 1 1 auto;
+  background: transparent;
+}
+.markdown-video input[type="range"]:focus-visible {
+  outline: 2px solid var(--video-control);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.markdown-video input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--video-control-hover) var(--fill, 0%),
+    var(--video-track) var(--fill, 0%)
+  );
+}
+.markdown-video input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-top: -4px;
+  border-radius: 9999px;
+  background-color: var(--video-control-hover);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 15%);
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+.markdown-video input[type="range"]:is(:hover, :active, :focus-visible)::-webkit-slider-thumb {
+  opacity: 1;
+}

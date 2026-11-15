@@ -4,6 +4,7 @@ import { ChevronDown, List } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Heading } from "@/lib/markdown/headings";
 import { TocList } from "./TocList";
+import "./FloatingPill.css";
 
 /**
  * The floating pill, top left, once the inline list has scrolled away: the

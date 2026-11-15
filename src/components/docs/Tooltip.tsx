@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { hitOf } from "@/lib/search";
 import { methodSignature } from "@/lib/method-signature";
 import type { PageView } from "@/lib/pages";
+import "./Tooltip.css";
 
 interface MetaEntry {
   title: string;

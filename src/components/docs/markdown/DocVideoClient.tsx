@@ -9,6 +9,7 @@ import {
   type SVGProps,
 } from "react";
 import { ProgressiveBlur } from "@jtche/progressive-blur";
+import "./DocVideoClient.css";
 
 function icon(path: string) {
   return function PlayerIcon(props: SVGProps<SVGSVGElement>) {
@@ -261,13 +262,13 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
         }}
       />
 
-      {loading && <span className="video-spinner animate-spin motion-reduce:animate-none" aria-hidden="true" />}
+      {loading && <span className="pointer-events-none absolute inset-0 m-auto size-10 animate-spin rounded-full border-3 border-(--video-track) border-t-(--video-control) motion-reduce:animate-none" aria-hidden="true" />}
 
       <ProgressiveBlur side="bottom" strength={12} steps={6} className="video-blur" />
 
       <div className="video-controls">
         <div
-          className="video-seek"
+          className="relative flex h-6 px-2"
           onPointerMove={(event) => {
             const rect = event.currentTarget.getBoundingClientRect();
             const fraction = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
@@ -318,7 +319,7 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
           </div>
           <span className="video-time">
             {time}
-            <span className="video-time-divider">/</span>
+            <span className="mx-1 opacity-60">/</span>
             {clock(duration)}
           </span>
           <span className="flex-1" />
