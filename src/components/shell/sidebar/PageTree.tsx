@@ -55,10 +55,10 @@ function indent(depth: number): React.CSSProperties | undefined {
   return place(folderLeft(depth));
 }
 
-/** A page's arrow slot holds only its bookmark flag, so the page steps back
-    one arrow: its ICON then stands under its parent's name. */
+/** A page has no arrow slot, so at its folder's child step its ICON stands
+    where a child folder's arrow would. */
 function pageIndent(depth: number): React.CSSProperties | undefined {
-  return place(folderLeft(depth) - ARROW);
+  return place(folderLeft(depth));
 }
 
 interface PageTreeProps {

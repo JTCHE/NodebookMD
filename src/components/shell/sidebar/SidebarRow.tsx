@@ -132,16 +132,7 @@ export function SidebarRow({
 
   const content = (
     <>
-      {bare ? null : disclosure === "none" ? (
-        // A page row has no arrow, so the arrow's place is where its flag
-        // goes. Outside the row the flag hung into the panel's own margin and
-        // read as a stray mark; here it reads as the row's own state, and an
-        // unkept page still holds the width open so nothing shifts when a
-        // page is kept.
-        <span className="grid size-[11px] shrink-0 place-items-center" aria-hidden="true">
-          {kept && <Icons.bookmark className="size-[9px] text-brand" fill="currentColor" />}
-        </span>
-      ) : (
+      {bare || disclosure === "none" ? null : (
         <Disclosure
           className={cn(
             // The arrow's ink is narrower than its box: pulled left by the
@@ -195,6 +186,11 @@ export function SidebarRow({
       >
         {label}
       </span>
+
+      {/* A page row has no arrow and no slot for one, so its chip pads its
+          icon like any row. Its flag stands at the end, where a kept page
+          says so without moving its name. */}
+      {kept && <Icons.bookmark className="size-[9px] shrink-0 text-brand" fill="currentColor" aria-hidden="true" />}
 
       {count !== undefined && (
         <span className="shrink-0 text-[11px] text-neutral-400 tabular-nums opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none">
