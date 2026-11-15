@@ -19,7 +19,7 @@ const CONTROL =
 /** The surface of a window: squircle corners, a hairline, and a soft sheen lit
     from above in both themes. The empty panel uses it too. */
 export const WINDOW =
-  "rounded-[14px] border-[0.5px] border-hairline bg-linear-to-b from-background to-neutral-50 shadow-chip [corner-shape:squircle] dark:from-neutral-100 dark:to-background";
+  "rounded-[14px] border-[0.5px] border-hairline bg-linear-to-b from-neutral-50 to-neutral-100 shadow-chip [corner-shape:squircle] dark:from-neutral-100 dark:to-background";
 
 export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; kept: boolean; onForget?: () => void }) {
   return (

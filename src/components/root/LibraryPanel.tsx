@@ -70,7 +70,7 @@ export function LibraryPanel({ className }: { className?: string }) {
                 "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
                 active
                   ? "text-neutral-950"
-                  : "text-neutral-500 pointer-hover:text-neutral-800",
+                  : "text-neutral-500 pointer-hover:bg-foreground/[0.04] pointer-hover:text-neutral-800",
                 "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 focus-visible:outline-none",
               )}
             >
