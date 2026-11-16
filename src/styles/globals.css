@@ -875,7 +875,7 @@ pre code.hljs {
   border: none;
   border-radius: var(--radius-xl);
   /* The surface fades down, as the open method row does. */
-  background: linear-gradient(var(--callout-surface), color-mix(in oklab, var(--callout-surface) 70%, transparent));
+  background: linear-gradient(var(--callout-surface), color-mix(in oklab, var(--callout-surface) 50%, transparent));
   font-size: 0.9rem;
   color: var(--foreground);
   box-shadow:
