@@ -198,11 +198,27 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
         className="h-full min-w-[48px] flex-1"
       />
 
+      <SearchButton />
       <PinButton corner={nativeFrame && !fullscreen} />
       <WindowControls />
 
       {menuAt && <TitleBarMenu at={menuAt} port={port} onClose={() => setMenuAt(null)} />}
     </header>
+  );
+}
+
+/** Opens the search, for a reader who does not know the shortcut. It
+    presses the shortcut itself, so the search on a page and the field on
+    the home page each answer it as they answer the key. */
+function SearchButton() {
+  const press = () =>
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true, cancelable: true }));
+  return (
+    <Hint label="Search" keys={`${COMMAND_KEY}+K`} className="h-full">
+      <button type="button" tabIndex={-1} aria-label="Search" className={CAPTION_BUTTON} onMouseDown={(event) => event.preventDefault()} onClick={press}>
+        <Icons.search className="size-glyph" />
+      </button>
+    </Hint>
   );
 }
 
