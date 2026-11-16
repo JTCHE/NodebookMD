@@ -177,14 +177,39 @@ pub fn icon_layered(install_root: &Path, packages: &[PathBuf], name: &str) -> Re
             }
         }
     }
-    // A node whose own icon is not in the install (Fractal Noise COP names
-    // `COP_fractalnoise`, and no such file ships) shows the digital asset
-    // icon in Houdini. Show the same one.
+    // Houdini maps an icon name that ships no file to one that does, in
+    // `IconMapping` inside the same zip: Fractal Noise COP names
+    // `COP_fractalnoise`, which Houdini draws as `COP2_noise`.
+    if let Some(bytes) = mapped(install_root, clean) {
+        return Ok(bytes);
+    }
+    // A node with no icon and no mapping shows the digital asset icon in
+    // Houdini. Show the same one.
     let context = clean.split_once('/').map(|(context, _)| context).unwrap_or("");
     if NODE_CONTEXTS.contains(&context) {
         return icon(install_root, "MISC/digital_asset.svg");
     }
     Err(format!("no icon {name}"))
+}
+
+/// The icon `IconMapping` gives for `COP/fractalnoise.svg`. A line reads
+/// `COP_fractalnoise := COP2_noise;`, and a target can map on again.
+fn mapped(install_root: &Path, clean: &str) -> Option<Vec<u8>> {
+    let zip = install_root.join("houdini").join("config").join("Icons").join("icons.zip");
+    let table = String::from_utf8_lossy(&read(&zip, "IconMapping").ok()??).into_owned();
+    let mut key = clean.trim_end_matches(".svg").replacen('/', "_", 1);
+    for _hop in 0..4 {
+        let target = table.lines().find_map(|line| {
+            let (from, to) = line.split_once(":=")?;
+            (from.trim() == key).then(|| to.trim().trim_end_matches(';').trim().to_string())
+        })?;
+        let (context, name) = target.split_once('_')?;
+        if let Ok(bytes) = icon(install_root, &format!("{context}/{name}.svg")) {
+            return Some(bytes);
+        }
+        key = target;
+    }
+    None
 }
 
 /// The icon folders that hold one icon for each node type.
