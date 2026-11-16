@@ -7,13 +7,15 @@ import { scopedInput, searchQuotes } from "@/lib/scope";
 import { ScopeChip } from "@/components/search/ScopeChip";
 import { isCommand, isTyping, useHotkey, usePagePaste } from "@/lib/hotkeys";
 import {
-  SEARCH_DROPDOWN_CLASS,
+  SEARCH_LIST_CLASS,
   SearchResultList,
   rowPath,
   toRows,
 } from "@/components/search/SearchResultList";
 import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { PasteSearchButton } from "./PasteSearchButton";
+import { SearchHints } from "@/components/search/SearchHints";
+import { FADE_OUT, useOverflow } from "@/lib/ui/overflow";
 import { useSearchReport } from "@/lib/telemetry";
 import { openTab, tabFor } from "@/lib/tabs";
 
@@ -32,11 +34,22 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
   const containerRef = useRef<HTMLDivElement>(null);
   const errorId = useId();
 
-  const { hits } = useSearch(query);
+  const { hits, settled } = useSearch(query);
   const field = scopedInput(query, changeQuery);
-  // The list opens on its own when there is something to show, and stays shut
-  // until the next answer once the reader dismisses it.
-  const open = !closed && hits.length > 0;
+  // An answer with no page in it is said in the panel, where the list would
+  // be: the reader sees it as they type and nothing above the field moves.
+  const nothing = error || (settled && hits.length === 0 && query.trim() ? `No page matches “${field.text.trim()}”.` : "");
+  // The panel opens on its own when there is something to show, and stays
+  // shut until the next answer once the reader dismisses it.
+  const open = !closed && (hits.length > 0 || Boolean(nothing));
+  // What the panel holds stays while it closes, so it folds away with its
+  // rows in it and does not blink out a frame before.
+  const answer = { hits, nothing, text: field.text };
+  const kept = useRef(answer);
+  if (open) kept.current = answer;
+  const panel = kept.current;
+  const panelRef = useRef<HTMLDivElement>(null);
+  useOverflow(panelRef, [panel.hits, open]);
 
   // The list expands each page into its matching sections, so the arrow keys
   // count rows and not results.
@@ -117,7 +130,8 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
     if (!wanted) return;
     const hit = await resolve(wanted, rows[selected]?.hit);
     if (!hit) {
-      setError(`Nothing in this Houdini build matches “${wanted}”.`);
+      setError(`No page matches “${wanted}”.`);
+      setClosed(false);
       tell(-1);
       return;
     }
@@ -186,19 +200,20 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
     // The field overhangs its column by exactly its own padding, so the input
     // text sits on the same left axis as the text above it and only the
     // surface reaches past.
-    <div ref={containerRef} className={cn("relative -mr-xs -ml-ms lg:-ml-md", className)}>
-      {error && (
-        <p id={errorId} className="mb-sm ml-ms text-meta text-destructive lg:ml-md">
-          {error}
-        </p>
-      )}
-
-      <form
-        onSubmit={handleSubmit}
-        role="search"
+    // The box keeps the height of the closed field, and the surface grows
+    // out of it over the page below, so nothing under the field moves.
+    <div ref={containerRef} className={cn("relative z-10 -mr-xs -ml-ms h-12 lg:-ml-md", className)}>
+     {/* One surface: the field, and under it the answer. Closed, it is a well
+         in the page. Open, it lifts to a panel and the well's shading goes. */}
+     <div
+        data-open={open}
         className={cn(
-          "relative isolate flex items-center gap-sm overflow-hidden rounded-xl",
+          "group/search absolute inset-x-0 top-0 isolate overflow-hidden rounded-xl",
           "bg-neutral-100 shadow-field dark:bg-neutral-0",
+          // Dark has no darker fill to sink to, so the top wall casts its shade on the floor.
+          "dark:inset-shadow-[0_2px_5px_0_oklch(0_0_0/55%)]",
+          "data-[open=true]:bg-popover data-[open=true]:shadow-pane dark:data-[open=true]:bg-popover dark:data-[open=true]:inset-shadow-none",
+          "transition-[background-color,box-shadow] duration-(--duration-base) ease-out-quint motion-reduce:transition-none",
           // Two edge lines, one bevel. Call `d` the step the fill sits below
           // the page. The OUTER line is a further `d` down — the page falling
           // away — and the INNER line is the page value itself, the lit lip of
@@ -206,13 +221,13 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
           // cannot: below its page there is only black, and a 1px line the
           // strict rule's width disappears on an emissive screen, so the lip
           // takes the next step up the ramp instead of the page step.
-          "border border-hairline dark:border-black",
+          "border border-hairline dark:border-black dark:data-[open=true]:border-hairline",
           "ring-1 ring-inset ring-neutral-0 dark:ring-neutral-100",
           // The focus ring the field takes on behalf of the input it holds.
           "has-[input:focus-visible]:ring-1 has-[input:focus-visible]:ring-neutral-200",
-          "py-xs pr-xs pl-md",
         )}
       >
+      <form onSubmit={handleSubmit} role="search" className="relative flex h-[46px] items-center gap-sm py-xs pr-xs pl-md">
         {/* Depth across the fill, straight off the design: the two ends and a
             flat plateau between 38% and 60%. The plateau is what keeps it a
             shallow band rather than a sweep. The geometry is one shape in both
@@ -237,7 +252,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
         <div
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-0 rounded-xl",
+            "pointer-events-none absolute inset-0 transition-opacity duration-(--duration-base) group-data-[open=true]/search:opacity-0 motion-reduce:transition-none",
             "mix-blend-soft-light dark:mix-blend-normal",
             "[--sheen-ends:oklch(1_0_0/50%)] [--sheen-plateau:oklch(0_0_0/50%)]",
             "dark:[--sheen-ends:transparent] dark:[--sheen-plateau:oklch(1_0_0/2%)]",
@@ -260,7 +275,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
             }}
             aria-label="Search the Houdini documentation"
             aria-invalid={!!error}
-            aria-describedby={error ? errorId : undefined}
+            aria-describedby={open && nothing ? errorId : undefined}
             autoComplete="off"
             autoCorrect="on"
             autoCapitalize="off"
@@ -276,20 +291,51 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
         <PasteSearchButton mode={mode} label={buttonLabel} onPaste={() => void pasteAndSearch()} />
       </form>
 
-      {open && (
-        <SearchResultList
-          hits={hits}
-          query={field.text}
-          selected={selected}
-          onSelect={setSelected}
-          onActivate={(row, rank, event) => {
-            tell(rank);
-            rememberSearch(row.hit);
-            go(rowPath(row), row.section?.excerpt, event ? tabFor(event) : null);
-          }}
-          className={cn("absolute top-full right-0 left-0 z-10", SEARCH_DROPDOWN_CLASS)}
-        />
-      )}
+      {/* The rows fold: a grid row that goes from nothing to its content's
+          height is the one way to animate to a height nobody stated. Fast, and
+          the rows take a press from the first frame. */}
+      <div
+        inert={!open}
+        className={cn(
+          "grid grid-cols-[minmax(0,1fr)] transition-[grid-template-rows] duration-(--duration-base) ease-out-quint motion-reduce:transition-none",
+          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+        )}
+      >
+        {/* While it folds, the rows fade out at the moving edge; a hard cut
+            there would slice a row in two. See `fold-fade` in globals.css. */}
+        <div className="fold-fade min-h-0 overflow-clip">
+          {panel.hits.length > 0 ? (
+            <div className="border-t border-hairline">
+              <div ref={panelRef} className={cn("scroll-pt-5 scroll-pb-10 px-xs [scrollbar-width:none]!", SEARCH_LIST_CLASS, FADE_OUT, "[--fade-size:40px] [--fade-head-size:20px]")}>
+                <SearchResultList
+                  hits={panel.hits}
+                  query={panel.text}
+                  // The chip in the field already names the part of the docs.
+                  withCategory={!field.scope}
+                  selected={selected}
+                  onSelect={setSelected}
+                  onActivate={(row, rank, event) => {
+                    tell(rank);
+                    rememberSearch(row.hit);
+                    go(rowPath(row), row.section?.excerpt, event ? tabFor(event) : null);
+                  }}
+                />
+              </div>
+              <SearchHints className="px-md py-sm">
+                <span>{panel.hits.length === 1 ? "1 page" : `${panel.hits.length} pages`}</span>
+              </SearchHints>
+            </div>
+          ) : (
+            panel.nothing && (
+              // On the field's text axis, at a row's height: the list with nothing in it.
+              <p id={errorId} role="status" className="truncate border-t border-hairline px-md py-ms text-sm text-muted-foreground">
+                {panel.nothing}
+              </p>
+            )
+          )}
+        </div>
+      </div>
+     </div>
     </div>
   );
 }

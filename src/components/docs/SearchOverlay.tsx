@@ -12,7 +12,7 @@ import { Hint } from "@/components/ui/Hint";
 import { createPortal, flushSync } from "react-dom";
 import { useLocation, useNavigate } from "react-router";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
+import { SearchHints } from "@/components/search/SearchHints";
 import { showToast } from "@/components/ui/toast-notification";
 import { findAnchor, jumpTo } from "@/components/docs/toc/measure";
 import { invoke, inTauri } from "@/lib/backend";
@@ -33,12 +33,6 @@ import {
   toRows,
   type Row,
 } from "@/components/search/SearchResultList";
-
-const FOOTER_HINTS: Array<{ keys: string[]; label: string }> = [
-  { keys: ["↑", "↓"], label: "navigate" },
-  { keys: ["↵"], label: "open" },
-  { keys: ["esc"], label: "close" },
-];
 
 export interface SearchOverlayRef {
   openSearch: () => void;
@@ -451,21 +445,9 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
 
         {/* The mark on the left, the keys on the right, drawn as the status
             bar draws them. */}
-        <div className="flex items-center gap-md border-t px-4 py-2 select-none">
+        <SearchHints className="px-4 py-2">
           <BrandLogo className="h-4 w-auto opacity-60" />
-          <div className="ml-auto flex items-center gap-md text-meta text-neutral-500">
-            {FOOTER_HINTS.map((hint) => (
-              <span key={hint.label} className="flex items-center gap-xs">
-                {hint.keys.map((key) => (
-                  <Keycap key={key} className={SMALL_KEY}>
-                    {key}
-                  </Keycap>
-                ))}
-                <span className="ml-2xs">{hint.label}</span>
-              </span>
-            ))}
-          </div>
-        </div>
+        </SearchHints>
       </div>
       </div>
     </div>,

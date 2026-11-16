@@ -8,6 +8,8 @@ import { hitOf } from "@/lib/search";
 import { methodSignature } from "@/lib/method-signature";
 import { useHoverTip } from "@/lib/ui/hover-tip";
 import type { PageView } from "@/lib/pages";
+import { PagePreview } from "@/components/root/PagePreview";
+import { WINDOW } from "@/components/root/LibraryCard";
 import "./Tooltip.css";
 
 interface MetaEntry {
@@ -343,6 +345,18 @@ export function DocTooltip({ slug, summaryOnly = false, anchor, ...anchored }: A
 
   const summary = meta?.summary;
   if (summaryOnly && !summary) return null;
+
+  // A link to a whole page shows the page itself, as the home page cards do.
+  // A signature and a summary-only tip stay as text: they name a part.
+  if (meta && !summaryOnly && !signature && !anchor) {
+    return (
+      <TooltipBox {...anchored} className={cn("w-72 border-0 bg-transparent p-0 shadow-lg", WINDOW)}>
+        <span className="relative block h-window overflow-hidden rounded-[inherit]">
+          <PagePreview path={slug} title={meta.title} />
+        </span>
+      </TooltipBox>
+    );
+  }
 
   return (
     <TooltipBox {...anchored} className="w-max max-w-[16rem]">

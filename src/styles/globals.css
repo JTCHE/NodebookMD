@@ -667,6 +667,28 @@ kbd {
   }
 }
 
+/* The edge of a panel that folds open: its content fades into the moving
+   edge, and the fade is gone when the panel is open. The length is a
+   registered property so it can transition. Set data-open on an ancestor. */
+@property --fold-fade {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@utility fold-fade {
+  --fold-fade: 48px;
+  mask-image: linear-gradient(to bottom, black calc(100% - var(--fold-fade)), transparent);
+  /* ease-in: the fade holds for most of the fold and goes at its end. */
+  transition: --fold-fade var(--duration-base) ease-in;
+  [data-open="true"] & {
+    --fold-fade: 0px;
+  }
+  :root[data-motion="reduce"] & {
+    transition: none;
+  }
+}
+
 @utility pop-out {
   animation: pop-in 120ms cubic-bezier(0.2, 0, 0, 1) reverse forwards;
 }
