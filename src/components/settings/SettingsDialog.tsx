@@ -235,7 +235,7 @@ function HelpSection() {
     <Section title="Houdini help">
       {/* Houdini writes its preferences when it closes, so a change made while it is open is lost. Said once, over the list. */}
       {houdiniOpen && series && series.length > 0 && (
-        <p className="-mx-ms mt-xs rounded-lg bg-neutral-100 px-ms py-sm text-label text-neutral-700">Close Houdini to change these.</p>
+        <p className="mt-xs text-label text-muted-foreground">Close Houdini to change these.</p>
       )}
       {series?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
       {series?.map((name) => {
@@ -600,7 +600,7 @@ function PrivacySection() {
         </button>
       </Row>
       {/* What cannot come back sits apart, on a tint, with how much would go. */}
-      <div className="-mx-ms mt-md rounded-lg bg-neutral-100 px-ms">
+      <div className="-mx-ms mt-md rounded-[18px] bg-neutral-100 px-ms [corner-shape:squircle]">
         <Row label="Recent pages" fact={count(library.recents.length)}>
           <ClearButton label="Clear" disabled={library.recents.length === 0} onClear={() => void clearLibrary(false)} />
         </Row>
@@ -657,6 +657,11 @@ function AboutSection() {
       </Row>
       <Row label="Release notes">
         <button type="button" className={BUTTON} onClick={() => void openWeb(`${REPO}/releases`)}>
+          Open
+        </button>
+      </Row>
+      <Row label="Report a problem">
+        <button type="button" className={BUTTON} onClick={() => void openWeb(`${REPO}/issues/new`)}>
           Open
         </button>
       </Row>
