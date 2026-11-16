@@ -7,8 +7,9 @@
 import { useSyncExternalStore } from "react";
 
 export type Accent = "neutral" | "red" | "brand" | "yellow" | "green" | "blue" | "purple" | "pink" | "custom";
-/** Neutral first, then the colours around the wheel, then a hue of your own. */
-export const ACCENTS: Accent[] = ["neutral", "red", "brand", "yellow", "green", "blue", "purple", "pink", "custom"];
+/** The default first, as in every choice in Settings; then the colours
+    around the wheel, no colour, and a hue of your own. */
+export const ACCENTS: Accent[] = ["brand", "red", "yellow", "green", "blue", "purple", "pink", "neutral", "custom"];
 export const ACCENT_LABEL: Record<Accent, string> = {
   neutral: "Neutral",
   red: "Red",
