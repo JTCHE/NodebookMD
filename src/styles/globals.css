@@ -65,20 +65,6 @@ html {
   background: var(--neutral-400);
 }
 
-/* A caption glyph from the system font, with a drawn twin for 1x screens
-   (lib/ui/icons.tsx). One shows at a time. */
-.glyph-drawn {
-  display: none;
-}
-@media (max-resolution: 1dppx) {
-  .glyph-font {
-    display: none;
-  }
-  .glyph-drawn {
-    display: block;
-  }
-}
-
 /* A bar that always shows. The gutter is held, so rows do not move when the bar comes. */
 .thin-scroll {
   scrollbar-gutter: stable;
