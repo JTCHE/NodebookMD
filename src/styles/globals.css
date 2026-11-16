@@ -181,6 +181,8 @@ a {
 }
 
 :root {
+  /* The code panel: a warm near-black, dark in both themes. */
+  --code-ground: oklch(0.16 0.008 60);
   --page-x: 1.5rem;
   --radius: 8px;
   --icon-stroke: 1px;
@@ -536,11 +538,38 @@ img.markdown-media {
 /* Fenced examples and VEX signature cards. No vertical bar: the last row hangs under the horizontal one. */
 .code-panel {
   --code-copy-clearance: 3rem;
-  background: oklch(0.13 0 0);
+  background: var(--code-ground);
   border: 1px solid oklch(1 0 0 / 10%);
   border-radius: var(--radius-lg);
   overflow-x: auto;
   overflow-y: hidden;
+}
+/* A line longer than the panel fades out in the right padding, inside the
+   border, so no glyph is cut at the edge. Over a short line the fade covers
+   only empty padding. */
+.group:has(> .code-panel)::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  bottom: 1px;
+  width: var(--md);
+  border-radius: 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0;
+  background: linear-gradient(to right, transparent, var(--code-ground));
+  pointer-events: none;
+}
+/* The same fade on the left, once the panel is scrolled (CodeBlock.tsx). */
+.group:has(> .code-panel)[data-scrolled]::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  width: var(--md);
+  border-radius: calc(var(--radius-lg) - 1px) 0 0 calc(var(--radius-lg) - 1px);
+  background: linear-gradient(to left, transparent, var(--code-ground));
+  pointer-events: none;
 }
 
 /* The code elements that the renderer outputs always have a class. */
@@ -567,14 +596,14 @@ pre code[class] {
 
 /* One hue for each role, as an editor's dark theme: keywords violet, types
    blue, calls warm yellow, classes teal, names pale blue, strings green,
-   numbers pale lavender, bindings pink. None is the brand's orange. */
+   numbers pale lime, bindings pink. None is the brand's orange. */
 .hljs-keyword,
 .vex-token-output {
-  color: oklch(0.74 0.13 305);
+  color: oklch(0.74 0.14 325);
   font-weight: 500;
 }
 .vex-argument-ampersand {
-  color: oklch(0.74 0.13 305);
+  color: oklch(0.74 0.14 325);
 }
 .hljs-type,
 .hljs-built_in,
@@ -582,11 +611,11 @@ pre code[class] {
 .vex-argument-type,
 .vex-return-arrow,
 .vex-return-type {
-  color: oklch(0.7 0.1 245);
+  color: oklch(0.72 0.11 265);
 }
 .hljs-number,
 .hljs-literal {
-  color: oklch(0.84 0.06 285);
+  color: oklch(0.83 0.08 60);
 }
 .hljs-binding {
   color: oklch(0.78 0.12 350);
@@ -606,7 +635,7 @@ pre code[class] {
   color: oklch(0.87 0.1 95);
 }
 .hljs-title.class_ {
-  color: oklch(0.8 0.1 180);
+  color: oklch(0.8 0.12 165);
 }
 .hljs-variable,
 .hljs-property {
@@ -751,6 +780,10 @@ kbd {
 .prose pre code,
 pre code.hljs {
   font-family: var(--font-mono);
+}
+/* Inline code at the text's own weight, in prose as in table cells. */
+.prose :where(code):not(:where([class~="not-prose"] *)) {
+  font-weight: 400;
 }
 
 /* Keep a link and its description close inside a list item. */

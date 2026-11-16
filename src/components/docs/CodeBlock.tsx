@@ -40,7 +40,7 @@ export function CodePanel({ children, language }: CodePanelProps) {
     if (language && !/language-/.test(code.className)) code.className = `language-${language}`;
     hljs.highlightElement(code as HTMLElement);
     const name = /language-(\S+)/.exec(code.className)?.[1];
-    if (name && hljs.getLanguage(name)) colourNames(code as HTMLElement, ownedWords(name));
+    if (name && hljs.getLanguage(name)) colourNames(code as HTMLElement, ownedWords(name), name === "vex");
   }, [language]);
 
   // A panel that scrolls hangs its bar over the code's bottom padding instead
@@ -56,7 +56,17 @@ export function CodePanel({ children, language }: CodePanelProps) {
     };
     const observer = new ResizeObserver(hang);
     observer.observe(scroller);
-    return () => observer.disconnect();
+    // Once scrolled, the left edge fades as the right one does (globals.css).
+    const panel = panelRef.current!;
+    const onScroll = () => {
+      if (scroller.scrollLeft > 0) panel.dataset.scrolled = "";
+      else delete panel.dataset.scrolled;
+    };
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      observer.disconnect();
+      scroller.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   const handleCopy = useCallback(async () => {
@@ -86,7 +96,7 @@ export function CodePanel({ children, language }: CodePanelProps) {
         onClick={(handleCopy)}
         aria-label="Copy code"
         data-copied={copied || undefined}
-        className="code-copy absolute cursor-interactive right-2 top-2 select-none rounded-md border border-white/15 bg-white/10 px-2.5 py-1 text-xs font-medium text-white/70 backdrop-blur-sm transition-all duration-150 hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 active:scale-95"
+        className="code-copy absolute z-10 cursor-interactive right-2 top-2 select-none rounded-md border border-white/15 bg-white/10 px-2.5 py-1 text-xs font-medium text-white/70 backdrop-blur-sm transition-all duration-150 hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 active:scale-95"
       >
         {copied ? "Copied" : "Copy"}
       </button>

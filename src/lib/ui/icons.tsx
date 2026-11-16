@@ -132,8 +132,8 @@ function CaptionSearch({ className }: { className?: string }) {
 const SYSTEM_GLYPHS = navigator.userAgent.includes("Windows");
 
 /** Caption glyphs are made for 10px. A general glyph, as the search and the
-    pin, is drawn thinner, for a larger size: at 13px its stroke is one full
-    device pixel and its ring is as tall as the maximize square. */
+    pin, is drawn thinner, for a larger size: at 12px its stroke is one full
+    device pixel and its optical size matches the maximize square. */
 function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement, size = 10) {
   if (!SYSTEM_GLYPHS) return Drawn;
   return function SystemGlyph({ className }: { className?: string }) {
@@ -205,9 +205,9 @@ export const Icons = {
   collapseAll: ChevronsDownUp,
 
   /* Window */
-  pin: systemGlyph("\uE718", CaptionPin, 13),
-  pinned: systemGlyph("\uE842", CaptionPinned, 13),
-  captionSearch: systemGlyph("\uE721", CaptionSearch, 13),
+  pin: systemGlyph("\uE718", CaptionPin, 12),
+  pinned: systemGlyph("\uE842", CaptionPinned, 12),
+  captionSearch: systemGlyph("\uE721", CaptionSearch, 12),
   versionPicker: ChevronsUpDown,
 
   /* Content */
