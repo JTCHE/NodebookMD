@@ -1289,6 +1289,10 @@ span.doc-icon.inline-icon-large {
   background: var(--raised);
   box-shadow: var(--elevation-chip), 0 0 0 1px var(--hairline);
 }
+/* In dark the raised ground is the track's grey; the knob is the switch's light knob. */
+[data-theme="dark"] .slider::-webkit-slider-thumb {
+  background: oklch(0.92 0 0);
+}
 .slider:focus-visible {
   outline: none;
 }

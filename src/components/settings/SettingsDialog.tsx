@@ -237,7 +237,7 @@ function HelpSection() {
       {houdiniOpen && series && series.length > 0 && (
         <p
           role="status"
-          className="mt-xs flex items-center gap-sm rounded-lg border border-hairline bg-neutral-100 px-ms py-sm text-label text-neutral-900"
+          className="-mx-ms mt-xs mb-sm flex items-center gap-sm rounded-lg border border-hairline bg-neutral-100 px-ms py-sm text-label text-neutral-900"
         >
           <Icons.warning className="size-icon shrink-0 text-neutral-700" />
           Houdini is open. Close it to change these switches.
