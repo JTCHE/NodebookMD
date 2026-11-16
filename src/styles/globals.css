@@ -638,10 +638,7 @@ pre code[class] {
 }
 .hljs-type,
 .hljs-built_in,
-.vex-token-type,
-.vex-argument-type,
-.vex-return-arrow,
-.vex-return-type {
+.vex-token-type {
   color: oklch(0.72 0.12 245);
 }
 .hljs-number,
@@ -1133,6 +1130,21 @@ pre code.hljs {
   display: block;
   width: 100%;
   height: 100%;
+}
+/* The open row's hover fill fades down into its body, so it does not end
+   on a hard edge above the text it opened. */
+@media (hover: hover) {
+  .hom-method[open] > summary:hover {
+    background-color: transparent;
+    background-image: linear-gradient(var(--neutral-100), transparent);
+  }
+}
+/* Monochrome: code is one grey ramp too, by weight and shade, not by hue. */
+:root[data-accent="monochrome"] :is([class*="hljs-"], [class*="vex-token-"], .vex-argument-ampersand) {
+  color: inherit;
+}
+:root[data-accent="monochrome"] .hljs-comment {
+  color: oklch(0.62 0 0);
 }
 .hom-method[open] > summary > .hom-method-chevron {
   transform: rotate(90deg);
