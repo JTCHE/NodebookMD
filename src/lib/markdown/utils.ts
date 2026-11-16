@@ -5,6 +5,7 @@ import type { CodeLanguage } from './types';
  */
 export function detectLanguage(slug: string): CodeLanguage {
   if (slug === 'api' || slug.startsWith('api/')) return 'python';
+  if (slug === 'hapi' || slug.startsWith('hapi/')) return 'python';
   if (slug.includes('hom/') || slug.includes('python/') || slug.endsWith('model/verbs')) return 'python';
   if (slug.includes('hscript/')) return 'hscript';
   if (slug.startsWith('hengine/') || slug.startsWith('hdk/')) return 'cpp';

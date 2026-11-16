@@ -7,9 +7,28 @@ import "./CodeBlock.css";
 
 const withFunctionCalls = (languageFactory: typeof c) => (highlightJs: Parameters<typeof c>[0]) => {
   const language = languageFactory(highlightJs);
-  language.contains.unshift({
-    className: "title function_",
-    begin: /\b[A-Za-z_]\w*(?=\s*\()/,
+  // The language files name keywords, strings and numbers only. These add
+  // the names a reader tracks, as an editor colours them: a class made by a
+  // call, a function call, a name that takes a value, an object before a
+  // dot, and a member after one.
+  language.contains.unshift(
+    { className: "title class_", begin: /\b[A-Z]\w*(?=\s*\()/, relevance: 0 },
+    { className: "title function_", begin: /\b[A-Za-z_]\w*(?=\s*\()/, relevance: 0 },
+    { className: "variable", begin: /\b[A-Za-z_]\w*(?=\s*=(?!=))/, relevance: 0 },
+    { className: "variable", begin: /\b[a-z_]\w*(?=\.[A-Za-z_])/, relevance: 0 },
+    { className: "property", begin: /(?<=\.)[A-Za-z_]\w*\b/, relevance: 0 },
+  );
+  // Any other lower-case name is a variable, except a word the language
+  // itself owns. The language's own lists say which words those are.
+  const owned = Object.entries((language.keywords ?? {}) as Record<string, unknown>)
+    .filter(([kind]) => kind !== "$pattern")
+    .flatMap(([, words]) => (typeof words === "string" ? words.split(/\s+/) : Array.isArray(words) ? words : []))
+    .map(String)
+    .map((word) => word.split("|")[0])
+    .filter((word) => /^\w+$/.test(word));
+  language.contains.push({
+    className: "variable",
+    begin: new RegExp(`\\b(?!(?:${owned.join("|")})\\b)[a-z_]\\w*\\b`),
     relevance: 0,
   });
   return language;
@@ -17,7 +36,7 @@ const withFunctionCalls = (languageFactory: typeof c) => (highlightJs: Parameter
 
 hljs.registerLanguage("c", withFunctionCalls(c));
 hljs.registerLanguage("python", withFunctionCalls(python));
-hljs.registerAliases(["vex", "hscript"], { languageName: "c" });
+hljs.registerAliases(["vex", "hscript", "cpp", "c++"], { languageName: "c" });
 
 interface CodePanelProps {
   children: React.ReactNode;
@@ -33,7 +52,9 @@ export function CodePanel({ children, language }: CodePanelProps) {
   useLayoutEffect(() => {
     const code = panelRef.current?.querySelector("code");
     if (!code || (code as HTMLElement).dataset.highlighted) return;
-    if (language) code.className = `language-${language}`;
+    // A block that names its own language (`#!python` in the source) keeps
+    // it. The page's language is for a block that names none.
+    if (language && !/language-/.test(code.className)) code.className = `language-${language}`;
     hljs.highlightElement(code as HTMLElement);
   }, [language]);
 

@@ -592,9 +592,15 @@ pre code[class] {
 .vex-token-function {
   color: oklch(0.71 0.13 308.92);
 }
+.hljs-title.class_ {
+  color: oklch(0.8 0.1 180);
+}
+.hljs-variable,
+.hljs-property {
+  color: oklch(0.86 0.07 230);
+}
 /* Not --foreground: the code panel is dark in both themes. */
 .hljs-params,
-.hljs-variable,
 .vex-token-argument {
   color: oklch(0.93 0 0);
 }

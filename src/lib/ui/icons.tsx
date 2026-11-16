@@ -35,7 +35,6 @@ import {
   ListFilter,
   Workflow,
   PanelLeft,
-  Pin,
   Play,
   Search,
   Settings,
@@ -97,6 +96,30 @@ function CaptionClose({ className }: { className?: string }) {
   );
 }
 
+/** The keep-on-top pin, drawn as a caption glyph: the same 10px grid, 1px
+    stroke and snapped edges as the window controls beside it, so it is as
+    sharp as they are. Its lines are all square to the grid, as theirs are. */
+function CaptionPin({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 10 10" className={className} fill="none" stroke="currentColor" shapeRendering="crispEdges" overflow="visible" aria-hidden="true">
+      <path d="M3 0h4M3 0v5M7 0v5M1 5h8M5 5v5" />
+    </svg>
+  );
+}
+
+/** The search, drawn as a caption glyph for the title bar, beside the pin. */
+function CaptionSearch({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 10 10" className={className} fill="none" stroke="currentColor" overflow="visible" aria-hidden="true">
+      {/* The lens is an octagon: its straight sides snap to the grid as the
+          maximize square does, and its corners and handle are 45° lines, as
+          sharp as the close cross. A circle can be neither. */}
+      <path d="M2.5 0h3M8 2.5v3M5.5 8h-3M0 5.5v-3" shapeRendering="crispEdges" />
+      <path d="M0 2.5L2.5 0M5.5 0L8 2.5M8 5.5L5.5 8M2.5 8L0 5.5M7 7l3 3" />
+    </svg>
+  );
+}
+
 /** The Obsidian mark, so the app's way out to Obsidian reads as Obsidian. */
 function ObsidianIcon({ className }: { className?: string }) {
   // Drawn as a stroke, like the lucide icons beside it: the gem's outline and
@@ -145,7 +168,8 @@ export const Icons = {
   collapseAll: ChevronsDownUp,
 
   /* Window */
-  pin: Pin,
+  pin: CaptionPin,
+  captionSearch: CaptionSearch,
   versionPicker: ChevronsUpDown,
 
   /* Content */

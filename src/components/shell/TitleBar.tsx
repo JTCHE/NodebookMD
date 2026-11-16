@@ -216,7 +216,7 @@ function SearchButton() {
   return (
     <Hint label="Search" keys={`${COMMAND_KEY}+K`} className="h-full">
       <button type="button" tabIndex={-1} aria-label="Search" className={CAPTION_BUTTON} onMouseDown={(event) => event.preventDefault()} onClick={press}>
-        <Icons.search className="size-glyph" />
+        <Icons.captionSearch className="size-glyph" />
       </button>
     </Hint>
   );

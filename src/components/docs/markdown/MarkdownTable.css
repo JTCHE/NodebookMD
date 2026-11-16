@@ -43,9 +43,11 @@
 .markdown-table td pre {
   overflow-x: auto;
 }
-/* In a cell, a code panel does not bleed into the cell's padding. */
-.markdown-table td .not-prose {
-  margin-inline: 0;
+/* A code panel in a cell bleeds by its padding and border on the left, so
+   its code starts on the cell text. On the right it ends on the table's
+   edge, past which the page clips it. */
+.markdown-table td:last-child .not-prose {
+  margin-right: calc(var(--md) * -1);
 }
 .markdown-table-declarations {
   table-layout: fixed;
