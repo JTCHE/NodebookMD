@@ -19,7 +19,9 @@ export function SearchHints({ children, className }: { children?: ReactNode; cla
           <span key={hint.label} className="flex items-center gap-xs">
             {hint.keys.map((key) => (
               <Keycap key={key} className={SMALL_KEY}>
-                {key}
+                {/* The font draws ↵ at half the height of the arrows; a scale
+                    grows the glyph and not the key. */}
+                {key === "↵" ? <span className="inline-block scale-150">{key}</span> : key}
               </Keycap>
             ))}
             <span className="ml-2xs">{hint.label}</span>

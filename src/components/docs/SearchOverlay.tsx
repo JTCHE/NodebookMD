@@ -8,10 +8,10 @@ import {
   useState,
 } from "react";
 import { SCRIM } from "@/components/ui/Modal";
-import { Hint } from "@/components/ui/Hint";
 import { createPortal, flushSync } from "react-dom";
 import { useLocation, useNavigate } from "react-router";
-import { BrandLogo } from "@/components/brand/BrandLogo";
+import { FADE_OUT } from "@/lib/ui/overflow";
+import { cn } from "@/lib/utils";
 import { SearchHints } from "@/components/search/SearchHints";
 import { showToast } from "@/components/ui/toast-notification";
 import { findAnchor, jumpTo } from "@/components/docs/toc/measure";
@@ -154,7 +154,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
     };
   }, [paste, trimmed]);
 
-  const { hits: live } = useSearch(paste ? "" : query);
+  const { hits: live, settled } = useSearch(paste ? "" : query);
   const field = scopedInput(query, (next) => {
     setQuery(next);
     setPicked(null);
@@ -176,8 +176,6 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
   const words = field.text.trim();
   const empty = trimmed === "";
   const results = empty ? recent : hits;
-  // A pasted link is already the answer; there is nothing further to search for.
-  const searchFor = words !== "" && !paste;
   // Same flattening the list renders, so the arrow-key indices line up with it.
   const rows = useMemo(() => toRows(results, !empty), [results, empty]);
 
@@ -303,14 +301,13 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
   }, [trimmed, words, hits, go, location.pathname, tell, rows]);
 
   function onKeyDown(event: React.KeyboardEvent) {
-    const total = skip + rows.length + (searchFor ? 1 : 0);
-    if (total === 0) return;
+    const total = skip + rows.length;
 
-    if (event.key === "ArrowDown") {
+    if (event.key === "ArrowDown" && total > 0) {
       event.preventDefault();
       setPicked((selected + 1) % total);
     }
-    if (event.key === "ArrowUp") {
+    if (event.key === "ArrowUp" && total > 0) {
       event.preventDefault();
       setPicked((selected - 1 + total) % total);
     }
@@ -325,7 +322,9 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
 
   if (!open) return null;
 
-  const showList = skip > 0 || rows.length > 0 || searchFor;
+  const showList = skip > 0 || rows.length > 0;
+  // The home field's one line: the list with nothing in it.
+  const nothing = !empty && !showList && (paste || settled) ? `No page matches “${words}”.` : "";
 
   // Rendered to `document.body`, not in place: the scroll column this
   // component sits under carries `@container` (`container-type: inline-size`),
@@ -365,19 +364,17 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
             className="w-full min-w-0 px-4 py-3 pr-11 text-sm bg-transparent outline-none [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
           />
           {query && (
-            <Hint label="Clear" className="absolute right-3 top-1/2 -translate-y-1/2">
-            <button
+                        <button
               type="button"
               aria-label="Clear search"
               onClick={(() => {
                 setQuery("");
                 inputRef.current?.focus();
               })}
-              className="flex items-center justify-center size-6 rounded text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors pointer-hover:bg-foreground/[0.06] pointer-hover:text-foreground active:bg-foreground/[0.1] focus-ring"
             >
               <Icons.dismiss className="size-icon" />
             </button>
-            </Hint>
           )}
         </div>
 
@@ -391,7 +388,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
             selected={selected - skip}
             onSelect={(index) => setPicked(index + skip)}
             onActivate={(row, rank, event) => openRow(row, rank, event ? tabFor(event) : null)}
-            className={SEARCH_LIST_CLASS}
+            className={cn(SEARCH_LIST_CLASS, FADE_OUT, "[--fade-size:32px] [--fade-head-size:16px]")}
             rowRounded={false}
             header={
               empty && recent.length > 0 ? (
@@ -424,29 +421,17 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
                 </>
               ) : null
             }
-            footer={
-              searchFor ? (
-                <li>
-                  <button
-                    className={`w-full text-left px-4 py-2.5 flex items-center gap-2 transition-colors text-muted-foreground ${
-                      selected === skip + rows.length ? "bg-muted" : "hover:bg-muted/50"
-                    }`}
-                    onClick={(() => void submit())}
-                    onMouseMove={() => setPicked(skip + rows.length)}
-                  >
-                    <span className="text-xs shrink-0">Search for</span>
-                    <span className="text-sm font-mono truncate">&ldquo;{words}&rdquo;</span>
-                  </button>
-                </li>
-              ) : null
-            }
           />
         )}
 
-        {/* The mark on the left, the keys on the right, drawn as the status
-            bar draws them. */}
+        {nothing && (
+          <p role="status" className="truncate px-4 py-ms text-sm text-muted-foreground">
+            {nothing}
+          </p>
+        )}
+
         <SearchHints className="px-4 py-2">
-          <BrandLogo className="h-4 w-auto opacity-60" />
+          {!empty && results.length > 0 && <span>{results.length === 1 ? "1 page" : `${results.length} pages`}</span>}
         </SearchHints>
       </div>
       </div>
