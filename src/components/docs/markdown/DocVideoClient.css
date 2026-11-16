@@ -33,7 +33,8 @@
   inset-inline: 0;
   bottom: 0;
   z-index: 1;
-  height: calc(var(--video-controls-height) + 1rem);
+  /* Only under the button row: the frame above the seek bar stays sharp. */
+  height: 3rem;
   --progressive-blur-opacity: 1;
   transition:
     --progressive-blur-opacity var(--duration-base) var(--ease-out-quint),
@@ -48,7 +49,8 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 0 0.5rem 0.25rem;
+  /* The button glyphs end as far from the bottom as from the sides. */
+  padding: 0 0.5rem 0.125rem;
   background: linear-gradient(to top, rgb(0 0 0 / 60%), rgb(0 0 0 / 0%));
   transition:
     opacity var(--duration-base) var(--ease-out-quint),
@@ -81,12 +83,13 @@
    chip with a light edge, so it reads on a black frame too. */
 .video-seek-preview,
 .video-button::after {
+  corner-shape: squircle;
   padding: 0.125rem 0.375rem;
   border-radius: var(--radius-sm);
   background-color: rgb(28 28 28 / 92%);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
   font-size: var(--text-xs);
-  font-weight: 500;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
   color: var(--video-control-hover);
   white-space: nowrap;
@@ -128,8 +131,10 @@
   width: 3.5rem;
   height: 3.5rem;
   border-radius: 9999px;
-  background-color: rgb(0 0 0 / 45%);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
+  background: linear-gradient(to bottom, rgb(255 255 255 / 10%), rgb(255 255 255 / 0%)), rgb(0 0 0 / 45%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 14%),
+    0 4px 16px rgb(0 0 0 / 30%);
   backdrop-filter: blur(8px);
   color: white;
   pointer-events: none;
@@ -157,7 +162,7 @@
 .video-rest {
   transition: opacity var(--duration-base) var(--ease-out-quint), scale var(--duration-base) var(--ease-out-quint);
 }
-.markdown-video:hover .video-rest {
+.markdown-video:is(:hover, :has(:focus-visible)) .video-rest {
   opacity: 0;
   scale: 0.9;
 }
@@ -292,6 +297,7 @@
   opacity: 0;
   transition: opacity var(--duration-fast);
 }
-.markdown-video input[type="range"]:is(:hover, :active, :focus-visible)::-webkit-slider-thumb {
+.markdown-video input[type="range"]:is(:hover, :active, :focus-visible)::-webkit-slider-thumb,
+.video-volume:hover input[type="range"]::-webkit-slider-thumb {
   opacity: 1;
 }

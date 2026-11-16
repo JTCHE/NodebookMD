@@ -288,9 +288,9 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
 
       <div className="video-controls">
         <div
-          // The track starts on the play glyph's left edge: the bar's padding
+          // The track starts on the play triangle's ink: the bar's padding
           // plus the glyph's inset in its round button.
-          className="video-seek relative flex h-6 px-[calc((2.25rem-1.125rem)/2)]"
+          className="video-seek relative flex h-6 pr-[calc((2.25rem-1.125rem)/2+1px)] pl-[calc((2.25rem-1.125rem)/2+4px)]"
           onPointerMove={(event) => {
             const track = seekRef.current!.getBoundingClientRect();
             const fraction = Math.min(1, Math.max(0, (event.clientX - track.left) / track.width));
@@ -346,8 +346,11 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
           </div>
           <span className="video-time">
             {time}
-            <span className="mx-1 opacity-60">/</span>
-            {clock(duration)}
+            {/* The total is one step dimmer than the time now. */}
+            <span className="opacity-60">
+              <span className="mx-1">/</span>
+              {clock(duration)}
+            </span>
           </span>
           <span className="flex-1" />
           <ControlButton label={fullscreen ? "Exit full screen" : "Enter full screen"} onClick={toggleFullscreen}>
