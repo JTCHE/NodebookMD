@@ -306,7 +306,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
         <div className="fold-fade min-h-0 overflow-clip">
           {panel.hits.length > 0 ? (
             <div className="border-t border-hairline">
-              <div ref={panelRef} className={cn("scroll-pt-5 scroll-pb-10 px-xs [scrollbar-width:none]!", SEARCH_LIST_CLASS, FADE_OUT, "[--fade-size:40px] [--fade-head-size:20px]")}>
+              <div ref={panelRef} className={cn("scroll-pt-5 scroll-pb-10 [scrollbar-width:none]!", SEARCH_LIST_CLASS, FADE_OUT, "[--fade-size:40px] [--fade-head-size:20px]")}>
                 <SearchResultList
                   hits={panel.hits}
                   query={panel.text}

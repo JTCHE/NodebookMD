@@ -133,7 +133,6 @@ export function SearchResultRow({
   subKind,
   excerpt,
   query,
-  rounded = true,
   onClick,
   onMouseMove,
 }: {
@@ -152,12 +151,6 @@ export function SearchResultRow({
   excerpt?: string;
   /** What the reader typed, marked inside the excerpt. */
   query?: string;
-  /**
-   * Off when the row runs edge to edge (no side gutter around the list): a
-   * rounded highlight against a straight-sided panel shows a sliver of
-   * background at each corner instead of a clean full-bleed bar.
-   */
-  rounded?: boolean;
   onClick: (event: React.MouseEvent) => void;
   onMouseMove: () => void;
 }) {
@@ -166,17 +159,18 @@ export function SearchResultRow({
 
   // One column for the mark and one for the words, in every row: a page's
   // icon and a nested hit's glyph share an axis, and so do all the titles.
-  // The corner is the panel's, less its border and the list's gutter.
+  // The active row is a flat fill from edge to edge: nothing round sits
+  // around it, so it has no corner and no gutter.
   const row = cn(
     "flex w-full items-start gap-ms text-left transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-    rounded ? "rounded-[7px] px-ms" : "px-md",
+    "px-md",
     active && "bg-muted",
   );
   const press = { onClick, onMouseMove };
 
   if (sub) {
     return (
-      <button type="button" className={cn(row, "-mt-xs py-2xs")} {...press}>
+      <button type="button" className={cn(row, "py-xs")} {...press}>
         <span aria-hidden="true" className="grid h-[1.125rem] w-5 shrink-0 place-items-center text-muted-foreground/50">
           {subKind === "text" ? <ParagraphIcon /> : <HashIcon />}
         </span>

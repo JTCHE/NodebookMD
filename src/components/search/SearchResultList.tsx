@@ -65,7 +65,6 @@ export function SearchResultList({
   header,
   footer,
   className,
-  rowRounded = true,
 }: {
   hits: Hit[];
   /** What the reader typed, bolded inside each excerpt. */
@@ -81,8 +80,6 @@ export function SearchResultList({
   header?: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
-  /** Off for a list with no side gutter, where a rounded row shows corner slivers. */
-  rowRounded?: boolean;
 }) {
   const rows = useMemo(() => toRows(hits, withSubHits), [hits, withSubHits]);
   const listRef = useRef<HTMLUListElement>(null);
@@ -117,7 +114,6 @@ export function SearchResultList({
             excerpt={row.section?.excerpt}
             query={query}
             active={i === selected}
-            rounded={rowRounded}
             onClick={(event) => onActivate(row, i, event)}
             onMouseMove={() => onSelect(i)}
           />
