@@ -151,7 +151,7 @@ function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) =
           transform: `translate3d(0, ${-lift}em, 0)`,
           // A general glyph is drawn for 16px, so at this size its stroke is
           // under one pixel. The outline brings it to the caption glyphs' weight.
-          WebkitTextStroke: size === 10 ? undefined : "0.25px currentColor",
+          WebkitTextStroke: size === 10 ? undefined : "0.3px currentColor",
         }}
       >
         {codepoint}
@@ -210,7 +210,7 @@ export const Icons = {
   /* Window */
   pin: systemGlyph("\uE718", CaptionPin, 11),
   pinned: systemGlyph("\uE842", CaptionPinned, 11),
-  captionSearch: systemGlyph("\uE721", CaptionSearch, 12, 0),
+  captionSearch: systemGlyph("\uE721", CaptionSearch, 11.5, 0.05),
   versionPicker: ChevronsUpDown,
 
   /* Content */

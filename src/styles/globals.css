@@ -555,7 +555,7 @@ img.markdown-media {
   bottom: 1px;
   width: var(--md);
   border-radius: 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0;
-  background: linear-gradient(to right, transparent, var(--code-ground));
+  background: linear-gradient(to right, transparent, var(--code-ground) 55%);
   pointer-events: none;
 }
 /* The same fade on the left, once the panel is scrolled (CodeBlock.tsx). */
@@ -568,7 +568,7 @@ img.markdown-media {
   left: 1px;
   width: var(--md);
   border-radius: calc(var(--radius-lg) - 1px) 0 0 calc(var(--radius-lg) - 1px);
-  background: linear-gradient(to left, transparent, var(--code-ground));
+  background: linear-gradient(to left, transparent, var(--code-ground) 55%);
   pointer-events: none;
 }
 
@@ -615,7 +615,7 @@ pre code[class] {
 }
 .hljs-number,
 .hljs-literal {
-  color: oklch(0.86 0.08 130);
+  color: oklch(0.84 0.06 135);
 }
 .hljs-binding {
   color: oklch(0.78 0.12 345);
@@ -635,11 +635,11 @@ pre code[class] {
   color: oklch(0.87 0.1 95);
 }
 .hljs-title.class_ {
-  color: oklch(0.8 0.09 190);
+  color: oklch(0.8 0.115 190);
 }
 .hljs-variable,
 .hljs-property {
-  color: oklch(0.86 0.07 230);
+  color: oklch(0.86 0.04 230);
 }
 /* Not --foreground: the code panel is dark in both themes. */
 .hljs-params,
