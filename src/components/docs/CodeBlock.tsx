@@ -56,7 +56,17 @@ export function CodePanel({ children, language }: CodePanelProps) {
     };
     const observer = new ResizeObserver(hang);
     observer.observe(scroller);
-    return () => observer.disconnect();
+    // Once scrolled, the left edge fades as the right one does (globals.css).
+    const panel = panelRef.current!;
+    const onScroll = () => {
+      if (scroller.scrollLeft > 0) panel.dataset.scrolled = "";
+      else delete panel.dataset.scrolled;
+    };
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      observer.disconnect();
+      scroller.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   const handleCopy = useCallback(async () => {

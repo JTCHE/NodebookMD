@@ -570,6 +570,19 @@ img.markdown-media {
   background: linear-gradient(to right, transparent, oklch(0.13 0 0));
   pointer-events: none;
 }
+/* The same fade on the left, once the panel is scrolled (CodeBlock.tsx). */
+.group:has(> .code-panel)[data-scrolled]::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  width: var(--md);
+  border-radius: calc(var(--radius-lg) - 1px) 0 0 calc(var(--radius-lg) - 1px);
+  background: linear-gradient(to left, transparent, oklch(0.13 0 0));
+  pointer-events: none;
+}
 
 /* The code elements that the renderer outputs always have a class. */
 pre code[class] * {
@@ -595,7 +608,7 @@ pre code[class] {
 
 /* One hue for each role, as an editor's dark theme: keywords violet, types
    blue, calls warm yellow, classes teal, names pale blue, strings green,
-   numbers pale lavender, bindings pink. None is the brand's orange. */
+   numbers pale lime, bindings pink. None is the brand's orange. */
 .hljs-keyword,
 .vex-token-output {
   color: oklch(0.74 0.13 305);
@@ -610,11 +623,11 @@ pre code[class] {
 .vex-argument-type,
 .vex-return-arrow,
 .vex-return-type {
-  color: oklch(0.7 0.1 245);
+  color: oklch(0.72 0.11 265);
 }
 .hljs-number,
 .hljs-literal {
-  color: oklch(0.84 0.06 285);
+  color: oklch(0.88 0.12 125);
 }
 .hljs-binding {
   color: oklch(0.78 0.12 350);
@@ -779,6 +792,10 @@ kbd {
 .prose pre code,
 pre code.hljs {
   font-family: var(--font-mono);
+}
+/* Inline code at the text's own weight, in prose as in table cells. */
+.prose :where(code):not(:where([class~="not-prose"] *)) {
+  font-weight: 400;
 }
 
 /* Keep a link and its description close inside a list item. */
