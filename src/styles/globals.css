@@ -948,9 +948,14 @@ pre code.hljs {
   /* The logo takes the accent; Original keeps the trademark orange. */
   --logo: var(--brand);
 }
-/* Monochrome has no colour at all: icons, pictures and clips go grey too. */
+/* Monochrome has no colour at all: icons, pictures and clips go grey too.
+   The lightbox and a playing clip show the true colour. */
 :root[data-accent="monochrome"] :is(img, video) {
   filter: grayscale(1);
+  transition: filter 300ms var(--ease-out-quint);
+}
+:root[data-accent="monochrome"] :is([role="dialog"] img, .markdown-video:not([data-paused]) video) {
+  filter: none;
 }
 :root[data-accent="original"] {
   --logo: oklch(0.68 0.174 52);
