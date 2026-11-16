@@ -1,127 +1,73 @@
 /**
- * The pages the reader kept, as a row of marks.
+ * The pages the reader kept, as rows of the panel: icon and name, the same
+ * row the tree draws, so a kept page reads the same in both places. A mark
+ * with no name could only be told apart by its picture.
  *
- * Icon only, no name: a bookmark is a page the reader chose, so they already
- * know it by its mark, and six marks in the width of one row is the point of
- * putting them here rather than in a list. The name is one hover away,
- * in the tooltip every page link has.
- *
- * The strip holds its height with nothing in it. A panel that grows a row the
- * first time a reader keeps a page moves everything under it, and the row
- * below is the tree — the part of the panel the reader is looking at.
+ * With nothing kept the strip is one row tall, the height of one kept page,
+ * so the first bookmark does not move the tree below it.
  */
-import { useRef } from "react";
-import { useHoverTip } from "@/lib/ui/hover-tip";
-import { Link } from "react-router";
-import { warm } from "@/lib/pages";
+import { useLocation } from "react-router";
 import { COMMAND_KEY } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
-import DocIconClient from "@/components/docs/markdown/DocIconClient";
-import { DocTooltip } from "@/components/docs/Tooltip";
-import type { LibraryEntry } from "@/lib/store/library";
+import { toggleBookmark, type LibraryEntry } from "@/lib/store/library";
 import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
-
-/** How many fit on the row at the panel's width. */
-const SHOWN = 6;
+import { SidebarRow } from "./SidebarRow";
+import { FadeList } from "@/components/ui/FadeList";
 
 export function BookmarkStrip({ entries, className }: { entries: LibraryEntry[]; className?: string }) {
-  const shown = entries.slice(0, SHOWN);
+  const { pathname } = useLocation();
 
   return (
-    <section className={cn("flex flex-col gap-[6px]", className)}>
-      <Link
-        to="/?tab=bookmarks"
-        className={cn(
-          "flex cursor-interactive items-center gap-2xs self-start rounded-md px-sm py-2xs text-[11.5px] text-neutral-500",
-          "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-          "pointer-hover:text-neutral-800",
-          "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        )}
-      >
-        Bookmarks
-        <Icons.collapsed className="size-[11px] translate-y-[0.5px]" />
-      </Link>
+    <section className={cn("flex flex-col gap-2xs pb-xs", className)}>
+      <h2 className="mt-xs mb-2xs flex h-[22px] items-center px-sm text-[11.5px] tracking-[-0.005em] text-neutral-500">Bookmarks</h2>
 
-      <div className="flex min-h-chip flex-wrap items-center gap-[6px]">
-        {shown.length === 0 ? (
-          // The same height as a row of tiles: the strip must not grow the
-          // first time a page is kept, or the whole tree below it steps down.
-          <p className="flex h-chip w-full items-center gap-2xs rounded-lg border border-dashed border-hairline px-sm text-caption text-neutral-500">
-            Press
-            <Keycap className={SMALL_KEY}>{COMMAND_KEY}</Keycap>
-            <Keycap className={SMALL_KEY}>D</Keycap>
-            to save a page.
-          </p>
-        ) : (
-          shown.map((entry) => <BookmarkTile key={entry.path} entry={entry} />)
-        )}
-      </div>
+      {entries.length === 0 ? (
+        // The same height and inset as a row of the tree: the strip must not
+        // grow the first time a page is kept, or the whole tree steps down.
+        <p className="flex h-row w-full items-center gap-[3px] px-sm text-row tracking-[-0.01em] text-neutral-500">
+          <Keycap className={SMALL_KEY}>{COMMAND_KEY}</Keycap>
+          <Keycap className={SMALL_KEY}>D</Keycap>
+          <span className="ml-xs">to bookmark</span>
+        </p>
+      ) : (
+        // Every kept page, in a box of six whole rows that scrolls. The last
+        // row fades across its height while more hide below it, so the box
+        // ends on a row and the gap to the tree never changes.
+        <FadeList className="max-h-[calc(var(--spacing-row)*6)] [scrollbar-gutter:auto]! [--fade-size:16px] [--fade-head-size:16px]" deps={[entries.length]}>
+          {entries.map((entry) => (
+            <BookmarkRow key={entry.path} entry={entry} open={pathname === `/${entry.path}`} />
+          ))}
+        </FadeList>
+      )}
     </section>
   );
 }
 
-/** One kept page. Its name and what it is about show on hover, in the same
-    tooltip a link in the page shows, so the two never read differently. */
-function BookmarkTile({ entry }: { entry: LibraryEntry }) {
-  const tile = useRef<HTMLAnchorElement>(null);
-  const { shown: hovered, open, openNow, hide } = useHoverTip();
+/** One kept page: the panel's row, marked when it is the open page, and a
+    remove control that comes with the pointer or the keyboard. The control
+    sits over the row, not in it: a link cannot hold a button. */
+function BookmarkRow({ entry, open }: { entry: LibraryEntry; open: boolean }) {
   return (
-    <>
-      <Link
-        to={`/${entry.path}`}
-        ref={tile}
-        onPointerEnter={() => warm(entry.path)}
-        onMouseEnter={open}
-        onMouseLeave={hide}
-        onFocus={(e) => e.currentTarget.matches(":focus-visible") && openNow()}
-        onBlur={hide}
-        onClick={hide}
-        aria-label={entry.title}
+    <div className="group/bookmark relative">
+      <SidebarRow label={entry.title} icon={entry.icon ?? null} to={`/${entry.path}`} selected={open}
+        // The remove control covers the row's end, so the row keeps its hover
+        // while the pointer is on the control.
+        className={cn("pr-[32px]", !open && "group-hover/bookmark:bg-foreground/[0.035] dark:group-hover/bookmark:bg-foreground/[0.055]")}
+      />
+      <button
+        type="button"
+        aria-label={`Remove ${entry.title} from bookmarks`}
+        onClick={() => toggleBookmark(entry)}
         className={cn(
-          // Square. A tile carries an icon and nothing else, so its
-          // width is its height and a row of them steps evenly.
-          "grid size-chip shrink-0 cursor-interactive place-items-center rounded-lg",
-          "border border-hairline bg-raised shadow-chip",
-          "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-          "pointer-hover:bg-neutral-100 active:bg-neutral-200",
-          "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+          "absolute top-1/2 right-sm grid size-[18px] -translate-y-1/2 cursor-interactive place-items-center rounded-[5px] text-neutral-600 dark:text-neutral-700",
+          "opacity-0 transition-opacity duration-(--duration-fast) group-hover/bookmark:opacity-100 group-focus-within/bookmark:opacity-100 focus-visible:opacity-100 motion-reduce:transition-none",
+          "pointer-hover:bg-foreground/[0.15] dark:pointer-hover:bg-foreground/[0.2] pointer-hover:text-neutral-950",
+          "focus-visible:bg-foreground/[0.12] dark:focus-visible:bg-foreground/[0.2] focus-visible:text-neutral-950 focus-visible:ring-[1.5px] focus-visible:ring-neutral-700 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent focus-visible:outline-none",
         )}
       >
-        {entry.icon ? (
-          <DocIconClient
-            src={entry.icon}
-            alt=""
-            className="size-[17px]"
-            // The install ships a few pages whose icon file is not in
-            // it. A blank tile reads as a fault.
-            fallback={<Initials title={entry.title} />}
-          />
-        ) : (
-          <Initials title={entry.title} />
-        )}
-      </Link>
-      {hovered && <DocTooltip slug={entry.path} anchorRef={tile} />}
-    </>
-  );
-}
-
-/** Two letters for a page with no icon: a row of the same page glyph tells
-    the pages apart by position only. `Group by Range` gives GR, `AddItUp`
-    gives AI, `Solaris` gives So. */
-function initials(title: string): string {
-  const words = title.split(/[\s._\-/:]+/).filter(Boolean);
-  if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase();
-  const word = words[0] ?? "";
-  const capitals = word.match(/[A-Z]/g);
-  if (capitals && capitals.length > 1) return capitals[0] + capitals[1];
-  return word.slice(0, 1).toUpperCase() + word.slice(1, 2);
-}
-
-function Initials({ title }: { title: string }) {
-  return (
-    <span aria-hidden="true" className="text-[11px] leading-none font-semibold tracking-[-0.02em] text-neutral-500">
-      {initials(title)}
-    </span>
+        <Icons.dismiss className="size-glyph" strokeWidth={2.4} />
+      </button>
+    </div>
   );
 }

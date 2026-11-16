@@ -110,8 +110,8 @@ export function ExploreColumns({ className }: { className?: string }) {
             )}
             <div className="flex min-w-0 flex-1 flex-col gap-sm">
               <div className="flex h-[20px] items-center gap-sm">
-                <Mark className="size-[15px] shrink-0 text-brand" />
-                <span className="text-[13.5px] font-semibold tracking-[-0.012em] text-neutral-950">
+                <Mark className="size-icon shrink-0 text-brand" />
+                <span className="text-label font-semibold tracking-[-0.012em] text-neutral-950">
                   {column.label}
                 </span>
               </div>
@@ -123,7 +123,7 @@ export function ExploreColumns({ className }: { className?: string }) {
               <div className="-mx-sm flex flex-col">
                 {column.rows.map((row) => {
                   const rowClass = cn(
-                    "flex h-[32px] items-center rounded-md px-sm text-[13.5px] tracking-[-0.01em] text-neutral-800 ",
+                    "flex h-[32px] items-center rounded-md px-sm text-label tracking-[-0.01em] text-neutral-800 ",
                     "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
                     "pointer-hover:bg-neutral-100",
                     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",

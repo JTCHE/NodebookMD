@@ -61,7 +61,7 @@ export function Breadcrumbs({ path, version, title }: { path: string; version?: 
             {crumb.href ? (
               <Link
                 to={crumb.href}
-                className="hover:text-foreground transition-colors"
+                className="rounded-sm underline-offset-2 transition-colors hover:text-neutral-700 hover:underline focus-ring"
                 // A crumb is an index page, often a long one: it is read and
                 // parsed while the pointer is on its way to the press.
                 onPointerEnter={() => crumb.href !== "/" && warm(crumb.href.slice(1))}

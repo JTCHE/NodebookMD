@@ -1,0 +1,32 @@
+/* The loading bars of the tooltip. */
+@keyframes skeleton-shimmer {
+  to {
+    transform: translateX(150%);
+  }
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Linear, and mixed against --foreground, so the sweep shows in both themes. */
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-150%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklch, var(--foreground) 14%, transparent) 50%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 2.6s linear infinite;
+}
+
+:root[data-motion="reduce"] {
+  .skeleton::after {
+    animation: none;
+  }
+}

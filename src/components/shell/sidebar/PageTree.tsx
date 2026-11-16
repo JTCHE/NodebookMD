@@ -37,15 +37,28 @@ import { SidebarRow } from "./SidebarRow";
     windowing needs the same number in JavaScript. */
 const ROW = 30;
 
-/** A branch sits this far in from its group, and every level below it one step
-    further: the step that puts a row's mark under the name of the row above. */
-const BRANCH_INDENT = 19;
-const STEP = 23;
+/** One step per level: a child's arrow stands under its parent's first glyph,
+    the icon when the parent has one, else the name. The arrow slot is 11px
+    plus an 8px gap. */
+const ARROW = 23;
+
+function folderLeft(depth: number): number {
+  return ARROW * depth;
+}
+
+function place(left: number): React.CSSProperties | undefined {
+  if (left === 0) return undefined;
+  return { marginLeft: left, width: `calc(100% - ${left}px)` };
+}
 
 function indent(depth: number): React.CSSProperties | undefined {
-  if (depth === 0) return undefined;
-  const left = BRANCH_INDENT + STEP * (depth - 1);
-  return { marginLeft: left, width: `calc(100% - ${left}px)` };
+  return place(folderLeft(depth));
+}
+
+/** A page has no arrow slot, so at its folder's child step its ICON stands
+    where a child folder's arrow would. */
+function pageIndent(depth: number): React.CSSProperties | undefined {
+  return place(folderLeft(depth));
 }
 
 interface PageTreeProps {
@@ -248,7 +261,28 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
     const at = lines.findIndex((line) => line.kind === "folder" && line.folder.id === id);
     if (list && at >= 0) held.current = { id, offset: Math.max(depth * ROW, at * ROW - list.scrollTop) };
     setOpen((now) => (now[depth] === id ? now.slice(0, depth) : [...now.slice(0, depth), id]));
+    if (open[depth] !== id) setOpened(id);
   };
+
+  // The rows a click opens fade in under their folder. Only those rows, and
+  // only for a moment: the list mounts rows as it scrolls too, and a row
+  // scrolled into view must not fade.
+  const [opened, setOpened] = useState<string | null>(null);
+  useEffect(() => {
+    if (!opened) return;
+    const timer = window.setTimeout(() => setOpened(null), 320);
+    return () => window.clearTimeout(timer);
+  }, [opened]);
+  const fresh = useMemo(() => {
+    const at = opened ? lines.findIndex((line) => line.kind === "folder" && line.folder.id === opened) : -1;
+    if (at < 0) return null;
+    const keys = new Set<string>();
+    for (const line of lines.slice(at + 1)) {
+      if (line.depth <= lines[at].depth) break;
+      keys.add(line.kind === "folder" ? line.folder.id : line.page.path);
+    }
+    return keys;
+  }, [opened, lines]);
   useLayoutEffect(() => {
     const want = held.current;
     held.current = null;
@@ -268,7 +302,7 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
       // are in by the time the rows draw.
       onPointerEnter: isOpen ? undefined : () => void warmIcons(iconsShownBy(folder)),
       style: indent(depth),
-      className: pinnedCopy ? "pointer-events-auto" : undefined,
+      className: pinnedCopy ? "pointer-events-auto" : fresh?.has(folder.id) ? "row-in" : undefined,
     };
     if (depth === 0) {
       const Mark = groupIcon(folder.id);
@@ -282,8 +316,8 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
           // together read as two selections.
           mark={
             Mark ? (
-              <Mark className={cn("size-[15px]", isOpen ? "text-brand" : "text-neutral-500")} />
-            ) : undefined
+              <Mark className={cn("size-icon", isOpen ? "text-neutral-800" : "text-neutral-500")} />
+            ) : null
           }
         />
       );
@@ -301,9 +335,9 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
         />
       );
     }
-    // No mark at all. A folder is a place inside the branch, not a page, and
-    // the page glyph said the opposite. Leaving the slot out is also what puts
-    // the folder NAME on the axis the pages under it put their ICONS on.
+    // No mark at all. A folder is a place inside the branch, not a page.
+    // Leaving the slot out puts the folder NAME on the axis the pages under it
+    // put their ICONS on.
     return <SidebarRow key={folder.id} {...shared} />;
   };
 
@@ -317,7 +351,9 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
       {pinned.length > 0 && (
         <div
           style={{ paddingRight: gutter }}
-          className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-neutral-100"
+          // No edge of its own: the list hides its rows under the stack and
+          // fades them in below it (`--fade-top`).
+          className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-chrome"
           data-pinned=""
         >
           {pinned.map((line) => folderRow(line, true))}
@@ -335,6 +371,7 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
         // and a page has one open row per level above it.
         revealBelow={reveal >= 0 ? lines[reveal].depth * ROW : 0}
         onTop={setTop}
+        style={{ "--fade-top": `${pinned.length * ROW}px` } as React.CSSProperties}
         // Slack on the left for what a row draws outside its own box — the
         // bookmark flag hangs 9px past the mark, the chip's shadow spreads past
         // every edge — given back as a negative margin so the rows keep their
@@ -355,9 +392,9 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
               selected={line.page.path === currentPath}
               kept={bookmarked?.has(line.page.path)}
               // A page starts its ICON where the folder above it starts its
-              // NAME, which is what makes it read as contents of the folder
-              // rather than as its neighbour.
-              style={indent(line.depth)}
+              // NAME, and its name where its sibling folders start theirs.
+              style={pageIndent(line.depth)}
+              className={fresh?.has(line.page.path) ? "row-in" : undefined}
             />
           )
         }

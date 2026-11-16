@@ -1,5 +1,6 @@
 import { Check, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router";
+import { Hint } from "@/components/ui/Hint";
 import { cn } from "@/lib/utils";
 import { MENU_ICON, MENU_ITEM, MENU_PANEL, useMenu } from "@/lib/ui/menu";
 import type { NodeVersion } from "@/lib/pages";
@@ -24,26 +25,42 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
   const latest = versions[0];
   const onLatest = current === latest;
 
+  // Each item's key is the first character of its own label ("2" in 2.0,
+  // "L" in Latest), underlined like the access letters of the other menus.
+  // A character two labels share is no key.
+  const firsts = versions.map((version) => version.label[0].toLowerCase());
+  const keyed = (version: NodeVersion) => firsts.filter((first) => first === version.label[0].toLowerCase()).length === 1;
+  const onMenuKey = (event: React.KeyboardEvent) => {
+    const hit = open && !event.ctrlKey && !event.altKey && !event.metaKey && versions.find((version) => keyed(version) && version.label[0].toLowerCase() === event.key.toLowerCase());
+    if (hit) {
+      event.preventDefault();
+      pick(hit);
+      return;
+    }
+    onKeyDown(event);
+  };
+
   function pick(version: NodeVersion) {
     setOpen(false);
     if (version !== current) navigate(`/${version.path}`);
   }
 
   return (
-    <div ref={container} onKeyDown={onKeyDown} className="relative inline-flex print:hidden">
+    <Hint side="below" label={onLatest ? "The latest version of this node" : `An older version. The latest is ${latest.label}.`}>
+    <div ref={container} onKeyDown={onMenuKey} className="relative -ml-2 mr-xs inline-flex print:hidden">
       <button
         ref={trigger}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        title={onLatest ? "The latest version of this node" : `An older version. The latest is ${latest.label}.`}
         onClick={() => setOpen((was) => !was)}
         className={cn(
-          "inline-flex cursor-interactive items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium transition-colors",
-          "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+          // A ghost picker like Copy; only an older version is marked.
+          "inline-flex h-6 cursor-interactive items-center gap-1 rounded-md border px-2 text-xs transition-colors [corner-shape:squircle] active:bg-neutral-200",
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400",
           onLatest
-            ? "border-border bg-muted text-muted-foreground hover:text-foreground"
-            : "border-brand/40 bg-brand/10 text-brand-700 dark:text-brand-bright",
+            ? "border-transparent text-neutral-600 hover:bg-muted hover:text-foreground"
+            : "border-transparent bg-brand/10 text-brand-700 dark:text-brand-bright",
         )}
       >
         {named(current.label)}
@@ -62,10 +79,14 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
               role="option"
               aria-selected={version === current}
               onClick={() => pick(version)}
-              className={cn(MENU_ITEM, version === current && "text-brand-700 dark:text-brand-bright")}
+              className={cn(MENU_ITEM, version === current && "text-foreground")}
             >
               <Check className={cn(MENU_ICON, "text-current", version !== current && "invisible")} aria-hidden="true" />
-              {named(version.label)}
+              <span>
+                {named(version.label).slice(0, -version.label.length)}
+                {keyed(version) ? <u className="underline-offset-2">{version.label[0]}</u> : version.label[0]}
+                {version.label.slice(1)}
+              </span>
               {version === latest && version.label !== "Latest" && (
                 <span className="ml-auto text-caption text-neutral-500">Latest</span>
               )}
@@ -74,5 +95,6 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
         </div>
       )}
     </div>
+    </Hint>
   );
 }

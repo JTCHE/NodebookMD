@@ -5,12 +5,16 @@
 import { useEffect, useRef, useState } from "react";
 import { ROW_INTERACTION } from "./interactive";
 
-export const MENU_PANEL =
-  "absolute top-[calc(100%+4px)] right-0 z-50 origin-top-right rounded-lg border border-hairline bg-raised p-1 " +
-  "shadow-xl shadow-black/10 pop-in";
+/** The surface of every menu: the drop-downs and the right-click menus.
+    Corner = item corner (md, 6px) + padding (4px) + border (1px), so the corners nest. */
+export const MENU_SURFACE =
+  "rounded-[11px] [corner-shape:squircle] border border-hairline bg-raised p-1 shadow-xl shadow-black/10 pop-in";
+
+/** A drop-down under its trigger, flush to the trigger's right edge. */
+export const MENU_PANEL = "absolute top-[calc(100%+4px)] right-0 z-50 origin-top-right " + MENU_SURFACE;
 
 export const MENU_ITEM =
-  "flex w-full items-center gap-2.5 rounded-md px-sm py-[7px] text-left text-[13px] text-neutral-800 " + ROW_INTERACTION;
+  "flex w-full items-center gap-2.5 rounded-md [corner-shape:squircle] px-sm py-[7px] text-left text-row text-neutral-800 " + ROW_INTERACTION;
 
 export const MENU_ICON = "size-3.5 shrink-0 text-neutral-500";
 

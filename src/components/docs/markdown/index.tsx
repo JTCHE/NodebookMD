@@ -60,9 +60,7 @@ export const markdownComponents: Components = {
       <DocLink
         href={href}
         className={classes.length ? classes.join(" ") : undefined}
-        // A signature argument link is part of the code around it: it wears
-        // no page mark, only its token.
-        mark={!classes.includes("vex-sig-arg")}
+        mark={false}
         {...props}
       >
         {children}

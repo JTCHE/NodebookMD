@@ -41,9 +41,9 @@ export function FadeList({
       data-list=""
       className={cn(
         "thin-scroll flex min-h-0 flex-col overflow-y-auto",
-        // Whichever edge the fade sits on, the row nearest it has to clear the
-        // fade, or the reader can never read it.
-        overflows && (reverse ? `${FADE_IN} pt-lg` : `${FADE_OUT} pb-lg`),
+        // The last row on screen sits in the fade, so the list reads as
+        // going on; a scroll brings it out.
+        overflows && (reverse ? FADE_IN : FADE_OUT),
         className,
       )}
     >

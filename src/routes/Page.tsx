@@ -23,6 +23,7 @@ import { forgetPages, known, read, type PageError, type PageView } from "@/lib/p
 import { onBuildChanged } from "@/lib/install";
 import { isTyping, useHotkey } from "@/lib/hotkeys";
 import { flashText } from "@/lib/ui/flash-text";
+import { reducedMotion } from "@/lib/ui/motion";
 import { findAnchor, jumpTo } from "@/components/docs/toc/measure";
 
 /**
@@ -381,6 +382,17 @@ export default function Page() {
   const hasToc = headings.length > 0;
   const name = useMemo(() => (page ? nameOf(page, path) : ""), [page, path]);
 
+  // A new page settles in with a short fade, so a click lands as a change of
+  // page, not a cut. Once per path, not on each re-render of the tree.
+  // Opacity only: a translate makes the article the containing block of the
+  // absolute ToC, which then draws off its place until the animation ends.
+  const article = useRef<HTMLElement>(null);
+  const shown = Boolean(page);
+  useLayoutEffect(() => {
+    if (!shown || reducedMotion()) return;
+    article.current?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: "cubic-bezier(0.2, 0, 0, 1)" });
+  }, [path, shown]);
+
   // The tree comes parsed from `read` (a worker). The components are made once
   // per page, so the body's slices keep their elements across renders.
   const pagePath = page?.path;
@@ -407,12 +419,9 @@ export default function Page() {
       ref={scroller}
       // The bar's width is held on a short page too, so the column does not
       // step sideways between a page that scrolls and one that does not.
-      // The page runs on under the key strip at the bottom, which fades it
-      // out (see .status-scrim). The page ends on the bottom padding of
-      // `main`, which is deeper than the strip, so the last line always reads.
-      // --page-bar-h is the height of the bar that stays at the top: the
+      // --page-bar-height is the height of the bar that stays at the top: the
       // list of contents, the pill and a heading's jump offset clear it.
-      className="docs-shell @container flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable] [--page-bar-h:3.5rem] print:block print:overflow-visible"
+      className="docs-shell @container flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable] [--page-bar-height:2.75rem] print:block print:overflow-visible"
     >
       <SearchOverlay ref={search} />
       {/* Room for the contents list in the right gutter, taken from the box
@@ -420,7 +429,7 @@ export default function Page() {
           page moves left by half of it — breadcrumbs and article together —
           so the column stays centred on what is left, and the list is not
           paid for by the text's own width. */}
-      <div className={cn("flex min-h-0 flex-1 flex-col", hasToc && "@min-[780px]:pr-[200px]")}>
+      <div className={cn("flex min-h-0 flex-1 flex-col", hasToc && "@min-toc:pr-[200px]")}>
         {/* The column: the bar, then the page. It is the box the list of
             contents hangs off, from the top of the bar, so "On this page"
             sits on the same line as the breadcrumbs. */}
@@ -429,7 +438,7 @@ export default function Page() {
           sits on the breadcrumb line because that line is already the answer
           to "where am I", and the source is the last part of that answer.
           The bar stays at the top while the page scrolls under it. */}
-        <div className="page-bar-scrim @container sticky top-0 z-20 flex min-h-(--page-bar-h) shrink-0 items-center justify-between gap-md px-page-x print:hidden">
+        <div className="page-bar-scrim @container sticky top-0 z-20 flex min-h-(--page-bar-height) shrink-0 items-center justify-between gap-md px-page-x print:hidden">
           {page && (
             <Breadcrumbs
               path={page.path}
@@ -441,7 +450,7 @@ export default function Page() {
             href={sideFxUrl(path)}
             target="_blank"
             rel="noopener noreferrer"
-            className="group ml-auto flex shrink-0 items-center text-meta text-muted-foreground transition-colors hover:text-foreground print:hidden"
+            className="group focus-ring ml-auto flex shrink-0 items-center rounded-sm text-meta text-muted-foreground transition-colors hover:text-foreground print:hidden"
           >
             SideFX
             <LucideArrowUpRight
@@ -456,10 +465,10 @@ export default function Page() {
             // A narrow page's breadcrumbs wrap, and fill the bar down to its
             // foot: the title then comes close under them.
             // tabIndex: the skip link puts the focus here.
-            <main tabIndex={-1} className="w-full min-w-0 outline-none px-page-x pt-7 pb-[calc(2.5rem+var(--spacing-statusbar))] @max-xl:pt-2 print:p-0">
+            <main tabIndex={-1} className="w-full min-w-0 outline-none px-page-x pt-7 pb-10 @max-xl:pt-2 print:p-0">
               {error && <p className="text-sm text-muted-foreground">{error.message}</p>}
               {page && (
-                <article className="prose prose-neutral dark:prose-invert max-w-none">
+                <article ref={article} className="prose prose-neutral dark:prose-invert max-w-none">
                   <PageHeader
                     entry={{ path, title: name, icon: page.icon }}
                     name={name}

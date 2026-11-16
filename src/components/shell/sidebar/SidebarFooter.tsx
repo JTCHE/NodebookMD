@@ -8,21 +8,23 @@
 import { SETTINGS_KEYS, openSettings } from "@/components/settings/SettingsDialog";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
-import { THEME_ICON, THEME_LABEL, cycleTheme, useThemeChoice } from "@/lib/ui/theme";
 import { Hint } from "@/components/ui/Hint";
 import { SidebarRow } from "./SidebarRow";
+import { version } from "../../../../src-tauri/tauri.conf.json";
 
 /* Bugs go to GitHub issues, in the reader's own browser. See spec: Bug Filing Button. */
 const ISSUES = "https://github.com/JTCHE/NodebookMD/issues/new";
 
+/* Square, with the 16px glyph 8px in, as a row pads: the first one
+   stands on the panel's axis. */
 const FOOTER_BUTTON =
-  "grid size-[30px] cursor-interactive place-items-center rounded-md text-neutral-500 " +
+  "grid size-[32px] cursor-interactive place-items-center rounded-md text-neutral-500 " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none " +
-  "pointer-hover:bg-raised pointer-hover:text-neutral-800 " +
+  "pointer-hover:bg-raised pointer-hover:text-neutral-900 pointer-hover:shadow-chip active:bg-neutral-200 " +
   // Disabled changes what it DOES, not how loud it is: the two controls sit
   // side by side and a dimmed one beside a lit one reads as a rendering bug.
   "disabled:cursor-default " +
-  "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
+  "focus-ring";
 
 interface SidebarFooterProps {
   recentCount: number;
@@ -32,8 +34,6 @@ interface SidebarFooterProps {
 }
 
 export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, className }: SidebarFooterProps) {
-  const theme = useThemeChoice();
-  const ThemeMark = THEME_ICON[theme];
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -42,39 +42,32 @@ export function SidebarFooter({ recentCount, recentsOpen, onToggleRecents, class
           to go and not a label over a list. */}
       <SidebarRow
         label="Recents"
-        mark={<Icons.recent className="size-[15px] translate-y-[0.5px] text-neutral-500" />}
+        mark={<Icons.recent className={cn("size-icon", recentsOpen ? "text-neutral-800" : "text-neutral-500")} />}
         disclosure={recentsOpen ? "expanded" : "collapsed"}
         active={recentsOpen}
         count={recentCount}
         onClick={onToggleRecents}
       />
 
-      {/* The two that change the app side by side; the bug report, which
-          leaves it, apart in the far corner. */}
-      <div className="flex items-center gap-2xs px-ms pt-ms">
+      {/* Settings and the bug report on the left; the build it is, as text, on
+          the right. The theme lives in Settings. */}
+      {/* A short rule, inset like the rows, between the trail and the app's own controls. */}
+      <div className="mx-sm mt-xs h-px bg-hairline/60" />
+      <div className="mt-xs flex items-center gap-2xs pt-xs">
         <Hint label="Settings" keys={SETTINGS_KEYS}>
           <button type="button" aria-label="Settings" className={FOOTER_BUTTON} onClick={openSettings}>
-            <Icons.settings className="size-[18px]" />
+            <Icons.settings className="size-4" />
           </button>
         </Hint>
-        {/* Three choices, so the mark is the one in force and a press steps to
-            the next. Settings has the three side by side. */}
-        <Hint label={`${THEME_LABEL[theme]} theme`}>
-        <button
-          type="button"
-          aria-label={`Theme: ${THEME_LABEL[theme]}. Press for the next one.`}
-          className={FOOTER_BUTTON}
-          onClick={cycleTheme}
-        >
-          <ThemeMark className="size-md" />
-        </button>
-        </Hint>
-        <span className="flex-1" />
         <Hint label="File a bug on GitHub">
           <a href={ISSUES} target="_blank" rel="noopener noreferrer" aria-label="File a bug" className={FOOTER_BUTTON}>
-            <Icons.bugReport className="size-4.5" />
+            <Icons.bugReport className="size-4" />
           </a>
         </Hint>
+        <span className="flex-1" />
+        {/* Which build of the app this is: read, not pressed, so it ends the
+            row as text. */}
+        <span className="mr-xs text-[12px] text-neutral-500 tabular-nums">v{version}</span>
       </div>
     </div>
   );

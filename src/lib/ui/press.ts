@@ -61,6 +61,10 @@ export function startPress() {
       if (typing !== control && isTyping(typing)) (typing as HTMLElement).blur();
 
       pressed = control;
+      // A click raised inside the press takes `:active` away from the control
+      // in Chromium, so the pressed look would never draw. The mark stands in
+      // for it until the button comes up; `active:` reads both (globals.css).
+      control.setAttribute("data-pressed", "");
       control.click();
     },
     true,
@@ -85,4 +89,9 @@ export function startPress() {
   // the control went away with the click it fired — must not leave the next
   // click on that control swallowed.
   document.addEventListener("pointerup", () => setTimeout(() => (pressed = null), 0), true);
+  const release = () => {
+    for (const control of document.querySelectorAll("[data-pressed]")) control.removeAttribute("data-pressed");
+  };
+  document.addEventListener("pointerup", release, true);
+  document.addEventListener("pointercancel", release, true);
 }

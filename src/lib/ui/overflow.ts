@@ -18,33 +18,42 @@ export function useOverflow(node: RefObject<HTMLElement | null>, deps: unknown[]
     // the pixel independently, which can leave a list a couple of px taller
     // than its box with no extra row behind it. 4px clears that without
     // hiding a real one, which is always at least one row's worth more.
-    const measure = () => setOverflows(element.scrollHeight > element.clientHeight + 4);
+    // The box overflows or not; which edge fades follows the scroll: a list
+    // scrolled to its last row drops the bottom fade, and a list scrolled
+    // down fades its top so the row under the heading is not cut on a line.
+    const measure = () => {
+      setOverflows(element.scrollHeight > element.clientHeight + 4);
+      const below = element.scrollHeight - element.scrollTop > element.clientHeight + 4;
+      element.style.setProperty("--fade-below", below ? "1" : "0");
+      element.style.setProperty("--fade-above", element.scrollTop > 4 ? "1" : "0");
+    };
     measure();
+    element.addEventListener("scroll", measure, { passive: true });
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     for (const child of element.children) observer.observe(child);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      element.removeEventListener("scroll", measure);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   return overflows;
 }
 
-/** The fade itself, so every list in the app falls off the same way.
- *
- * The top edge fades too, but far shorter: the bottom fade is a promise of
- * more to come and needs room to read as one, while the top is only saying
- * that a row is passing under the header above it. A top fade as deep as the
- * bottom one would grey out the row the reader is about to click. */
-export const FADE_OUT =
-  "[mask-image:linear-gradient(to_bottom,black_0,black_calc(100%-40px),transparent_100%)]";
+/** The fade itself, so every list in the app falls off the same way. The
+    ramps live in globals.css (`.fade-*`), eased so no row ends on a hard line.
+
+    The top edge fades too, but shorter: the bottom fade is a promise of more
+    to come, while the top only says that a row passes under the header above
+    it. A list with headers pinned over its top sets `--fade-top` to their
+    height, so the rows are gone under the headers and fade in below them. */
+export const FADE_OUT = "fade-out";
 
 /** Both edges: a short fade in at the top, the full fade out at the bottom. */
-export const FADE_BOTH =
-  "[mask-image:linear-gradient(to_bottom,transparent_0,black_8px,black_calc(100%-40px),transparent_100%)]";
+export const FADE_BOTH = "fade-both";
 
 /** The mirror of `FADE_OUT`, for a list that reads newest-at-the-bottom (the
-    Recents trail): the promise of more is now above, so the full fade sits at
-    the TOP and the bottom, where the newest row already sits flush, gets none. */
-export const FADE_IN =
-  "[mask-image:linear-gradient(to_top,black_0,black_calc(100%-40px),transparent_100%)]";
+    Recents trail): the full fade sits at the TOP and the bottom gets none. */
+export const FADE_IN = "fade-in";

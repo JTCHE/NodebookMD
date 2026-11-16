@@ -8,6 +8,7 @@ import { hitOf } from "@/lib/search";
 import { methodSignature } from "@/lib/method-signature";
 import { useHoverTip } from "@/lib/ui/hover-tip";
 import type { PageView } from "@/lib/pages";
+import "./Tooltip.css";
 
 interface MetaEntry {
   title: string;
@@ -156,7 +157,22 @@ interface Anchored {
   hoverPosRef?: React.RefObject<{ x: number; y: number } | null>;
   /** `right` is for a row of the sidebar: it opens past the panel's edge, so
       it hides none of the rows the reader may scroll to. */
-  side?: "above" | "right";
+  side?: "above" | "below" | "right";
+}
+
+// A press puts every tooltip away at once, with no fade: a click opens a
+// page, and a box fading over the next page reads as a web page, not an app.
+let pressed = false;
+function press() {
+  pressed = true;
+  for (const ghost of document.querySelectorAll("[data-tooltip-ghost]")) ghost.remove();
+  setTimeout(() => {
+    pressed = false;
+  }, 400);
+}
+if (typeof document !== "undefined") {
+  document.addEventListener("pointerdown", press, true);
+  document.addEventListener("keydown", (event) => event.key === "Enter" && press(), true);
 }
 
 /** The box every tooltip sits in. Fixed, so it escapes any ancestor's
@@ -221,7 +237,7 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
     const left = line.left + line.width / 2 - width / 2;
     const x =
       left < margin ? margin - left : left + width > window.innerWidth - margin ? window.innerWidth - margin - (left + width) : 0;
-    const below = line.top - 4 - height < margin && line.bottom + 4 + height <= window.innerHeight - margin;
+    const below = side === "below" || (line.top - 4 - height < margin && line.bottom + 4 + height <= window.innerHeight - margin);
     // Whole pixels, and a change under one is no change: a scale on the box
     // makes the measured width jitter in the fifth decimal, and an exact
     // compare set the state on every render until React gave up (#185).
@@ -237,7 +253,7 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
     for (const ghost of document.querySelectorAll("[data-tooltip-ghost]")) ghost.remove();
     return () => {
       const el = tooltipRef.current;
-      if (!el || reducedMotion()) return;
+      if (!el || pressed || reducedMotion()) return;
       const ghost = el.cloneNode(true) as HTMLElement;
       ghost.classList.add("pop-out");
       ghost.setAttribute("data-tooltip-ghost", "");
@@ -261,7 +277,7 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
             }
       }
       className={cn(
-        "[@media(hover:none)]:hidden rounded-lg fixed z-50 bg-background border border-border shadow-lg p-2 text-xs pointer-events-none whitespace-normal [overflow-wrap:anywhere]",
+        "tip-in [@media(hover:none)]:hidden rounded-lg fixed z-50 bg-background border border-border shadow-lg p-2 text-xs pointer-events-none whitespace-normal [overflow-wrap:anywhere]",
         className,
       )}
     >
@@ -375,8 +391,8 @@ export function useRowTip<T extends HTMLElement>(slug: string, side: Anchored["s
 function Skeleton() {
   return (
     <>
-      <span className="sk block h-3 w-28 rounded-lg bg-muted" />
-      <span className="sk block h-2.5 w-40 rounded-lg bg-muted mt-1.5" />
+      <span className="skeleton block h-3 w-28 rounded-lg bg-muted" />
+      <span className="skeleton block h-2.5 w-40 rounded-lg bg-muted mt-1.5" />
     </>
   );
 }
@@ -489,13 +505,30 @@ export function LinkTooltip({ url, ...anchored }: Anchored & { url: string }) {
 
 const HEADING = /^H([1-6])$/;
 
+const BLOCK = "p,li,dt,dd,th,td,tr,div,h1,h2,h3,h4,h5,h6,pre,blockquote";
+
+/** The text of an element, with a space where one block or table cell ends
+    and the next begins. `textContent` runs cells together ("ParameterDescription"). */
+function wordsOf(root: Element): string {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let text = "";
+  let lastBlock: Element | null = null;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const block = node.parentElement?.closest(BLOCK) ?? root;
+    if (lastBlock && block !== lastBlock) text += " ";
+    text += node.textContent ?? "";
+    lastBlock = block;
+  }
+  return text.replace(/\s+/g, " ").trim();
+}
+
 /** The words of the section an anchor lands on, read off the page on screen.
     A heading owns what follows it down to the next heading of its rank or
     above; a parameter row owns its own cells. */
 function section(id: string): { title: string; text: string; signature?: boolean } | null {
   const target = document.getElementById(id);
   if (!target) return null;
-  const words = (el: Element) => (el.textContent ?? "").replace(/\s+/g, " ").trim();
+  const words = (el: Element) => wordsOf(el);
   // A hom method's anchor is an empty span in its summary row. The row holds
   // the signature, `menuItems() → tuple of str`, and the caption under it.
   const method = target.closest(".hom-method");

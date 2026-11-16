@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 /**
  * The tabs of the window, in the title bar. Always drawn, a lone tab too:
  * the strip does not appear and push the bar about when a second tab opens.
@@ -22,6 +23,7 @@ import { createPath } from "react-router";
 import { appWindow, inTauri, invoke, listen } from "@/lib/backend";
 import { Icons } from "@/lib/ui/icons";
 import { Hint } from "@/components/ui/Hint";
+import { BAR_BUTTON } from "@/lib/ui/button";
 import { MenuList } from "@/components/ui/MenuList";
 import DocIconClient from "@/components/docs/markdown/DocIconClient";
 import { COMMAND_KEY, IS_MAC, letterOf, useHotkey } from "@/lib/hotkeys";
@@ -55,7 +57,7 @@ export const REOPEN_TAB_KEYS = IS_MAC ? "⇧+⌘+T" : "Ctrl+Shift+T";
 /** The slide of the tabs that change place: short, and it decelerates. */
 const SLIDE = { duration: 180, easing: "cubic-bezier(0.2, 0, 0, 1)" };
 /** The width a tab takes when the bar has room. */
-const TAB_WIDTH = 184;
+const TAB_WIDTH = 188;
 /** The new tab button and its gap, which cover the end of a scrolled strip. */
 const NEW_TAB_ROOM = 32;
 /** Pixels a press travels before it is a drag and not a click. */
@@ -193,10 +195,11 @@ export function TabStrip() {
       }}
       // Each tab is a size container, which gives it no width of its own to
       // offer the row, so the strip asks for the room its tabs want.
-      style={{ flexBasis: tabs.length * (TAB_WIDTH + 4) + 28 }}
+      style={{ flexBasis: tabs.length * (TAB_WIDTH + 2) + NEW_TAB_ROOM }}
       className={cn(
         // Relative: each tab's `offsetLeft` is then its place in the strip.
-        "relative flex h-full min-w-0 items-center px-[8px] overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
+        // The first chip starts on the sheet's left edge.
+        "relative -mb-px flex h-[calc(100%+1px)] min-w-0 items-end gap-2xs overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
         "transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none",
       )}
     >
@@ -213,19 +216,9 @@ export function TabStrip() {
         />
       ))}
       {/* It stays at the end of the window when the tabs scroll under it. */}
-      <Hint label="New tab" keys={NEW_TAB_KEYS} className="sticky right-0 mb-[2px] self-end rounded-md bg-neutral-50 shadow-[0_0_0_3px_var(--color-neutral-50)]">
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-label="New tab"
-          onClick={newTab}
-          className={cn(
-            "grid size-[24px] shrink-0 cursor-interactive place-items-center rounded-md text-neutral-600",
-            "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-            "pointer-hover:bg-neutral-200 pointer-hover:text-neutral-900 active:bg-neutral-300",
-          )}
-        >
-          <Icons.newTab className="size-[15px]" />
+      <Hint label="New tab" keys={NEW_TAB_KEYS} className="sticky right-0 mb-[5px] ml-2xs rounded-md bg-chrome shadow-[0_0_0_2px_var(--color-chrome)]">
+        <button type="button" tabIndex={-1} aria-label="New tab" onClick={newTab} className={BAR_BUTTON}>
+          <Icons.newTab className="size-icon" />
         </button>
       </Hint>
       {menu && <TabMenu {...menu} count={tabs.length} onClose={() => setMenu(null)} />}
@@ -358,30 +351,30 @@ function TabChip({
       className={cn(
         // Wide enough for a name, and every tab gives way alike when the bar
         // runs short. A size container: the layout inside reads its width.
-        "group/tab @container relative h-[28px] min-w-[36px] shrink basis-(--tab) self-end cursor-interactive",
-        "touch-none select-none rounded-t-[8px]",
+        "group/tab @container relative h-[32px] min-w-[36px] shrink basis-(--tab) cursor-interactive",
+        "touch-none select-none rounded-t-lg",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-        // The divider on the left of a tab: none beside the active tab or
-        // the one under the pointer, which draw their own edge.
-        "before:absolute before:top-[7px] before:left-0 before:h-[14px] before:w-px before:bg-neutral-300",
-        "first:before:hidden [[aria-selected=true]+&]:before:opacity-0 [:hover+&]:before:opacity-0",
+        // The tab on screen is the chip the panel gives the page on screen:
+        // one look for "this one" across the window. The rest are words on
+        // the bar until the pointer finds them.
         active
-          ? "z-10 bg-background text-neutral-950 before:opacity-0"
-          : "text-neutral-600 pointer-hover:bg-neutral-200/70 pointer-hover:text-neutral-900 pointer-hover:before:opacity-0",
+          ? cn(
+            "z-10 bg-background text-neutral-950",
+            // Concave feet, as large as the tab's own top corners: the tab
+            // flows into the page instead of standing on it. The first tab has
+            // the sheet's edge at its left, so it needs no left foot.
+            "after:pointer-events-none after:absolute after:bottom-0 after:left-full after:size-(--radius-lg) after:content-['']",
+            "after:bg-[radial-gradient(circle_at_100%_0,transparent_calc(var(--radius-lg)-0.5px),var(--background)_var(--radius-lg))]",
+            index > 0 &&
+              "before:pointer-events-none before:absolute before:right-full before:bottom-0 before:size-(--radius-lg) before:content-[''] before:bg-[radial-gradient(circle_at_0_0,transparent_calc(var(--radius-lg)-0.5px),var(--background)_var(--radius-lg))]",
+          )
+          : "text-neutral-500 pointer-hover:bg-neutral-200/70 pointer-hover:text-neutral-900 dark:pointer-hover:bg-foreground/[0.035]",
       )}
     >
-      {active && (
-        // The active tab is part of the page under it, as in a browser: it
-        // covers the bar's hairline and flares into the page at each foot.
-        <>
-          <span aria-hidden className="absolute bottom-0 -left-[8px] size-[8px] bg-[radial-gradient(circle_at_0_0,transparent_8px,var(--background)_8.5px)]" />
-          <span aria-hidden className="absolute -right-[8px] bottom-0 size-[8px] bg-[radial-gradient(circle_at_100%_0,transparent_8px,var(--background)_8.5px)]" />
-        </>
-      )}
-      {/* Narrow, a tab shows one thing, centred: its icon, or its close
-          when it is the active one. */}
-      <span className="flex size-full items-center gap-[6px] pr-[4px] pl-[10px] @max-[72px]:justify-center @max-[72px]:px-0">
-        <span className={cn("grid shrink-0 place-items-center", active && "@max-[72px]:hidden")}>
+      {/* Narrow, a tab shows one thing, centred: its icon, and on the active
+          tab its close under the pointer. */}
+      <span className="flex size-full items-center gap-[7px] pr-xs pb-[6px] pl-sm @max-[72px]:justify-center @max-[72px]:px-0">
+        <span className={cn("grid shrink-0 place-items-center", active && "@max-[72px]:group-hover/tab:hidden")}>
           {icon ? (
             <DocIconClient src={icon} alt="" className="size-[14px]" fallback={<Icons.page className="size-[14px]" />} />
           ) : title === "Home" ? (
@@ -390,7 +383,7 @@ function TabChip({
             <Icons.page className="size-[14px]" />
           )}
         </span>
-        <span className="min-w-0 flex-1 translate-y-[0.5px] truncate text-[12px] leading-none @max-[72px]:hidden">{title}</span>
+        <span className="min-w-0 flex-1 translate-y-light truncate text-meta leading-none tracking-[-0.01em] @max-[72px]:hidden">{title}</span>
         <button
           type="button"
           tabIndex={-1}
@@ -399,15 +392,15 @@ function TabChip({
           onPointerDown={(event) => event.stopPropagation()}
           onClick={onClose}
           className={cn(
-            "grid size-[20px] shrink-0 place-items-center rounded-[4px] text-neutral-500",
+            "grid size-[20px] shrink-0 place-items-center rounded-sm text-neutral-500",
             "transition-[opacity,background-color,color] duration-(--duration-fast) motion-reduce:transition-none",
-            "pointer-hover:bg-neutral-300/70 pointer-hover:text-neutral-950",
+            "pointer-hover:bg-neutral-200 pointer-hover:text-neutral-950",
             // The active tab always shows its close; another only under the
             // pointer, and a narrow one never, so its icon keeps the room.
-            active ? "opacity-100" : "opacity-0 group-hover/tab:opacity-100 @max-[72px]:hidden",
+            active ? "opacity-100 @max-[72px]:hidden @max-[72px]:group-hover/tab:grid" : "opacity-0 group-hover/tab:opacity-100 @max-[72px]:hidden",
           )}
         >
-          <Icons.dismiss className="size-[12px]" />
+          <Icons.dismiss className="size-ms" />
         </button>
       </span>
     </div>
@@ -424,7 +417,8 @@ function TabMenu({ x, y, index, count, onClose }: { x: number; y: number; index:
     document.addEventListener("mousedown", outside);
     return () => document.removeEventListener("mousedown", outside);
   }, [onClose]);
-  return (
+  // On the body: inside the title bar the menu shares its stacking order and goes under the page bar.
+  return createPortal(
     <MenuList
       ref={panel}
       label="Tab"
@@ -443,6 +437,7 @@ function TabMenu({ x, y, index, count, onClose }: { x: number; y: number; index:
         ],
         [{ label: "Reopen closed tab", icon: Icons.recent, keys: REOPEN_TAB_KEYS, disabled: !canReopenTab(), run: reopenTab }],
       ]}
-    />
+    />,
+    document.body,
   );
 }

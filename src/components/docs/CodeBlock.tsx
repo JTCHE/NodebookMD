@@ -3,6 +3,7 @@ import hljs from "highlight.js/lib/core";
 import c from "highlight.js/lib/languages/c";
 import python from "highlight.js/lib/languages/python";
 import type { CodeLanguage } from "@/lib/markdown/types";
+import "./CodeBlock.css";
 
 const withFunctionCalls = (languageFactory: typeof c) => (highlightJs: Parameters<typeof c>[0]) => {
   const language = languageFactory(highlightJs);
@@ -55,7 +56,7 @@ export function CodePanel({ children, language }: CodePanelProps) {
   const handleCopy = useCallback(async () => {
     const panel = panelRef.current;
     if (!panel) return;
-    const signatureRows = panel.querySelectorAll<HTMLElement>(".vex-sig-row");
+    const signatureRows = panel.querySelectorAll<HTMLElement>(".vex-signature-row");
     const targets = signatureRows.length ? signatureRows : panel.querySelectorAll<HTMLElement>("code");
     const text = Array.from(targets, (target) => target.innerText).join("\n");
 

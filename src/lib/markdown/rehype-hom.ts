@@ -48,11 +48,11 @@ function highlight(code: Element) {
     const after = source.slice(match.index! + token.length);
     const kind = /^(?:[rubf]{0,2})?["']/.test(token) ? "hljs-string"
       : /^(?:None|True|False)$/.test(token) || /^\d/.test(token) ? "hljs-literal"
-      : token.startsWith("hou.") ? "vex-tk-type"
-      : /^\s*\(/.test(after) && /^\w/.test(token) ? "vex-tk-fn"
+      : token.startsWith("hou.") ? "vex-token-type"
+      : /^\s*\(/.test(after) && /^\w/.test(token) ? "vex-token-function"
       : token === "self" || token === "cls" ? "hljs-built_in"
-      : /^\w/.test(token) ? "vex-tk-arg"
-      : /^\s+$/.test(token) ? "" : "vex-tk-punct";
+      : /^\w/.test(token) ? "vex-token-argument"
+      : /^\s+$/.test(token) ? "" : "vex-token-punctuation";
     return kind ? { type: "element", tagName: "span", properties: { className: [kind] }, children: [{ type: "text", value: token }] } : { type: "text", value: token };
   });
 }
@@ -105,7 +105,7 @@ const parameterOf = (node: ElementContent, names: Set<string>, known = (name: st
 };
 
 /** The argument paragraphs become the Arguments table of a VEX page
-    (`.vex-args`, see remark-vex): a column of names, and what each does. A block
+    (`.vex-arguments`, see remark-vex): a column of names, and what each does. A block
     between two arguments is more about the one above it, so it goes in that
     one's description; a block after the last argument stays outside. */
 const listParameters = (nodes: ElementContent[], names: Set<string>): ElementContent[] => {
@@ -125,14 +125,14 @@ const listParameters = (nodes: ElementContent[], names: Set<string>): ElementCon
     const parameter = parameters[index];
     if (parameter) {
       if (!list) {
-        list = div("vex-args vex-args-untyped", [
-          div("vex-arg-sig vex-args-head", [{ type: "element", tagName: "span", properties: {}, children: [{ type: "text", value: "Name" }] }]),
-          div("vex-arg-desc vex-args-head", [{ type: "element", tagName: "span", properties: {}, children: [{ type: "text", value: "Description" }] }]),
+        list = div("vex-arguments vex-arguments-untyped", [
+          div("vex-argument-signature vex-arguments-head", [{ type: "element", tagName: "span", properties: {}, children: [{ type: "text", value: "Name" }] }]),
+          div("vex-argument-description vex-arguments-head", [{ type: "element", tagName: "span", properties: {}, children: [{ type: "text", value: "Description" }] }]),
         ]);
         out.push(list);
       }
-      description = div("vex-arg-desc", [{ type: "element", tagName: "p", properties: {}, children: parameter.description }]);
-      list.children.push(div("vex-arg-sig", [{ type: "element", tagName: "span", properties: { className: ["vex-arg-name"] }, children: [...parameter.anchors, { type: "text", value: parameter.name }] }]), description);
+      description = div("vex-argument-description", [{ type: "element", tagName: "p", properties: {}, children: parameter.description }]);
+      list.children.push(div("vex-argument-signature", [{ type: "element", tagName: "span", properties: { className: ["vex-argument-name"] }, children: [...parameter.anchors, { type: "text", value: parameter.name }] }]), description);
     } else if (description && index < last) {
       description.children.push(node);
     } else {
@@ -218,7 +218,7 @@ export function rehypeHom({ name }: { name: string | null }) {
             const returns: ElementContent[] = (JSON.parse(JSON.stringify((strong as Element).children.slice(1))) as ElementContent[]).map(plain);
             if (arrow) returns.unshift({ type: "text", value: ` → ${arrow[2]}` });
             for (const node of (strong as Element).children) if (node.type === "element" && node.tagName === "code") highlight(node);
-            const panel = div("vex-sig hom-signature", [div("vex-sig-card code-panel", [div("vex-sig-row", (strong as Element).children)])]);
+            const panel = div("vex-signature hom-signature", [div("vex-signature-card code-panel", [div("vex-signature-row", (strong as Element).children)])]);
             methodNames.set(panel, raw.slice(0, raw.indexOf("(")).trim());
             if (compact !== raw) shortened.add(panel);
             summaries.set(panel, [...leading, { type: "element", tagName: "span", properties: { className: ["hom-method-name"] }, children: [{ type: "text", value: compact }] }, ...returns]);
@@ -251,16 +251,16 @@ export function rehypeHom({ name }: { name: string | null }) {
         if (documented.size > 0) {
           const card = (panel as Element).children[0];
           const row = card?.type === "element"
-            ? card.children.find((child: ElementContent): child is Element => child.type === "element" && (child.properties.className as string[] | undefined)?.includes("vex-sig-row") === true)
+            ? card.children.find((child: ElementContent): child is Element => child.type === "element" && (child.properties.className as string[] | undefined)?.includes("vex-signature-row") === true)
             : undefined;
           const wrap = (element: Element) => {
             element.children = element.children.map((token: ElementContent) => {
               if (token.type !== "element") return token;
               const classes = token.properties.className as string[] | undefined;
-              const href = classes?.includes("vex-tk-arg") === true ? documented.get(fold(text(token))) : undefined;
+              const href = classes?.includes("vex-token-argument") === true ? documented.get(fold(text(token))) : undefined;
               // The class tells the renderer this link carries no page mark:
               // a page icon in front of every argument is noise.
-              return href ? { type: "element", tagName: "a", properties: { href, className: ["vex-sig-arg"] }, children: [token] } : token;
+              return href ? { type: "element", tagName: "a", properties: { href, className: ["vex-signature-argument"] }, children: [token] } : token;
             });
           };
           if (row?.type === "element") {

@@ -9,14 +9,15 @@ import { useRef, type ReactNode } from "react";
 import { useHoverTip } from "@/lib/ui/hover-tip";
 import { TooltipBox } from "@/components/docs/Tooltip";
 import { cn } from "@/lib/utils";
-import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
+import { Keys } from "@/components/ui/Keycap";
 
 /** `className` places the wrapper: a button that sits `absolute` gives its
     place to the wrapper, so the name is drawn at the button. */
-export function Hint({ label, keys, className, children }: { label: string; keys?: string; className?: string; children: ReactNode }) {
+export function Hint({ label, keys, side, className, children }: { label?: string; keys?: string; side?: "above" | "below"; className?: string; children: ReactNode }) {
   const anchor = useRef<HTMLSpanElement>(null);
   const { shown, open, hide } = useHoverTip();
 
+  // With keycaps the box closes on them, so that side takes the key inset; keys alone take it on both sides.
   return (
     <span
       ref={anchor}
@@ -28,17 +29,11 @@ export function Hint({ label, keys, className, children }: { label: string; keys
     >
       {children}
       {shown && (
-        <TooltipBox anchorRef={anchor} className="z-[80] w-max max-w-[24rem]">
+        <TooltipBox anchorRef={anchor} side={side} className={cn("z-[80] w-max max-w-[24rem] rounded-[11px] py-xs [corner-shape:squircle]", !label ? "px-xs" : keys ? "pr-xs pl-sm" : "px-sm")}>
           <span className="flex items-center gap-2 font-medium text-foreground">
             {label}
             {keys && (
-              <span className="flex items-center gap-2xs font-normal">
-                {keys.split("+").map((key) => (
-                  <Keycap key={key} className={SMALL_KEY}>
-                    {key}
-                  </Keycap>
-                ))}
-              </span>
+              <Keys keys={keys} />
             )}
           </span>
         </TooltipBox>

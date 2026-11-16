@@ -347,7 +347,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
       <div
         // transform-gpu keeps the panel on a layer of its own, so a keystroke
         // does not draw the page under it again.
-        className="w-full max-w-overlay mx-4 bg-background border rounded-xl shadow-2xl overflow-hidden pointer-events-auto transform-gpu"
+        className="w-full max-w-[32rem] mx-4 bg-background border rounded-xl shadow-2xl overflow-hidden pointer-events-auto transform-gpu"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative flex items-center border-b">
@@ -381,7 +381,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
               })}
               className="flex items-center justify-center size-6 rounded text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Icons.dismiss className="size-[15px]" />
+              <Icons.dismiss className="size-icon" />
             </button>
             </Hint>
           )}

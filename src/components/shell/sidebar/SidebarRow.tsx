@@ -66,6 +66,13 @@ export interface SidebarRowProps {
   bare?: boolean;
 }
 
+/** The whole name as the native tooltip, but only when the panel cuts it
+    short: a name that shows whole needs no second copy of itself. */
+function titleIfCut(event: React.PointerEvent<HTMLElement>, label: string) {
+  const text = event.currentTarget.querySelector<HTMLElement>("[data-label]");
+  event.currentTarget.title = text && text.scrollWidth > text.clientWidth ? label : "";
+}
+
 export function SidebarRow({
   label,
   icon,
@@ -88,7 +95,8 @@ export function SidebarRow({
     disclosure === "expanded" ? Icons.expanded : disclosure === "back" ? Icons.back : Icons.collapsed;
   // What stands in where the help ships no icon. A row that opens holds pages,
   // so the page glyph would say the row IS a page.
-  const Stand = disclosure === "expanded" || disclosure === "collapsed" ? Icons.section : Icons.page;
+  const opens = disclosure === "expanded" || disclosure === "collapsed";
+  const Stand = opens ? Icons.section : Icons.page;
   const raised = selected || active;
   // A page row names its page the way a link in the page does: the panel
   // cuts long names short, and the tooltip gives the whole name and what the
@@ -114,58 +122,57 @@ export function SidebarRow({
       // The row you are on is a chip lifted off the panel, not a tinted band:
       // the panel is already a shade of the page, so a tint would have to be
       // darker than the page to read at all.
-      raised ? "bg-raised shadow-chip" : "pointer-hover:bg-raised/70",
-      "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+      // A bare row, in Settings, sits in a panel with no other chip near
+      // it, so its fill alone says it is chosen.
+      // Hover is a tint of the panel, never the chip: a hovered row must not
+      // read as a second row you are on.
+      raised ? cn("bg-raised dark:bg-neutral-300", !bare && "shadow-chip ring-1 ring-inset ring-foreground/[0.14] dark:ring-0", "pointer-hover:bg-neutral-100 dark:pointer-hover:brightness-125") : "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045]",
+      // Focus is an accent ring inside the row's own shape: plain to see,
+      // and never mistaken for hover or the chip.
+      "focus-ring",
       className,
     ),
   };
 
   const content = (
     <>
-      {bare ? null : disclosure === "none" ? (
-        // A page row has no arrow, so the arrow's place is where its flag
-        // goes. Outside the row the flag hung into the panel's own margin and
-        // read as a stray mark; here it reads as the row's own state, and an
-        // unkept page still holds the width open so nothing shifts when a
-        // page is kept.
-        <span className="grid size-[11px] shrink-0 place-items-center" aria-hidden="true">
-          {kept && <Icons.bookmark className="size-[9px] text-brand" fill="currentColor" />}
+      {bare || disclosure === "none" ? null : (
+        // The arrow sits in a slot as wide as a mark, so its centre stands on
+        // the icon column of the rows above and below.
+        <span className="grid size-icon shrink-0 place-items-center" aria-hidden="true">
+          <Disclosure
+            className={cn(
+              "size-glyph",
+              // One ink for both directions: the turn of the arrow says open or closed.
+              "text-neutral-600",
+              quietDisclosure &&
+                "opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none",
+            )}
+          />
         </span>
-      ) : (
-        <Disclosure
-          className={cn(
-            "size-[11px] shrink-0",
-            // Open reads as a darker arrow, not as the raised chip: the chip
-            // means "the row you are on", and an open branch is a place you
-            // are inside, not the row itself.
-            disclosure === "expanded" ? "text-neutral-600" : "text-neutral-400",
-            quietDisclosure &&
-              "opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none",
-          )}
-        />
       )}
 
       {/* The mark sits in a box of a stated size whatever fills it. A help
           icon carries its own aspect ratio and an app glyph does not, and
           without the box the two draw rows of different heights. */}
       {(mark !== undefined || icon !== undefined) && (
-        <span className="grid size-[15px] shrink-0 place-items-center" aria-hidden="true">
+        <span className="grid size-icon shrink-0 place-items-center" aria-hidden="true">
           {mark === undefined && icon !== undefined ? (
             icon ? (
               <DocIconClient
                 src={icon}
                 alt=""
-                className="size-[15px]"
+                className="size-icon"
                 // The list only mounts the rows on screen, so a lazy load only
                 // adds a frame between a row and its icon.
                 priority
                 // The install ships a few pages whose icon file is not in it.
                 // A blank where every neighbour has a mark reads as a fault;
                 // the page glyph reads as a page.
-                fallback={<Stand className="size-[15px] text-neutral-400" />}
+                fallback={<Stand className="size-icon text-neutral-400" />}
               />
             ) : (
-              <Stand className="size-[15px] text-neutral-400" />
+              <Stand className="size-icon text-neutral-400" />
             )
           ) : (
             mark
@@ -174,17 +181,23 @@ export function SidebarRow({
       )}
 
       <span
+        data-label=""
         className={cn(
-          "min-w-0 flex-1 truncate text-[13px] tracking-[-0.01em]",
+          "min-w-0 flex-1 truncate text-row tracking-[-0.01em]",
           header && "font-medium",
-          raised ? "text-neutral-800" : "text-neutral-500 group-hover:text-neutral-900",
+          raised ? "text-neutral-950" : header ? "text-neutral-700 group-hover:text-neutral-950" : "text-neutral-600 group-hover:text-neutral-950",
         )}
       >
         {label}
       </span>
 
+      {/* A page row has no arrow and no slot for one, so its chip pads its
+          icon like any row. Its flag stands at the end, where a kept page
+          says so without moving its name. */}
+      {kept && <Icons.bookmark className="ml-2xs size-glyph shrink-0 text-neutral-600" strokeWidth={2} aria-hidden="true" />}
+
       {count !== undefined && (
-        <span className="shrink-0 text-[11.5px] text-neutral-400 tabular-nums">
+        <span className="shrink-0 text-[11px] text-neutral-600 tabular-nums opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none">
           {count.toLocaleString()}
         </span>
       )}
@@ -199,7 +212,8 @@ export function SidebarRow({
       ref={anchorRef}
       to={to}
       {...pointer}
-      onPointerEnter={() => {
+      onPointerEnter={(event) => {
+        titleIfCut(event, label);
         warm(to.replace(/^\/+/, ""));
         pointer.onPointerEnter();
       }}
@@ -217,7 +231,10 @@ export function SidebarRow({
     <button
       type="button"
       onClick={() => onClick?.()}
-      onPointerEnter={onPointerEnter}
+      onPointerEnter={(event) => {
+        titleIfCut(event, label);
+        onPointerEnter?.();
+      }}
       {...shared}
       className={cn("group", shared.className)}
     >

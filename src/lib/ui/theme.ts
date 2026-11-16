@@ -89,12 +89,6 @@ export function setTheme(choice: ThemeChoice) {
   for (const notify of listeners) notify();
 }
 
-/** The next choice after the one in force. */
-export function cycleTheme() {
-  const at = THEME_CHOICES.indexOf(stored() ?? "system");
-  setTheme(THEME_CHOICES[(at + 1) % THEME_CHOICES.length]);
-}
-
 function subscribe(notify: () => void) {
   listeners.add(notify);
   return () => listeners.delete(notify);

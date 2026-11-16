@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { isCollapsed, sectionKey, sectionOf, setCollapsed } from "@/lib/ui/sections";
 import { Icons } from "@/lib/ui/icons";
 import { BAR_BUTTON } from "@/lib/ui/button";
+import "./MarkdownHeading.css";
 
 type Tag = "h2" | "h3" | "h4";
 

@@ -31,14 +31,14 @@ interface PageHeaderProps {
  *  the "Since" badge, the copy-as-markdown action, and the summary caption. */
 export function PageHeader({ name, nodeType, icon, since, summary, markdown, entry, versions, tree }: PageHeaderProps) {
   return (
-    <header className="@container not-prose border-b border-border pb-3 mb-6">
+    <header className="@container not-prose mb-0">
       {/* The actions hold the right of the title line at every width. What
           wraps is the title side: a long name wraps under itself. */}
       <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-3">
         <div className="flex min-w-0 flex-1 basis-0 flex-wrap items-center gap-x-3 gap-y-2">
           <PageTitle name={name} nodeType={nodeType} icon={icon} />
         </div>
-        <div className="flex shrink-0 items-center gap-2 pt-0.5 print:hidden">
+        <div className="flex shrink-0 items-center gap-0.5 pt-0.5 print:hidden">
           <ExampleFor path={entry.path} />
           <LaunchExample path={entry.path} />
           {tree && <PicturesButton tree={tree} />}
@@ -55,7 +55,7 @@ export function PageHeader({ name, nodeType, icon, since, summary, markdown, ent
             <div className="flex shrink-0 items-center gap-2">
               <NodeVersionSelector versions={versions} path={entry.path} />
               {since && (
-                <span className="inline-flex shrink-0 items-center rounded-md border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                <span className="shrink-0 text-xs text-neutral-500">
                   Since {since}
                 </span>
               )}

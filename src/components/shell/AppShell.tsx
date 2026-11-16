@@ -27,7 +27,6 @@ import { TitleBar } from "./TitleBar";
 import { Sidebar, storedWidth } from "./Sidebar";
 import { REVEAL } from "./sidebar/PageTree";
 import { SettingsDialog } from "@/components/settings/SettingsDialog";
-import { StatusBar } from "./StatusBar";
 import { FindBar } from "./FindBar";
 
 /**
@@ -45,7 +44,7 @@ function SkipToContent() {
         (main?.querySelector<HTMLElement>("input") ?? main)?.focus({ preventScroll: true });
       }}
       className={cn(
-        "sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-[4px] focus-visible:left-sm focus-visible:z-50",
+        "sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-xs focus-visible:left-sm focus-visible:z-50",
         "rounded-md bg-raised text-meta font-medium text-neutral-950 shadow-chip focus-visible:px-ms focus-visible:py-xs",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
       )}
@@ -161,13 +160,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   });
 
   const onLanding = path === "";
+  const docked = !tight && sidebarOpen;
 
   return (
     // A print is the page alone, at its full length: the window's own height,
     // its bars and its panel stay on the screen.
-    <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground print:block print:h-auto print:overflow-visible">
+    // The bars and the panel are one ground (`--chrome`); the page is a sheet
+    // laid on it, so the eye goes to the paper and the furniture recedes.
+    <div className="flex h-dvh flex-col overflow-hidden bg-chrome text-foreground print:block print:h-auto print:overflow-visible print:bg-background">
       <SkipToContent />
       <TitleBar
+        docked={docked}
         sidebarOpen={tight ? floating : sidebarOpen}
         onToggleSidebar={toggleSidebar}
         showTrail={!onLanding}
@@ -178,7 +181,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {ready && onboarding === true && <Onboarding onDone={finish} />}
       {ready && onboarding === false && (
       <div className="relative flex min-h-0 flex-1 print:block">
-        {!tight && sidebarOpen && <Sidebar currentPath={shown || undefined} className="print:hidden" />}
+        {/* The docked panel fades in when shown, like the floating one slides in. */}
+        {docked && <Sidebar currentPath={shown || undefined} className="transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none print:hidden" />}
         {tight && floating && (
           <div
             ref={card}
@@ -193,14 +197,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <div className={cn("relative flex min-w-0 flex-1 flex-col overflow-hidden print:block print:overflow-visible")}>
+        {/* The sheet. Its top and left edges are hairlines, and the corner
+            where the bar meets the panel is rounded. It runs flush to the
+            window's right and bottom edges, so the window's own corner
+            clips it and the two stay concentric. Without the panel, the
+            sheet meets the window's left edge and has no corner to round. */}
+        <div
+          className={cn(
+            "relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background",
+                                    "print:block print:overflow-visible print:border-0",
+          )}
+        >
           {children}
           <FindBar />
-          {/* The strip lies over the bottom of the page, which runs on under
-              it and fades out (see .status-scrim), so the page needs room for
-              it at its own foot. Only its contents take the pointer: the
-              scrollbar under it still drags. */}
-          <StatusBar className="pointer-events-none absolute inset-x-0 bottom-0 z-10 print:hidden [&>*]:pointer-events-auto" />
+          {/* The page fades out at its foot, so a line is never cut hard. */}
+          <div aria-hidden="true" className="page-foot-scrim print:hidden" />
         </div>
         <Lightbox />
         <ContextMenu />

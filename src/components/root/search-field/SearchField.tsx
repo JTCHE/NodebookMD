@@ -198,7 +198,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
         role="search"
         className={cn(
           "relative isolate flex items-center gap-sm overflow-hidden rounded-xl",
-          "bg-surface-sunken shadow-field",
+          "bg-neutral-100 shadow-field dark:bg-neutral-0",
           // Two edge lines, one bevel. Call `d` the step the fill sits below
           // the page. The OUTER line is a further `d` down — the page falling
           // away — and the INNER line is the page value itself, the lit lip of

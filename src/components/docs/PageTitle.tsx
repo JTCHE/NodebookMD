@@ -18,7 +18,7 @@ interface PageTitleProps {
  */
 export function PageTitle({ name, nodeType, icon }: PageTitleProps) {
   return (
-    <div className="flex items-center gap-3 min-w-0">
+    <div className="flex items-start gap-3 min-w-0">
       {/* No stand-in here. A list needs one, because a blank in a column of
           marks reads as a fault; a title stands alone, and a generic glyph in
           front of it only says the page has no icon. */}
@@ -30,7 +30,7 @@ export function PageTitle({ name, nodeType, icon }: PageTitleProps) {
           aria-label={`Show the ${name} icon`}
           data-icon={icon}
           onClick={(event) => openPicture(event.currentTarget, { src: localIconUrl(icon), alt: `${name} icon`, icon, ground: "none" })}
-          className="-m-1 shrink-0 cursor-zoom-in rounded-md p-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="-m-1 shrink-0 cursor-zoom-in rounded-md p-1 focus-ring"
         >
           <DocIconClient src={icon} alt="" className="size-8 select-none" priority />
         </button>

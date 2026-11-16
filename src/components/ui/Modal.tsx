@@ -19,18 +19,30 @@ import { Hint } from "@/components/ui/Hint";
 export const SCRIM =
   "absolute inset-0 bg-black/50 scrim-blur transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none";
 
-export const MODAL_TOP = "pt-[20px]";
+/** The modal's inset. Content padded by it ends where the close button's
+    cross ends: the button hangs its own padding past that line (`CLOSE`). */
+export const MODAL_TOP = "pt-lg";
 export const MODAL_LINE = "flex h-7 shrink-0 items-center";
+
+/** The close button is 28px and its cross is 8px, so the cross stands 10px
+    inside the button. The button gives those 10px back, as every ghost
+    button gives back its padding. A title's capitals sit 1px above the
+    middle of its line, so the cross moves up by as much to meet them. */
+const CLOSE = "top-[calc(var(--spacing-lg)-1px)] right-[calc(var(--spacing-lg)-10px)]";
 
 export function Modal({
   label,
   onClose,
   className,
+  closeAt = CLOSE,
   children,
 }: {
   label: string;
   onClose: () => void;
   className?: string;
+  /** Where the close button stands, for a modal whose title line holds
+      controls of its own. */
+  closeAt?: string;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -56,19 +68,20 @@ export function Modal({
           className,
         )}
       >
-        <Hint label="Close" keys="Esc" className="absolute top-[20px] right-[20px] z-10">
-        <button
-          type="button"
-          aria-label="Close"
-          onClick={onClose}
-          className={cn(
-            "grid size-7 cursor-interactive place-items-center rounded-md text-neutral-500",
-            "pointer-hover:bg-neutral-100 pointer-hover:text-neutral-800",
-            "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-          )}
-        >
-          <Icons.dismiss className="size-4" />
-        </button>
+        <Hint label="Close" keys="Esc" className={cn("absolute z-10", closeAt)}>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className={cn(
+              "grid size-7 cursor-interactive place-items-center rounded-md text-neutral-500",
+              "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
+              "pointer-hover:bg-neutral-100 pointer-hover:text-neutral-800 active:bg-neutral-200",
+              "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+            )}
+          >
+            <Icons.dismiss className="size-4" />
+          </button>
         </Hint>
         {children}
       </div>

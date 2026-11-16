@@ -4,6 +4,7 @@ import { ChevronDown, List } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Heading } from "@/lib/markdown/headings";
 import { TocList } from "./TocList";
+import "./FloatingPill.css";
 
 /**
  * The floating pill, top left, once the inline list has scrolled away: the
@@ -75,7 +76,7 @@ export function FloatingPill({
       // itself over that panel instead of over the page. The wrapper carries
       // no height, so it lies over the text rather than pushing it down.
       // It rides just under the page's bar, which stays at the top.
-      className={`print:hidden @min-[780px]:hidden sticky top-[calc(var(--page-bar-h)+0.5rem)] z-20 h-0 transition-opacity duration-300 ease-out motion-reduce:transition-none ${
+      className={`print:hidden @min-toc:hidden sticky top-[calc(var(--page-bar-height)+0.5rem)] z-20 h-0 transition-opacity duration-300 ease-out motion-reduce:transition-none ${
         floating ? "opacity-100" : "pointer-events-none opacity-0"
       }`}
     >
@@ -108,7 +109,7 @@ export function FloatingPill({
             // address bar hidden, so a panel sized against it runs off the
             // bottom of the screen under Safari's bottom bar. svh is the
             // smallest state — the panel fits with every bar on screen.
-            style={{ maxHeight: "calc(100svh - var(--header-h, 3.5rem) - 6rem)" }}
+            style={{ maxHeight: "calc(100svh - var(--spacing-titlebar) - 6rem)" }}
             className={`-ml-[15px] absolute left-0 top-full mt-2 w-[min(20rem,calc(100vw-3rem))] overflow-y-auto overscroll-contain border border-border bg-background rounded-2xl shadow-xl shadow-black/20 p-1.5 origin-top-left transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${expanded ? "opacity-100 scale-100" : "pointer-events-none opacity-0 scale-[0.98]"}`}
           >
             <TocList headings={headings} top={top} active={active} padded onNavigate={() => setOpen(false)} />

@@ -19,8 +19,8 @@ import { IS_MAC } from "@/lib/hotkeys";
 
 /* Windows' own caption button: a wide, short target with no radius, reaching
    the full height of the bar so the pointer catches it at the screen corner. */
-const CAPTION_BUTTON =
-  "grid h-full w-caption-w shrink-0 cursor-interactive place-items-center text-neutral-700 " +
+export const CAPTION_BUTTON =
+  "grid h-full w-[46px] shrink-0 cursor-interactive place-items-center text-neutral-700 " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none " +
   "pointer-hover:bg-neutral-200 active:bg-neutral-300 " +
   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:-ring-offset-2";
@@ -74,7 +74,7 @@ export function WindowControls({ className }: { className?: string }) {
         className={CAPTION_BUTTON}
         onClick={(() => void appWindow()?.minimize())}
       >
-        <Icons.captionMinimize className="size-[11px]" />
+        <Icons.captionMinimize className="size-glyph" />
       </button>
       <button
         type="button"
@@ -83,7 +83,7 @@ export function WindowControls({ className }: { className?: string }) {
         className={CAPTION_BUTTON}
         onClick={(() => void appWindow()?.toggleMaximize())}
       >
-        <MaximizeGlyph className="size-[11px]" />
+        <MaximizeGlyph className="size-glyph" />
       </button>
       <button
         type="button"
@@ -97,7 +97,7 @@ export function WindowControls({ className }: { className?: string }) {
         )}
         onClick={(() => void appWindow()?.close())}
       >
-        <Icons.captionClose className="size-[11px]" />
+        <Icons.captionClose className="size-glyph" />
       </button>
     </div>
   );

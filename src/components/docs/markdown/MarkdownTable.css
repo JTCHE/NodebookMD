@@ -1,0 +1,56 @@
+/* GFM tables and VEX arguments share one look: row lines only, edge to edge through a negative --md margin. */
+.markdown-table-wrap {
+  overflow-x: auto;
+  margin: 2rem calc(var(--md) * -1);
+}
+.markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.markdown-table th {
+  padding: var(--ms) var(--md);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.markdown-table td {
+  padding: var(--ms) var(--md);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--foreground);
+}
+.markdown-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* A headerless source table: hide the blank header row that markdown requires. */
+.markdown-table-headerless thead {
+  display: none;
+}
+.markdown-table td code {
+  white-space: nowrap;
+}
+.markdown-table-declarations {
+  table-layout: fixed;
+}
+.markdown-table-declarations td code {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.markdown-table tr > :first-child {
+  width: 20%;
+  color: var(--muted-foreground);
+}
+.markdown-table-declarations tr > :nth-child(2):not(:last-child) {
+  width: 50%;
+}
+/* A hairline on a dense screen: one device pixel, not two. */
+@media (min-resolution: 2dppx) {
+  .markdown-table th,
+  .markdown-table td {
+    border-bottom-width: 0.5px;
+  }
+}

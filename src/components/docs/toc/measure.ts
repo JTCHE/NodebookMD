@@ -22,7 +22,7 @@ export function readingLine() {
   // The same measure and breakpoint the gutter list is switched on: the
   // scroller's width, not the window's. Below it the pill is there too.
   const box = scroller();
-  const bar = box ? parseFloat(getComputedStyle(box).getPropertyValue("--page-bar-h")) * 16 || 0 : 0;
+  const bar = box ? parseFloat(getComputedStyle(box).getPropertyValue("--page-bar-height")) * 16 || 0 : 0;
   return bar + ((box?.clientWidth ?? window.innerWidth) >= 780 ? 24 : 64);
 }
 
