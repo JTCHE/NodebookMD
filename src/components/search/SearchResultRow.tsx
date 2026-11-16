@@ -108,8 +108,8 @@ function Highlight({ text, query }: { text: string; query: string }) {
     <>
       {parts.map((part, i) =>
         i % 2 ? (
-          // Colour alone marks the match: the excerpt is grey, the match is ink.
-          <mark key={i} className="bg-transparent text-foreground">
+          // Colour alone marks the match: one grey step above the excerpt, never title ink.
+          <mark key={i} className="bg-transparent text-muted-foreground">
             {part}
           </mark>
         ) : (
@@ -176,7 +176,7 @@ export function SearchResultRow({
 
   if (sub) {
     return (
-      <button type="button" className={cn(row, "py-2xs")} {...press}>
+      <button type="button" className={cn(row, "-mt-xs py-2xs")} {...press}>
         <span aria-hidden="true" className="grid h-[1.125rem] w-5 shrink-0 place-items-center text-muted-foreground/50">
           {subKind === "text" ? <ParagraphIcon /> : <HashIcon />}
         </span>
