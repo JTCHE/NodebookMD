@@ -1,6 +1,15 @@
 import type { ReactNode } from "react";
 import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
 import { cn } from "@/lib/utils";
+import { ArrowDown, ArrowUp, CornerDownLeft } from "lucide-react";
+
+// Drawn keys, not font arrows: the font gives each arrow its own size and weight.
+const GLYPH = "size-[1em] stroke-[2.25]";
+const DRAWN: Record<string, ReactNode> = {
+  "↑": <ArrowUp className={GLYPH} aria-label="Up" />,
+  "↓": <ArrowDown className={GLYPH} aria-label="Down" />,
+  "↵": <CornerDownLeft className={GLYPH} aria-label="Enter" />,
+};
 
 const HINTS: Array<{ keys: string[]; label: string }> = [
   { keys: ["↑", "↓"], label: "navigate" },
@@ -20,9 +29,7 @@ export function SearchHints({ children, className, single = false }: { children?
           <span key={hint.label} className="flex items-center gap-xs">
             {hint.keys.map((key) => (
               <Keycap key={key} className={SMALL_KEY}>
-                {/* The font draws ↵ at half the height of the arrows; a scale
-                    grows the glyph and not the key. */}
-                {key === "↵" ? <span className="inline-block scale-150">{key}</span> : key}
+                {DRAWN[key] ?? key}
               </Keycap>
             ))}
             <span className="ml-2xs">{hint.label}</span>
