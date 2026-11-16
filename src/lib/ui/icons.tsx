@@ -47,6 +47,7 @@ import {
   Bot,
   ShieldCheck,
   TriangleAlert,
+  ArrowUpRight,
   Type,
   Info,
 } from "lucide-react";
@@ -156,6 +157,7 @@ export const Icons = {
   agents: Bot,
   privacy: ShieldCheck,
   warning: TriangleAlert,
+  external: ArrowUpRight,
   reading: Type,
   about: Info,
   /** A page the help holds no icon for. */

@@ -24,12 +24,12 @@ import { APP_NAME, REPO } from "@/lib/brand";
 import { openWeb } from "@/lib/web";
 import { clearLibrary, useLibrary } from "@/lib/store/library";
 import {
-  CHARACTERS_PER_CH,
   MEASURE_DEFAULT,
   MEASURE_MAX,
   MEASURE_MIN,
   TEXT_SIZES,
   TEXT_SIZE_LABEL,
+  resetReading,
   setMeasure,
   setTextSize,
   useMeasure,
@@ -199,6 +199,31 @@ const BUTTON =
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
+/** Puts a tab back to its defaults. It shows only when a setting on the
+    tab differs from its default, on the title's line. It gives its padding
+    back, so its text ends on the content's right edge. */
+function RestoreButton({ onRestore }: { onRestore: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onRestore}
+      className="-mr-sm h-7 shrink-0 cursor-interactive rounded-md px-sm text-label text-neutral-600 transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
+      Restore defaults
+    </button>
+  );
+}
+
+/** A button that opens a web page outside the app, and says so with its arrow. */
+function WebButton({ url }: { url: string }) {
+  return (
+    <button type="button" className={cn(BUTTON, "inline-flex items-center justify-center gap-2xs")} onClick={() => void openWeb(url)}>
+      Open
+      <Icons.external className="size-3.5 text-neutral-500" aria-hidden="true" />
+    </button>
+  );
+}
+
 /** A fact the switch cannot show: a release that never ran has no
     preferences to write, so its switch stays off and greyed; F1 that opens
     another server is off too, but not Houdini's own help. */
@@ -234,6 +259,9 @@ function HelpSection() {
   return (
     <Section title="Houdini help">
       {/* Houdini writes its preferences when it closes, so a change made while it is open is lost. Said once, over the list. */}
+      {!houdiniOpen && series && series.length > 0 && (
+        <p className="mt-xs mb-sm text-label text-neutral-500">F1 in each Houdini opens its help in {APP_NAME}.</p>
+      )}
       {houdiniOpen && series && series.length > 0 && (
         <p
           role="status"
@@ -491,7 +519,21 @@ function GeneralSection() {
 
   const trayLabel = IS_MAC ? "Keep running in the menu bar" : "Keep running in the tray";
   return (
-    <Section title="General">
+    <Section
+      title="General"
+      // The look of the app comes back to the system's; what the app does at
+      // start and at close is a choice about the machine, and stays.
+      action={
+        theme !== "system" || motion !== "system" ? (
+          <RestoreButton
+            onRestore={() => {
+              setTheme("system");
+              setMotion("system");
+            }}
+          />
+        ) : null
+      }
+    >
       <Row label="Theme">
         <Segmented
           label="Theme"
@@ -545,7 +587,10 @@ function ReadingSection() {
   const size = useTextSize();
   const measure = useMeasure();
   return (
-    <Section title="Reading">
+    <Section
+      title="Reading"
+      action={size !== "default" || measure !== MEASURE_DEFAULT ? <RestoreButton onRestore={resetReading} /> : null}
+    >
       <Row label="Page text size">
         <Segmented
           label="Page text size"
@@ -562,7 +607,7 @@ function ReadingSection() {
       <div data-preview-keep className="-mx-ms rounded-lg px-ms">
         <Row
           label="Page width"
-          fact={`About ${Math.round(measure * CHARACTERS_PER_CH)} characters a line${measure === MEASURE_DEFAULT ? ", the default" : ""}`}
+          fact={`About ${measure} characters a line${measure === MEASURE_DEFAULT ? ", the default" : ""}`}
         >
           <input
             type="range"
@@ -706,19 +751,13 @@ function AboutSection() {
         )}
       </Row>
       <Row label="Release notes">
-        <button type="button" className={BUTTON} onClick={() => void openWeb(`${REPO}/releases`)}>
-          Open
-        </button>
+        <WebButton url={`${REPO}/releases`} />
       </Row>
       <Row label="Report a problem">
-        <button type="button" className={BUTTON} onClick={() => void openWeb(`${REPO}/issues/new`)}>
-          Open
-        </button>
+        <WebButton url={`${REPO}/issues/new`} />
       </Row>
       <Row label="Licence" fact="MIT">
-        <button type="button" className={BUTTON} onClick={() => void openWeb(`${REPO}/blob/main/LICENSE`)}>
-          Open
-        </button>
+        <WebButton url={`${REPO}/blob/main/LICENSE`} />
       </Row>
     </Section>
   );

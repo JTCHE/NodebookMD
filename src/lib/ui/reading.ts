@@ -1,7 +1,7 @@
 /**
  * How a docs page reads: its text size and its measure. The size is a root
  * attribute, `data-text`; the measure is a root variable, `--measure`, in
- * `ch`. `globals.css` does the rest.
+ * `ch`, set from a count of characters a line, the reader's own unit. `globals.css` does the rest.
  * Kept in the browser, as the theme is, so the help pane reads it too.
  */
 import { useSyncExternalStore } from "react";
@@ -11,12 +11,12 @@ export type TextSize = "small" | "default" | "large";
 export const TEXT_SIZES: TextSize[] = ["small", "default", "large"];
 export const TEXT_SIZE_LABEL: Record<TextSize, string> = { small: "Small", default: "Default", large: "Large" };
 
-/** The measure, in `ch` of Geist. 72ch is about 105 characters of prose. */
-export const MEASURE_MIN = 52;
-export const MEASURE_MAX = 104;
-export const MEASURE_DEFAULT = 72;
-/** Characters of prose in one `ch`, for the reader's own unit. */
-export const CHARACTERS_PER_CH = 105 / 72;
+/** The measure, in characters of prose a line. */
+export const MEASURE_MIN = 66;
+export const MEASURE_MAX = 120;
+export const MEASURE_DEFAULT = 75;
+/** Characters of Geist prose in one `ch`: 72ch holds about 105 of them. */
+const CHARACTERS_PER_CH = 105 / 72;
 
 const TEXT_KEY = "nodebookmd.text-size";
 const MEASURE_KEY = "nodebookmd.measure";
@@ -43,7 +43,7 @@ function readMeasure(): number {
 
 function paint() {
   document.documentElement.dataset.text = read(TEXT_KEY, TEXT_SIZES);
-  document.documentElement.style.setProperty("--measure", `${readMeasure()}ch`);
+  document.documentElement.style.setProperty("--measure", `${(readMeasure() / CHARACTERS_PER_CH).toFixed(2)}ch`);
   for (const notify of listeners) notify();
 }
 
@@ -67,6 +67,12 @@ function write(key: string, value: string) {
 
 export const setTextSize = (choice: TextSize) => write(TEXT_KEY, choice);
 export const setMeasure = (measure: number) => write(MEASURE_KEY, String(measure));
+
+/** Both back to their defaults. */
+export function resetReading() {
+  setTextSize("default");
+  setMeasure(MEASURE_DEFAULT);
+}
 
 function subscribe(notify: () => void) {
   listeners.add(notify);
