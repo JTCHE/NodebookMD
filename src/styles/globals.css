@@ -1390,18 +1390,13 @@ span.doc-icon.inline-icon-large {
 }
 
 /* Print, last, so it overrides the screen rules above. The printer sets the paper, and theme.ts prints the light theme. */
-/* Settings > Reading (lib/ui/reading.ts). The text size zooms the page column,
-   so a line keeps its count of characters; the measure sets that count. The
-   rule is outside the layers, so it wins over the max-w-page utility, which
-   holds a copy of --container-page, not the variable. */
-:root[data-text="small"] .max-w-page {
-  zoom: 0.9;
-}
-:root[data-text="large"] .max-w-page {
-  zoom: 1.125;
-}
+/* Settings > Reading (lib/ui/reading.ts). The text size zooms the page
+   column; the width is divided by the same zoom, so the column keeps its
+   width on screen and a larger size fits fewer characters. Outside the
+   layers, so it wins over the max-w-page utility. */
 .max-w-page {
-  max-width: calc(var(--measure, 72ch) + 2 * var(--page-x));
+  zoom: var(--text-zoom, 1);
+  max-width: calc((var(--measure, 72ch) + 2 * var(--page-x)) / var(--text-zoom, 1));
 }
 
 /* While the reader drags the page width, Settings steps aside: only the
