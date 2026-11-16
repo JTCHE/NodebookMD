@@ -36,7 +36,7 @@ import {
   useTextSize,
 } from "@/lib/ui/reading";
 import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
-import { HUE_DEFAULT, resetAccent, useAccent, useHue } from "@/lib/ui/accent";
+import { ACCENT_DEFAULT, HUE_DEFAULT, resetAccent, useAccent, useHue } from "@/lib/ui/accent";
 import { AccentPicker } from "@/components/settings/AccentPicker";
 import { MOTION_CHOICES, MOTION_LABEL, setMotion, useMotionChoice } from "@/lib/ui/motion";
 import { LINK_FORMATS, linkFormat, setLinkFormat, type LinkFormat } from "@/lib/link";
@@ -555,7 +555,7 @@ function GeneralSection() {
           onChange={setTheme}
         />
       </Row>
-      <Row label="Accent" onReset={accent !== "brand" || hue !== HUE_DEFAULT ? resetAccent : undefined}>
+      <Row label="Accent" onReset={accent !== ACCENT_DEFAULT || hue !== HUE_DEFAULT ? resetAccent : undefined}>
         <AccentPicker value={accent} hue={hue} />
       </Row>
       <Row label="Reduce motion" onReset={motion !== "system" ? () => setMotion("system") : undefined}>
