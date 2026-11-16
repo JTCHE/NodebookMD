@@ -906,7 +906,8 @@ pre code.hljs {
   --callout-code: color-mix(in srgb, var(--brand) 10%, white);
 }
 /* With no accent colour, a tip's title is the ink, not a grey under the text. */
-:root[data-accent="neutral"] .callout-tip {
+:root[data-accent="neutral"] .callout-tip,
+:root[data-theme="dark"][data-accent="neutral"] .callout-tip {
   --callout-color: var(--foreground);
 }
 :root[data-theme="dark"] .callout-tip {
@@ -1387,10 +1388,11 @@ span.doc-icon.inline-icon-large {
 .slider-hue::-webkit-slider-runnable-track {
   background: var(--hue-wheel);
 }
-/* The knob shows the hue it holds. */
+/* The knob is the switch's knob, with a ring of the hue it holds. */
 .slider-hue::-webkit-slider-thumb,
 [data-theme="dark"] .slider-hue::-webkit-slider-thumb {
-  background: var(--brand);
+  background: white;
+  box-shadow: inset 0 0 0 4px var(--brand), 0 1px 2px oklch(0 0 0 / 30%);
 }
 .slider:focus-visible {
   outline: none;

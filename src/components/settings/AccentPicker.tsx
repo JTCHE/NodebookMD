@@ -18,7 +18,7 @@ function swatch(accent: Accent, hue: number): string {
 
 export function AccentPicker({ value, hue }: { value: Accent; hue: number }) {
   return (
-    <div role="radiogroup" aria-label="Accent" className="flex items-center gap-sm">
+    <div role="radiogroup" aria-label="Accent" className="flex items-center gap-sm pr-[3.5px]">
       {ACCENTS.map((accent) => (
         <button
           key={accent}
@@ -33,7 +33,8 @@ export function AccentPicker({ value, hue }: { value: Accent; hue: number }) {
             "transition-transform duration-(--duration-fast) motion-reduce:transition-none pointer-hover:scale-110 active:scale-95",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
             // The chosen swatch keeps its full size, with a ring outside it.
-            value === accent && "outline-2 outline-offset-2 outline-foreground/70",
+            // A shadow, so the focus outline can still draw over it.
+            value === accent && "shadow-[0_0_0_2px_var(--background),0_0_0_3.5px_var(--neutral-600)]",
           )}
           style={{ background: swatch(accent, hue) }}
         />
