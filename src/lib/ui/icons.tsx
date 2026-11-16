@@ -50,6 +50,7 @@ import {
   ArrowUpRight,
   Type,
   Info,
+  RotateCcw,
 } from "lucide-react";
 
 export type IconComponent = LucideIcon | ((props: { className?: string }) => React.ReactElement);
@@ -232,6 +233,8 @@ export const Icons = {
   external: ArrowUpRight,
   reading: Type,
   about: Info,
+  /** Puts one setting back to its default. */
+  reset: RotateCcw,
   /** A page the help holds no icon for. */
   page: FileText,
   /** A section the help holds no icon for. A section holds pages, so the page

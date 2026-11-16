@@ -45,7 +45,7 @@ export function Toggle({
         // Off is a mid grey, dark enough to read as a live control; disabled
         // fades the whole switch to half, so the two never look alike and
         // the disabled one is still there to see.
-        checked ? "bg-neutral-950" : "bg-neutral-500",
+        checked ? "bg-(--accent-fill)" : "bg-neutral-500",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
@@ -57,7 +57,7 @@ export function Toggle({
           // the pale one, so it stands out of the track in both themes.
           "absolute top-2xs left-2xs size-md rounded-full shadow-chip",
           "transition-transform duration-(--duration-base) motion-reduce:transition-none",
-          checked ? "translate-x-[14px] bg-neutral-0" : "bg-white",
+          checked ? "translate-x-[14px] bg-(--accent-knob)" : "bg-white",
         )}
       />
     </button>
