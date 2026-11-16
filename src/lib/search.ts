@@ -14,8 +14,8 @@ export function excerptText(excerpt: string): string {
     .replace(/<\/?[a-z][^<>]*>/gi, " ")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\]\([^)\s]*\)?/g, "")
-    // A callout the snippet crossed: its `>` quote marks and its `![WARNING]` kind go.
-    .replace(/!\[[A-Z]+\]/g, "")
+    // A callout the snippet crossed: its `>` quote marks and its `[!WARNING]` kind go.
+    .replace(/\[![A-Z]+\]/g, "")
     .replace(/(^|\s)>(?=\s|$)/g, "$1")
     .replace(/\*\*|__|`|\[/g, "")
     // A markdown escape or hard line break: `\*`, `floatmax\ The`. A `\n`
@@ -165,12 +165,12 @@ export function category(hit: Hit): string {
     // The node type is already the exact label, "Geometry node"; the line names
     // a family rather than one page, so it is said in the plural.
     case "nodes":
-      return hit.nodeType ? `Nodes > ${hit.nodeType}s` : "Nodes";
+      return hit.nodeType ? `Nodes › ${hit.nodeType}s` : "Nodes";
     case "vex":
-      return second === "functions" ? "VEX > Functions" : "VEX";
+      return second === "functions" ? "VEX › Functions" : "VEX";
     // The path says `hom`, the docs say Python. The reader typed "python".
     case "hom":
-      return second && second !== "index" ? `Python scripting > ${second}` : "Python scripting";
+      return second && second !== "index" ? `Python scripting › ${second}` : "Python scripting";
     case "expressions":
       return "Expression functions";
     case "commands":

@@ -15,7 +15,7 @@ import {
 import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { PasteSearchButton } from "./PasteSearchButton";
 import { SearchHints } from "@/components/search/SearchHints";
-import { FADE_OUT, useOverflow } from "@/lib/ui/overflow";
+import { FADE_BOTH, useOverflow } from "@/lib/ui/overflow";
 import { useSearchReport } from "@/lib/telemetry";
 import { openTab, tabFor } from "@/lib/tabs";
 
@@ -301,10 +301,12 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
           open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
         )}
       >
-        <div className="min-h-0 overflow-hidden">
+        {/* While it folds, the rows fade out at the moving edge; a hard cut
+            there would slice a row in two. See `fold-fade` in globals.css. */}
+        <div className="fold-fade min-h-0 overflow-hidden">
           {panel.hits.length > 0 ? (
             <div className="border-t border-hairline">
-              <div ref={panelRef} className={cn("scroll-pt-5 scroll-pb-10 px-xs", SEARCH_LIST_CLASS, FADE_OUT, "[--fade-size:40px]")}>
+              <div ref={panelRef} className={cn("scroll-pt-5 scroll-pb-10 px-xs", SEARCH_LIST_CLASS, FADE_BOTH, "[--fade-size:40px]")}>
                 <SearchResultList
                   hits={panel.hits}
                   query={panel.text}
@@ -326,7 +328,7 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
           ) : (
             panel.nothing && (
               // On the field's text axis, at a row's height: the list with nothing in it.
-              <p id={errorId} role="status" className="border-t border-hairline px-md py-ms text-sm text-muted-foreground">
+              <p id={errorId} role="status" className="truncate border-t border-hairline px-md py-ms text-sm text-muted-foreground">
                 {panel.nothing}
               </p>
             )

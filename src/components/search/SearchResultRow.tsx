@@ -173,7 +173,7 @@ export function SearchResultRow({
 
   if (sub) {
     return (
-      <button type="button" className={cn(row, "py-xs")} {...press}>
+      <button type="button" className={cn(row, "py-2xs")} {...press}>
         <span aria-hidden="true" className="grid h-[1.125rem] w-5 shrink-0 place-items-center text-muted-foreground/50">
           {subKind === "text" ? <ParagraphIcon /> : <HashIcon />}
         </span>
@@ -214,7 +214,7 @@ export function SearchResultRow({
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex items-baseline gap-ms">
-          <span className="truncate text-sm leading-5 font-medium">{title}</span>
+          <span className="truncate text-sm leading-5 font-medium dark:font-normal">{title}</span>
           {category && <span className="ml-auto max-w-[45%] shrink-0 truncate text-xs text-muted-foreground">{category}</span>}
         </span>
         {summary && <span className="truncate text-xs text-muted-foreground">{summary}</span>}
