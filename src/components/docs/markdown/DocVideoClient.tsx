@@ -50,6 +50,7 @@ const ReplayIcon = icon("M3 12a9 9 0 1 0 2.64-6.36L3 8.3M3 3v5.3h5.3");
 /** Controls stay up this long after the pointer stops, while the clip plays. */
 const IDLE_MS = 2000;
 const SEEK_SECONDS = 5;
+const PULSE_MS = 280;
 const VOLUME_STEP = 0.05;
 
 /** m:ss, or h:mm:ss from one hour. */
@@ -145,18 +146,32 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
     return () => observer.disconnect();
   }, []);
 
-  const wake = () => {
+  // The controls stay up while the pointer is on them: the idle timer runs
+  // only over the picture.
+  const wake = (event?: { target: EventTarget | null }) => {
     setIdle(false);
     clearTimeout(idleTimer.current);
+    if (event?.target instanceof Element && event.target.closest(".video-controls")) return;
     idleTimer.current = window.setTimeout(() => setIdle(true), IDLE_MS);
   };
 
+  const pulseTimer = useRef(0);
   const togglePlay = () => {
     const video = videoRef.current;
     if (!video) return;
-    setPulse((was) => ({ count: (was?.count ?? 0) + 1, playing: video.paused }));
     if (video.paused) video.play().catch(() => {});
     else video.pause();
+  };
+  // The picture and the keys get a short pulse of the new state; the bar's
+  // own button already shows it. A timer clears it, so reduced motion,
+  // which has no animation end, still clears it.
+  const togglePlayWithPulse = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    setPulse((was) => ({ count: (was?.count ?? 0) + 1, playing: video.paused }));
+    clearTimeout(pulseTimer.current);
+    pulseTimer.current = window.setTimeout(() => setPulse(null), PULSE_MS);
+    togglePlay();
   };
 
   const toggleMute = () => {
@@ -191,8 +206,8 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
     if (target instanceof HTMLButtonElement && (event.key === " " || event.key === "Enter")) return;
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
     const action = {
-      " ": togglePlay,
-      k: togglePlay,
+      " ": togglePlayWithPulse,
+      k: togglePlayWithPulse,
       m: toggleMute,
       f: toggleFullscreen,
       j: () => seekBy(-SEEK_SECONDS),
@@ -221,6 +236,7 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
       className="markdown-media markdown-video not-prose relative isolate my-4 bg-muted"
       style={{ aspectRatio: ratio }}
       data-idle={(idle && !paused) || undefined}
+      data-paused={paused || undefined}
       onPointerMove={wake}
       onKeyDown={onKeyDown}
     >
@@ -232,8 +248,7 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
         preload="metadata"
         playsInline
         className="absolute inset-0 size-full cursor-interactive"
-        onClick={togglePlay}
-        onDoubleClick={toggleFullscreen}
+        onClick={togglePlayWithPulse}
         onLoadedMetadata={(event) => {
           const video = event.currentTarget;
           if (video.videoWidth && video.videoHeight) setRatio(`${video.videoWidth} / ${video.videoHeight}`);
@@ -273,13 +288,14 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
 
       {/* The triangle's centroid sits 10% right of its box centre; a full
           shift reads too far right, 4% too far left; 7% is about 1.7px. */}
+      {/* The main action stays where it is while paused, hovered or not. */}
       {paused && !loading && !pulse && (
-        <span className="video-center video-rest" aria-hidden="true">
+        <button type="button" className="video-center video-rest" aria-label={ended ? "Replay" : "Play"} onClick={togglePlayWithPulse}>
           {ended ? <ReplayIcon /> : <PlayIcon className="translate-x-[calc(7%-1px)]" />}
-        </span>
+        </button>
       )}
       {pulse && (
-        <span key={pulse.count} className="video-center video-pulse" aria-hidden="true" onAnimationEnd={() => setPulse(null)}>
+        <span key={pulse.count} className="video-center video-pulse" aria-hidden="true">
           {pulse.playing ? <PlayIcon className="translate-x-[calc(7%-1px)]" /> : <PauseIcon />}
         </span>
       )}
@@ -327,7 +343,7 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
 
         <div className="video-bar">
           <ControlButton label={ended ? "Replay" : paused ? "Play" : "Pause"} onClick={togglePlay}>
-            {ended ? <ReplayIcon /> : paused ? <PlayIcon className="translate-x-px" /> : <PauseIcon />}
+            {ended ? <ReplayIcon className="translate-x-[3px]" /> : paused ? <PlayIcon className="translate-x-px" /> : <PauseIcon />}
           </ControlButton>
           <div className="video-volume">
             <ControlButton label={muted ? "Unmute" : "Mute"} onClick={toggleMute}>
@@ -347,7 +363,7 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
           <span className="video-time">
             {time}
             {/* The total is one step dimmer than the time now. */}
-            <span className="opacity-60">
+            <span className="opacity-75">
               <span className="mx-1">/</span>
               {clock(duration)}
             </span>
