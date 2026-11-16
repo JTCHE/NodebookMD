@@ -141,7 +141,15 @@ function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) =
       <span
         aria-hidden="true"
         className={cn(className, "grid place-items-center leading-none")}
-        style={{ fontFamily: "'Segoe Fluent Icons', 'Segoe MDL2 Assets'", fontSize: size }}
+        // A larger glyph's ink sits low in its em box; the lift puts it on
+        // the window controls' centre line. Its own layer makes Chromium
+        // draw it in grey antialiasing, as Windows draws its caption glyphs,
+        // with no ClearType colour fringe.
+        style={{
+          fontFamily: "'Segoe Fluent Icons', 'Segoe MDL2 Assets'",
+          fontSize: size,
+          transform: `translate3d(0, ${size === 10 ? 0 : -0.12}em, 0)`,
+        }}
       >
         {codepoint}
       </span>
