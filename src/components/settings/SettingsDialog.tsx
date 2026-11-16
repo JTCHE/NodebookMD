@@ -36,8 +36,8 @@ import {
   useTextSize,
 } from "@/lib/ui/reading";
 import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
-import { HUE_DEFAULT, resetAccent, setHue, useAccent, useHue } from "@/lib/ui/accent";
-import { AccentPicker, HUE_WHEEL } from "@/components/settings/AccentPicker";
+import { HUE_DEFAULT, resetAccent, useAccent, useHue } from "@/lib/ui/accent";
+import { AccentPicker } from "@/components/settings/AccentPicker";
 import { MOTION_CHOICES, MOTION_LABEL, setMotion, useMotionChoice } from "@/lib/ui/motion";
 import { LINK_FORMATS, linkFormat, setLinkFormat, type LinkFormat } from "@/lib/link";
 import { restoresTabs, setRestoresTabs } from "@/lib/tabs";
@@ -555,21 +555,7 @@ function GeneralSection() {
           onChange={setTheme}
         />
       </Row>
-      {/* The custom hue is part of the accent, so its slider is in the
-          accent's row, not a row of its own. */}
       <Row label="Accent" onReset={accent !== "brand" || hue !== HUE_DEFAULT ? resetAccent : undefined}>
-        {accent === "custom" && (
-          <input
-            type="range"
-            aria-label="Hue"
-            className="slider slider-hue w-[96px]"
-            style={{ "--hue-wheel": `linear-gradient(to right, ${HUE_WHEEL})` } as React.CSSProperties}
-            min={0}
-            max={360}
-            value={hue}
-            onChange={(event) => setHue(Number(event.target.value))}
-          />
-        )}
         <AccentPicker value={accent} hue={hue} />
       </Row>
       <Row label="Reduce motion" onReset={motion !== "system" ? () => setMotion("system") : undefined}>
