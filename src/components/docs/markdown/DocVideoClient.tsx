@@ -272,15 +272,15 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
       {loading && <span className="pointer-events-none absolute inset-0 m-auto size-10 animate-spin rounded-full border-3 border-(--video-track) border-t-(--video-control) motion-reduce:animate-none" aria-hidden="true" />}
 
       {/* The triangle's centroid sits 10% right of its box centre; a full
-          shift read too far right, so it moves 4%, about 1px. */}
+          shift reads too far right, 4% too far left; 7% is about 1.7px. */}
       {paused && !loading && !pulse && (
         <span className="video-center video-rest" aria-hidden="true">
-          {ended ? <ReplayIcon /> : <PlayIcon className="translate-x-[4%]" />}
+          {ended ? <ReplayIcon /> : <PlayIcon className="translate-x-[7%]" />}
         </span>
       )}
       {pulse && (
         <span key={pulse.count} className="video-center video-pulse" aria-hidden="true" onAnimationEnd={() => setPulse(null)}>
-          {pulse.playing ? <PlayIcon className="translate-x-[4%]" /> : <PauseIcon />}
+          {pulse.playing ? <PlayIcon className="translate-x-[7%]" /> : <PauseIcon />}
         </span>
       )}
 
