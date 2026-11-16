@@ -349,7 +349,9 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
         className="w-full max-w-[32rem] mx-4 bg-popover border border-hairline rounded-xl shadow-pane overflow-hidden pointer-events-auto transform-gpu"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative flex items-center border-b">
+        {/* The line under the field fades out over the card's corner radius, so
+            its ends meet the rounded border, not a square cut. */}
+        <div className="relative flex items-center after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[linear-gradient(to_right,transparent,var(--border)_var(--radius-xl),var(--border)_calc(100%-var(--radius-xl)),transparent)]">
           {field.scope && <span className="pl-[9px]"><ScopeChip scope={field.scope} /></span>}
           <input
             ref={inputRef}

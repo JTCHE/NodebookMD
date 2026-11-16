@@ -9,7 +9,9 @@ import { useSyncExternalStore } from "react";
 export type Accent = "neutral" | "red" | "brand" | "yellow" | "green" | "blue" | "purple" | "pink" | "custom";
 /** The default first, as in every choice in Settings; then the colours
     around the wheel, no colour, and a hue of your own. */
-export const ACCENTS: Accent[] = ["brand", "red", "yellow", "green", "blue", "purple", "pink", "neutral", "custom"];
+/** The default first. */
+export const ACCENTS: Accent[] = ["neutral", "brand", "red", "yellow", "green", "blue", "purple", "pink", "custom"];
+export const ACCENT_DEFAULT: Accent = "neutral";
 export const ACCENT_LABEL: Record<Accent, string> = {
   neutral: "Neutral",
   red: "Red",
@@ -32,9 +34,9 @@ const HUE_KEY = "nodebookmd.accent-hue";
 function readAccent(): Accent {
   try {
     const value = window.localStorage.getItem(ACCENT_KEY) as Accent | null;
-    return value && ACCENTS.includes(value) ? value : "brand";
+    return value && ACCENTS.includes(value) ? value : ACCENT_DEFAULT;
   } catch {
-    return "brand";
+    return ACCENT_DEFAULT;
   }
 }
 
@@ -83,13 +85,13 @@ function write(key: string, value: string | null) {
   paint();
 }
 
-export const setAccent = (accent: Accent) => write(ACCENT_KEY, accent === "brand" ? null : accent);
+export const setAccent = (accent: Accent) => write(ACCENT_KEY, accent === ACCENT_DEFAULT ? null : accent);
 export const setHue = (hue: number) => write(HUE_KEY, String(hue));
 
-/** The accent back to the brand, and the custom hue back to its default. */
+/** The accent back to its default, and the custom hue back to its default. */
 export function resetAccent() {
   write(HUE_KEY, null);
-  setAccent("brand");
+  setAccent(ACCENT_DEFAULT);
 }
 
 function subscribe(notify: () => void) {
@@ -97,5 +99,5 @@ function subscribe(notify: () => void) {
   return () => listeners.delete(notify);
 }
 
-export const useAccent = () => useSyncExternalStore(subscribe, readAccent, () => "brand" as Accent);
+export const useAccent = () => useSyncExternalStore(subscribe, readAccent, () => ACCENT_DEFAULT);
 export const useHue = () => useSyncExternalStore(subscribe, readHue, () => HUE_DEFAULT);

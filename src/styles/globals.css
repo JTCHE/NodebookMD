@@ -204,7 +204,7 @@ a {
 :root {
   /* Every grey and every surface takes this small chroma on the accent hue,
      so the whole app leans to the accent. Neutral sets the strength to 0. */
-  --tint: calc(0.005 * var(--accent-strength, 1));
+  --tint: calc(0.005 * var(--accent-strength, 0));
   /* The code panel: a near-black, dark in both themes. */
   --code-ground: oklch(0.15 var(--tint) var(--accent-hue, 52));
   --page-x: 1.5rem;
@@ -243,11 +243,11 @@ a {
   --neutral-950: oklch(0.145 var(--tint) var(--accent-hue, 52));
   /* The accent (lib/ui/accent.ts) sets the hue and the strength; the
      brand's own orange is hue 52 at full strength. */
-  --brand: oklch(0.680 calc(0.174 * var(--accent-strength, 1)) var(--accent-hue, 52));
-  --brand-bright: oklch(0.720 calc(0.185 * var(--accent-strength, 1)) var(--accent-hue, 52));
+  --brand: oklch(0.680 calc(0.174 * var(--accent-strength, 0)) var(--accent-hue, 52));
+  --brand-bright: oklch(0.720 calc(0.185 * var(--accent-strength, 0)) var(--accent-hue, 52));
 
   /* The brand as text: 4.6:1 on white, where --brand is 3.1:1. */
-  --brand-700: oklch(0.575 calc(0.147 * var(--accent-strength, 1)) var(--accent-hue, 52));
+  --brand-700: oklch(0.575 calc(0.147 * var(--accent-strength, 0)) var(--accent-hue, 52));
   --brand-foreground: oklch(0.985 0 0);
   /* What a control that is on draws with: the ink when the accent is
      neutral, the accent when it has a colour. */
@@ -295,7 +295,7 @@ a {
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --tint: calc(0.009 * var(--accent-strength, 1));
+  --tint: calc(0.009 * var(--accent-strength, 0));
   /* The ramp reverses. Elevation steps are stated, because a raised surface does not mirror. */
   --neutral-0: oklch(0.145 var(--tint) var(--accent-hue, 52));
   --neutral-50: oklch(0.175 var(--tint) var(--accent-hue, 52));
@@ -581,7 +581,8 @@ img.markdown-media {
   position: absolute;
   top: 1px;
   right: 1px;
-  bottom: 1px;
+  /* Above the 4px scroll bar, so the fade does not cover it. */
+  bottom: 5px;
   width: var(--md);
   border-radius: 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0;
   background: linear-gradient(to right, transparent, var(--code-ground) 55%);
@@ -593,7 +594,8 @@ img.markdown-media {
   position: absolute;
   z-index: 1;
   top: 1px;
-  bottom: 1px;
+  /* Above the 4px scroll bar, so the fade does not cover it. */
+  bottom: 5px;
   left: 1px;
   width: calc(var(--md) * 1.5);
   border-radius: calc(var(--radius-lg) - 1px) 0 0 calc(var(--radius-lg) - 1px);
