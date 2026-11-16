@@ -69,10 +69,21 @@ html {
 }
 ::-webkit-scrollbar-thumb {
   border-radius: 2px;
-  background: var(--neutral-300);
+  background: var(--scroll-thumb);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--neutral-400);
+}
+/* A bar shows only while the pointer is over the area it scrolls. Only the
+   thumb hides: the bar keeps its place, so nothing moves when it comes.
+   Chromium does not repaint a thumb on a `:hover` selector, but it does when
+   a property that the thumb reads changes. Each element sets its own value,
+   so a scroller inside a hovered one stays hidden. */
+* {
+  --scroll-thumb: transparent;
+}
+:hover {
+  --scroll-thumb: var(--neutral-300);
 }
 
 /* A bar that always shows. The gutter is held, so rows do not move when the bar comes. */

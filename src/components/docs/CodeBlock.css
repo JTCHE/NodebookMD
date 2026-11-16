@@ -8,9 +8,8 @@
   .code-copy[data-copied] {
     opacity: 1;
   }
-  /* The thumb hides, not the bar: `scrollbar-color` would swap the 4px bar
-     for the platform's wider one, and the panel would grow on hover. */
-  .group:not(:hover) .code-panel::-webkit-scrollbar-thumb {
-    background: transparent;
+  /* The bar of the panel shows while the pointer is anywhere on the block. */
+  .group:hover .code-panel {
+    --scroll-thumb: var(--neutral-300);
   }
 }
