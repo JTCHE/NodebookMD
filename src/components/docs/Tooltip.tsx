@@ -8,7 +8,7 @@ import { hitOf } from "@/lib/search";
 import { methodSignature } from "@/lib/method-signature";
 import { useHoverTip } from "@/lib/ui/hover-tip";
 import type { PageView } from "@/lib/pages";
-import { PagePreview } from "@/components/root/PagePreview";
+import { PagePreview, PreviewFrame } from "@/components/root/PagePreview";
 import { WINDOW } from "@/components/root/LibraryCard";
 import "./Tooltip.css";
 
@@ -347,14 +347,13 @@ export function DocTooltip({ slug, summaryOnly = false, anchor, ...anchored }: A
   if (summaryOnly && !summary) return null;
 
   // A link to a whole page shows the page itself, as the home page cards do.
-  // A signature and a summary-only tip stay as text: they name a part.
-  if (meta && !summaryOnly && !signature && !anchor) {
+  // A method signature (an anchor on a HOM page) and a summary-only tip stay
+  // as text: they name a part.
+  if (meta && !summaryOnly && !signature && !(anchor && slug.startsWith("hom/"))) {
     return (
-      <TooltipBox {...anchored} className={cn("w-72 border-0 bg-transparent p-0 shadow-lg", WINDOW)}>
-        <span className="relative block h-window overflow-hidden rounded-[inherit]">
-          <PagePreview path={slug} title={meta.title} />
-        </span>
-      </TooltipBox>
+      <PreviewCard {...anchored}>
+        <PagePreview path={slug} title={meta.title} />
+      </PreviewCard>
     );
   }
 
@@ -569,11 +568,56 @@ function section(id: string): { title: string; text: string; signature?: boolean
   return title || text ? { title, text: text.trim() } : null;
 }
 
+/** The tooltip that shows a picture of a page or of a section. */
+function PreviewCard({ children, ...anchored }: Anchored & { children: React.ReactNode }) {
+  return (
+    <TooltipBox {...anchored} className={cn("w-[22rem] border-0 bg-transparent p-0 shadow-lg", WINDOW)}>
+      <span className="relative block h-window overflow-hidden rounded-[inherit]">{children}</span>
+    </TooltipBox>
+  );
+}
+
+/** The blocks of a section on the open page, copied as they are drawn: the
+    heading and what it owns, down to the next heading of its rank or above. */
+function sectionBlocks(id: string): Element[] {
+  const target = document.getElementById(id);
+  const block = target?.closest<HTMLElement>("h1,h2,h3,h4,h5,h6");
+  if (!block) return [];
+  const level = Number(HEADING.exec(block.tagName)?.[1]);
+  const blocks: Element[] = [block];
+  for (let el = block.nextElementSibling; el && blocks.length < 6; el = el.nextElementSibling) {
+    if (Number(HEADING.exec(el.tagName)?.[1] ?? 7) <= level) break;
+    blocks.push(el);
+  }
+  return blocks;
+}
+
+function SectionPicture({ blocks }: { blocks: Element[] }) {
+  const holder = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const copies = blocks.map((block) => block.cloneNode(true) as Element);
+    // A copy keeps no id: the page owns its anchors.
+    for (const copy of copies) for (const element of [copy, ...copy.querySelectorAll("[id]")]) element.removeAttribute("id");
+    holder.current?.replaceChildren(...copies);
+  }, [blocks]);
+  return <div ref={holder} className="[&>:first-child]:mt-0" />;
+}
+
 /** What is at an anchor on the open page, so the reader need not jump there
     and back to find out. */
 export function SectionTooltip({ id, ...anchored }: Anchored & { id: string }) {
   // Read once, when the pointer arrives: the page does not change under it.
   const [found] = useState(() => section(id));
+  const [blocks] = useState(() => sectionBlocks(id));
+  // A heading shows its section as a picture, as a page link shows its page.
+  if (blocks.length > 0)
+    return (
+      <PreviewCard {...anchored}>
+        <PreviewFrame>
+          <SectionPicture blocks={blocks} />
+        </PreviewFrame>
+      </PreviewCard>
+    );
   if (!found) return null;
   return (
     <TooltipBox {...anchored} className="w-max max-w-[20rem]">

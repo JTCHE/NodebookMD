@@ -16,9 +16,10 @@ interface PageTitleProps {
  * puts its bar outside the clip, so the bar disappears with the line break.
  * No measurement, no state, and no layout shift.
  */
+// The icon sits on the middle of the name and its type, on one line or two.
 export function PageTitle({ name, nodeType, icon }: PageTitleProps) {
   return (
-    <div className="flex items-start gap-3 min-w-0">
+    <div className="flex items-center gap-3 min-w-0">
       {/* No stand-in here. A list needs one, because a blank in a column of
           marks reads as a fault; a title stands alone, and a generic glyph in
           front of it only says the page has no icon. */}
@@ -34,7 +35,7 @@ export function PageTitle({ name, nodeType, icon }: PageTitleProps) {
           // its gap must go too, or the name sits off the content edge.
           className="-m-1 shrink-0 cursor-zoom-in rounded-md p-1 focus-ring [&:not(:has([data-doc-icon]))]:hidden"
         >
-          <DocIconClient src={icon} alt="" className="size-8 select-none" priority />
+          <DocIconClient src={icon} alt="" className="size-8 translate-y-[1.5px] select-none" priority />
         </button>
       )}
       <div className="min-w-0 overflow-hidden">

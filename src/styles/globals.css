@@ -44,16 +44,30 @@ html {
   }
 }
 
-/* A thin bar that always shows. The gutter is held, so rows do not move when the bar comes. */
-.thin-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: var(--neutral-300) transparent;
-  scrollbar-gutter: stable;
+/* Every scroll bar: a 6px rounded thumb with no track and no arrows. Drawn
+   with the webkit parts, not scrollbar-width: "thin" is still 11px wide. */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-button {
+  display: none;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: var(--neutral-300);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neutral-400);
 }
 
-.thin-scroll:hover,
-.thin-scroll:focus-within {
-  scrollbar-color: var(--neutral-400) transparent;
+/* A bar that always shows. The gutter is held, so rows do not move when the bar comes. */
+.thin-scroll {
+  scrollbar-gutter: stable;
 }
 
 /* Buttons and app links show the arrow, as in a desktop window. Change it here to bring back the hand. */
@@ -93,7 +107,7 @@ a {
   --spacing-chip: 38px;
 
   /* The landing list box. It does not grow, so the field does not move between tabs. */
-  --spacing-window: 118px;
+  --spacing-window: 140px;
   /* Two rows of windows and the top of a third, so a hidden row shows its title, not a sliver. */
   --spacing-list: calc(var(--spacing-window) * 2.4 + var(--spacing-sm) * 2);
   --spacing-icon: 15px;
@@ -284,8 +298,6 @@ a {
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    scrollbar-width: thin;
-    scrollbar-color: gray transparent;
   }
   body {
     @apply bg-background text-foreground font-sans;
@@ -513,7 +525,6 @@ img.markdown-media {
   border-radius: var(--radius-lg);
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-color: oklch(1 0 0 / 22%) transparent;
 }
 
 /* The code elements that the renderer outputs always have a class. */

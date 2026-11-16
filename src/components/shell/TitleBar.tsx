@@ -100,7 +100,9 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
           // A size container only while it has a stated width: as one, its
           // contents no longer give it a width of their own.
           docked && "@container",
-          "flex h-full shrink-0 items-center pl-[10px]",
+          // 4px from the window edge, as from the top: the button corner is then
+          // concentric with the window corner.
+          "flex h-full shrink-0 items-center pl-[4px]",
           nativeFrame && !fullscreen && "pl-[80px]",
         )}
       >
@@ -114,7 +116,7 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
           // The floating panel closes on a press outside it; this press is the
           // button's own, and must toggle it instead.
           data-sidebar-toggle=""
-          className={BAR_BUTTON}
+          className={cn(BAR_BUTTON, !nativeFrame && "rounded-tl-[4px]")}
           onClick={onToggleSidebar}
         >
           <Icons.sidebarToggle className="size-4" />
@@ -224,7 +226,7 @@ function PinButton({ corner }: { corner: boolean }) {
   });
   if (!appWindow()) return null;
   return (
-    <Hint label={pinned ? "Stop keeping on top" : "Keep on top"} keys={`${COMMAND_KEY}+${ALT_KEY}+T`}>
+    <Hint label={pinned ? "Stop keeping on top" : "Keep on top"} keys={`${COMMAND_KEY}+${ALT_KEY}+T`} className="h-full">
     <button
       type="button"
       tabIndex={-1}
