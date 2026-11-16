@@ -14,10 +14,16 @@ export function excerptText(excerpt: string): string {
     .replace(/<\/?[a-z][^<>]*>/gi, " ")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\]\([^)\s]*\)?/g, "")
+    // A callout the snippet crossed: its `>` quote marks and its `![WARNING]` kind go.
+    .replace(/!\[[A-Z]+\]/g, "")
+    .replace(/(^|\s)>(?=\s|$)/g, "$1")
     .replace(/\*\*|__|`|\[/g, "")
     // A markdown escape or hard line break: `\*`, `floatmax\ The`. A `\n`
     // in code keeps its backslash.
-    .replace(/\\(?=[\s\p{P}]|$)/gu, "");
+    .replace(/\\(?=[\s\p{P}]|$)/gu, "")
+    // A list the snippet crossed, `- Box - Grid`, reads as its items. Only an
+    // excerpt that starts on a list marker: ` - ` in prose is a dash.
+    .replace(/^\s*- (.*)$/s, (_, items: string) => items.replace(/s+- /g, " · "));
 }
 
 /** A table the snippet crossed, as text: its head row and the `| --- |` row

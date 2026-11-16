@@ -28,37 +28,26 @@ import { category, type Hit, type Section } from "@/lib/search";
  */
 export const SEARCH_LIST_CLASS = "py-xs overflow-y-auto overscroll-contain max-h-[min(20rem,60dvh)]";
 
-/** The list as a panel of its own — what a field drops below itself. */
-export const SEARCH_DROPDOWN_CLASS = `mt-sm rounded-xl bg-popover border border-hairline shadow-pane px-xs ${SEARCH_LIST_CLASS}`;
-
 /** One selectable line: a page, one of its matching sections, or its prose. */
 export interface Row {
   hit: Hit;
   section?: Section;
-  /** The prose row a page gets when no section of it matched. */
-  text?: boolean;
 }
 
-/**
- * Flatten pages and their sub-hits into arrow-key order.
- *
- * A page with no matching section still gets one row for its own prose, so
- * every result can show WHY it matched rather than only its title.
- */
+/** Flatten pages and the sections that matched into arrow-key order. A page
+    says what it is on its own row; only a real match gets a row under it. */
 export function toRows(hits: Hit[], withSubHits = true): Row[] {
   if (!withSubHits) return hits.map((hit) => ({ hit }));
-  return hits.flatMap((hit) => [
-    { hit },
-    ...(hit.headings?.length
-      ? hit.headings.map((section) => ({ hit, section }))
-      : [{ hit, text: true }]),
-  ]);
+  return hits.flatMap((hit) => [{ hit }, ...(hit.headings ?? []).map((section) => ({ hit, section }))]);
 }
 
 /** Where a row goes: the page, or the page at one of its headings. */
 export function rowPath(row: Row): string {
   return row.section?.slug ? `${row.hit.path}#${row.section.slug}` : row.hit.path;
 }
+
+/** Whether a section row has a heading of its own to show. */
+const named = (row: Row) => Boolean(row.section?.heading) && row.section?.heading !== row.hit.title;
 
 /** Identifies a row within one result set. */
 const rowKey = (row: Row) => `${row.hit.path}#${row.section?.slug ?? ""}`;
@@ -70,6 +59,7 @@ export function SearchResultList({
   onSelect,
   onActivate,
   withSubHits = true,
+  withCategory = true,
   header,
   footer,
   className,
@@ -84,6 +74,8 @@ export function SearchResultList({
   onActivate: (row: Row, index: number, event?: React.MouseEvent) => void;
   /** Off for lists of pages the reader already chose, where sub-hits are noise. */
   withSubHits?: boolean;
+  /** Off where the caller already says which part of the docs the rows are from. */
+  withCategory?: boolean;
   header?: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
@@ -110,24 +102,16 @@ export function SearchResultList({
     <ul ref={listRef} className={className}>
       {header}
       {rows.map((row, i) => (
-        <li key={`${rowKey(row)}${row.section || row.text ? ":sub" : ""}`} data-row={i}>
+        <li key={`${rowKey(row)}${row.section ? ":sub" : ""}`} data-row={i}>
           <SearchResultRow
-            title={
-              row.section
-                ? row.section.heading || row.hit.title
-                : // A page that says nothing about itself shows its path, never
-                  // its own title again: two identical lines say less than one,
-                  // and the path is what tells two pages of a name apart.
-                  row.text
-                  ? row.hit.summary || row.hit.path
-                  : row.hit.title
-            }
-            category={category(row.hit)}
+            // A section with no heading is the text above the first one, and a
+            // heading that repeats the page name says nothing: both are prose.
+            title={row.section ? (named(row) ? row.section.heading : "") : row.hit.title}
+            category={withCategory ? category(row.hit) : ""}
+            summary={row.hit.summary}
             icon={row.hit.icon}
-            sub={Boolean(row.section || row.text)}
-            // A section with no heading is the text above the first one, which
-            // is prose and not a place the reader can be sent to.
-            subKind={row.section?.heading ? "heading" : "text"}
+            sub={Boolean(row.section)}
+            subKind={named(row) ? "heading" : "text"}
             excerpt={row.section?.excerpt}
             query={query}
             active={i === selected}

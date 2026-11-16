@@ -53,9 +53,11 @@ function names(query: string, title: string): boolean {
 export interface Found {
   query: string;
   hits: Hit[];
+  /** No later answer is on its way, so an empty list means no page matches. */
+  settled: boolean;
 }
 
-const NONE: Found = { query: "", hits: [] };
+const NONE: Found = { query: "", hits: [], settled: false };
 
 /**
  * The search behind every field in the app.
@@ -81,7 +83,7 @@ export function useSearch(query: string): Found {
     // A shorthand alone lists what it holds: `h:` is the pages read, newest first.
     if (!wanted) {
       if (!scope) setFound(NONE);
-      else titles().then((all) => live && setFound({ query: answer, hits: scoped(all, scope).slice(0, 20) }));
+      else titles().then((all) => live && setFound({ query: answer, hits: scoped(all, scope).slice(0, 20), settled: true }));
       return () => {
         live = false;
       };
@@ -91,12 +93,14 @@ export function useSearch(query: string): Found {
     const exact = wanted.includes('"');
     const pick = (all: Hit[]) => (exact ? [] : match(scope ? scoped(all, scope) : all, wanted));
 
+    // Only the title pick answers a query too short for the body search.
+    const short = !exact && wanted.length < MIN_BODY_QUERY;
     if (!exact)
       titles().then((all) => {
-        if (live) setFound({ query: answer, hits: pick(all) });
+        if (live) setFound({ query: answer, hits: pick(all), settled: short });
       });
 
-    if (!exact && wanted.length < MIN_BODY_QUERY) return () => { live = false; };
+    if (short) return () => { live = false; };
 
     const timer = window.setTimeout(async () => {
       // A scope throws most of the ranking away, so it asks for more of it.
@@ -117,6 +121,7 @@ export function useSearch(query: string): Found {
       setFound({
         query: answer,
         hits: [...(lead ? [lead] : []), ...picked, ...found.filter((hit) => !seen.has(hit.path) && hit !== lead)],
+        settled: true,
       });
     }, BODY_SEARCH_DELAY);
 

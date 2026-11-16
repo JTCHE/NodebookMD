@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { iconUrl } from "@/lib/assets";
 import { excerptText } from "@/lib/search";
+import { cn } from "@/lib/utils";
 
 /**
  * One result row (icon + title + category), and the nested rows under it.
@@ -58,7 +59,7 @@ function DocumentIcon() {
  */
 function HashIcon() {
   return (
-    <span className="flex size-[1.05rem] items-center justify-center text-[0.95rem] leading-none font-medium">
+    <span className="flex size-[1.05rem] items-center justify-center text-[0.95rem] leading-none">
       #
     </span>
   );
@@ -87,7 +88,7 @@ function forms(word: string): string[] {
 }
 
 /**
- * The query, in bold, wherever it appears in the excerpt — so the reader can
+ * The query, marked wherever it appears in the excerpt — so the reader can
  * see WHY a page matched without reading the whole line.
  *
  * The trailing `\w*` catches `point` inside `pointattrib`, and `forms` catches
@@ -107,9 +108,10 @@ function Highlight({ text, query }: { text: string; query: string }) {
     <>
       {parts.map((part, i) =>
         i % 2 ? (
-          <strong key={i} className="font-semibold text-foreground/75">
+          // Colour alone marks the match: the excerpt is grey, the match is ink.
+          <mark key={i} className="bg-transparent text-foreground">
             {part}
-          </strong>
+          </mark>
         ) : (
           part
         ),
@@ -121,6 +123,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
 export function SearchResultRow({
   title,
   category,
+  summary,
   icon,
   active,
   sub,
@@ -131,8 +134,11 @@ export function SearchResultRow({
   onClick,
   onMouseMove,
 }: {
+  /** Empty on a prose hit, which shows its excerpt alone. */
   title: string;
   category: string;
+  /** What the page says it is, under its title. */
+  summary?: string | null;
   icon?: string | null;
   active: boolean;
   /** Render as a hit nested under the page row above it. */
@@ -141,7 +147,7 @@ export function SearchResultRow({
   subKind?: "heading" | "text";
   /** Matching prose, shown under the sub-row title. */
   excerpt?: string;
-  /** What the reader typed, bolded inside the excerpt. */
+  /** What the reader typed, marked inside the excerpt. */
   query?: string;
   /**
    * Off when the row runs edge to edge (no side gutter around the list): a
@@ -155,38 +161,29 @@ export function SearchResultRow({
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
 
+  // One column for the mark and one for the words, in every row: a page's
+  // icon and a nested hit's glyph share an axis, and so do all the titles.
+  // The corner is the panel's, less its border and the list's gutter.
+  const row = cn(
+    "flex w-full items-start gap-ms text-left transition-colors duration-(--duration-fast) motion-reduce:transition-none",
+    rounded ? "rounded-[7px] px-ms [corner-shape:squircle]" : "px-md",
+    active && "bg-muted",
+  );
   const press = { onClick, onMouseMove };
 
   if (sub) {
     return (
-      <button
-        type="button"
-        // Rounded like the panel that holds it: a square highlight inside a
-        // rounded list reads as a rendering fault at the first and last row.
-        className={`flex w-full items-stretch gap-2.5 pr-4 text-left transition-colors ${rounded ? "rounded-lg" : ""} ${
-          active ? "bg-muted" : "hover:bg-muted/50"
-        }`}
-        {...press}
-      >
-        {/*
-          One unbroken rule down the left of the whole group, so a run of hits
-          reads as belonging to the page above it. Every nested row draws its
-          full height, so consecutive rows join into a single line.
-        */}
-        <span aria-hidden="true" className="ml-[1.6rem] w-px shrink-0 bg-muted-foreground/25" />
-
-        <span className="flex min-w-0 flex-1 items-start gap-2 py-1.5">
-          <span aria-hidden="true" className="mt-px shrink-0 text-muted-foreground/50">
-            {subKind === "text" ? <ParagraphIcon /> : <HashIcon />}
-          </span>
-          <span className="flex min-w-0 flex-col gap-0.5">
-            <span className="truncate text-xs text-muted-foreground">{title}</span>
-            {excerpt && (
-              <span className="line-clamp-2 text-[0.7rem] leading-snug text-muted-foreground/60">
-                {query ? <Highlight text={excerptText(excerpt)} query={query} /> : excerptText(excerpt)}
-              </span>
-            )}
-          </span>
+      <button type="button" className={cn(row, "py-xs")} {...press}>
+        <span aria-hidden="true" className="grid h-[1.125rem] w-5 shrink-0 place-items-center text-muted-foreground/50">
+          {subKind === "text" ? <ParagraphIcon /> : <HashIcon />}
+        </span>
+        <span className="flex min-w-0 flex-col gap-0.5">
+          {title && <span className="truncate text-xs text-muted-foreground">{title}</span>}
+          {excerpt && (
+            <span className="truncate text-xs leading-snug text-muted-foreground/70">
+              {query ? <Highlight text={excerptText(excerpt)} query={query} /> : excerptText(excerpt)}
+            </span>
+          )}
         </span>
       </button>
     );
@@ -197,17 +194,9 @@ export function SearchResultRow({
   const hasImage = Boolean(icon) && !errored;
 
   return (
-    <button
-      type="button"
-      className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${rounded ? "rounded-lg" : ""} ${
-        active ? "bg-muted" : "hover:bg-muted/50"
-      }`}
-      {...press}
-    >
+    <button type="button" className={cn(row, "py-sm")} {...press}>
       {/* The placeholder is what sits in the slot until the icon arrives, and
-          what stays there if it never does. The site pulsed a grey box instead,
-          which pulses for as long as the window is open when an icon is missing
-          from `icons.zip` and the load neither succeeds nor errors. */}
+          what stays there if it never does. */}
       <span className="relative size-5 shrink-0">
         <span className={`absolute inset-0 transition-opacity ${loaded ? "opacity-0" : "opacity-100"}`}>
           <DocumentIcon />
@@ -223,9 +212,12 @@ export function SearchResultRow({
           />
         )}
       </span>
-      <span className="flex min-w-0 flex-col gap-0.5">
-        <span className="truncate text-sm font-medium">{title}</span>
-        <span className="truncate text-xs text-muted-foreground">{category}</span>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="flex items-baseline gap-ms">
+          <span className="truncate text-sm leading-5 font-medium">{title}</span>
+          {category && <span className="ml-auto max-w-[45%] shrink-0 truncate text-xs text-muted-foreground">{category}</span>}
+        </span>
+        {summary && <span className="truncate text-xs text-muted-foreground">{summary}</span>}
       </span>
     </button>
   );
