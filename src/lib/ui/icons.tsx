@@ -134,13 +134,18 @@ const SYSTEM_GLYPHS = navigator.userAgent.includes("Windows");
 /** Caption glyphs are made for 10px. A general glyph, as the search and the
     pin, is drawn thinner, for a larger size: at 13px its stroke is one full
     device pixel and its ring is as tall as the maximize square. */
-function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement, size = 10) {
+function systemGlyph(
+  codepoint: string,
+  Drawn: (props: { className?: string }) => React.ReactElement,
+  size = 10,
+  drawnAtOneX = false,
+) {
   if (!SYSTEM_GLYPHS) return Drawn;
   return function SystemGlyph({ className }: { className?: string }) {
-    return (
+    const glyph = (
       <span
         aria-hidden="true"
-        className={cn(className, "grid place-items-center leading-none")}
+        className={cn(className, "grid place-items-center leading-none", drawnAtOneX && "glyph-font")}
         // A larger glyph's ink sits low in its em box; the lift puts it on
         // the window controls' centre line. Its own layer makes Chromium
         // draw it in grey antialiasing, as Windows draws its caption glyphs,
@@ -153,6 +158,15 @@ function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) =
       >
         {codepoint}
       </span>
+    );
+    if (!drawnAtOneX) return glyph;
+    // At one device pixel to the CSS pixel the font glyph breaks up into
+    // half-tones; the drawn glyph on the pixel grid stands in there.
+    return (
+      <>
+        {glyph}
+        <Drawn className={cn(className, "glyph-drawn")} />
+      </>
     );
   };
 }
@@ -205,8 +219,8 @@ export const Icons = {
   collapseAll: ChevronsDownUp,
 
   /* Window */
-  pin: systemGlyph("\uE718", CaptionPin, 13),
-  pinned: systemGlyph("\uE842", CaptionPinned, 13),
+  pin: systemGlyph("\uE718", CaptionPin, 13, true),
+  pinned: systemGlyph("\uE842", CaptionPinned, 13, true),
   captionSearch: systemGlyph("\uE721", CaptionSearch, 13),
   versionPicker: ChevronsUpDown,
 
