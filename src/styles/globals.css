@@ -215,11 +215,13 @@ a {
   --neutral-800: oklch(0.269 0 0);
   --neutral-900: oklch(0.205 0 0);
   --neutral-950: oklch(0.145 0 0);
-  --brand: oklch(0.680 0.174 52);
-  --brand-bright: oklch(0.720 0.185 52);
+  /* The accent (lib/ui/accent.ts) sets the hue and the strength; the
+     brand's own orange is hue 52 at full strength. */
+  --brand: oklch(0.680 calc(0.174 * var(--accent-strength, 1)) var(--accent-hue, 52));
+  --brand-bright: oklch(0.720 calc(0.185 * var(--accent-strength, 1)) var(--accent-hue, 52));
 
   /* The brand as text: 4.6:1 on white, where --brand is 3.1:1. */
-  --brand-700: oklch(0.575 0.147 52);
+  --brand-700: oklch(0.575 calc(0.147 * var(--accent-strength, 1)) var(--accent-hue, 52));
   --brand-foreground: oklch(0.985 0 0);
 
   /* A chip on the panel: one step lighter than its ground. */
@@ -1312,6 +1314,10 @@ span.doc-icon.inline-icon-large {
 /* In dark the raised ground is the track's grey; the knob is the switch's light knob. */
 [data-theme="dark"] .slider::-webkit-slider-thumb {
   background: oklch(0.92 0 0);
+}
+/* The hue slider's track is the colour wheel, so the knob sits on its hue. */
+.slider-hue::-webkit-slider-runnable-track {
+  background: var(--hue-wheel);
 }
 .slider:focus-visible {
   outline: none;
