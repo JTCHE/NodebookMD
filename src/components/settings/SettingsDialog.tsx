@@ -366,7 +366,7 @@ function McpSection() {
               </span>
             ) : agent.link === "other" ? (
               // Replace must say what it replaces.
-              "Another Houdini MCP is set up. Replace puts this one in its place"
+              "Another Houdini MCP is set up"
             ) : undefined
           }
         >
