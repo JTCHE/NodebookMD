@@ -49,8 +49,8 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  /* The button glyphs end as far from the bottom as from the sides. */
-  padding: 0 0.5rem 0.125rem;
+  /* The glyphs end as far from the bottom as from the sides (22px). */
+  padding: 0 0.5rem 9.5px;
   background: linear-gradient(to top, rgb(0 0 0 / 60%), rgb(0 0 0 / 0%));
   transition:
     opacity var(--duration-base) var(--ease-out-quint),
