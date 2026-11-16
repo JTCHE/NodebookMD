@@ -166,7 +166,7 @@ export function SearchResultRow({
   // The corner is the panel's, less its border and the list's gutter.
   const row = cn(
     "flex w-full items-start gap-ms text-left transition-colors duration-(--duration-fast) motion-reduce:transition-none",
-    rounded ? "rounded-[7px] px-ms [corner-shape:squircle]" : "px-md",
+    rounded ? "rounded-[7px] px-ms" : "px-md",
     active && "bg-muted",
   );
   const press = { onClick, onMouseMove };

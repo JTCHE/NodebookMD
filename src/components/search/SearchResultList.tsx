@@ -49,8 +49,10 @@ export function rowPath(row: Row): string {
 /** Whether a section row has a heading of its own to show. */
 const named = (row: Row) => Boolean(row.section?.heading) && row.section?.heading !== row.hit.title;
 
-/** Identifies a row within one result set. */
-const rowKey = (row: Row) => `${row.hit.path}#${row.section?.slug ?? ""}`;
+/** Identifies a row within one result set. Two prose hits of one page have
+    no slug to tell them apart, so a section also counts its place in the page:
+    two rows with one key leave a stale row in the list on the next answer. */
+const rowKey = (row: Row) => (row.section ? `${row.hit.path}#${row.hit.headings?.indexOf(row.section)}` : row.hit.path);
 
 export function SearchResultList({
   hits,
@@ -102,7 +104,7 @@ export function SearchResultList({
     <ul ref={listRef} className={className}>
       {header}
       {rows.map((row, i) => (
-        <li key={`${rowKey(row)}${row.section ? ":sub" : ""}`} data-row={i}>
+        <li key={rowKey(row)} data-row={i}>
           <SearchResultRow
             // A section with no heading is the text above the first one, and a
             // heading that repeats the page name says nothing: both are prose.

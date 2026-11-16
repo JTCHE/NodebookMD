@@ -15,7 +15,7 @@ import {
 import { AnimatedPlaceholder } from "./AnimatedPlaceholder";
 import { PasteSearchButton } from "./PasteSearchButton";
 import { SearchHints } from "@/components/search/SearchHints";
-import { FADE_BOTH, useOverflow } from "@/lib/ui/overflow";
+import { FADE_OUT, useOverflow } from "@/lib/ui/overflow";
 import { useSearchReport } from "@/lib/telemetry";
 import { openTab, tabFor } from "@/lib/tabs";
 
@@ -297,16 +297,16 @@ export function SearchField({ className, autoFocus = true }: { className?: strin
       <div
         inert={!open}
         className={cn(
-          "grid transition-[grid-template-rows] duration-(--duration-base) ease-out-quint motion-reduce:transition-none",
+          "grid grid-cols-[minmax(0,1fr)] transition-[grid-template-rows] duration-(--duration-base) ease-out-quint motion-reduce:transition-none",
           open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
         )}
       >
         {/* While it folds, the rows fade out at the moving edge; a hard cut
             there would slice a row in two. See `fold-fade` in globals.css. */}
-        <div className="fold-fade min-h-0 overflow-hidden">
+        <div className="fold-fade min-h-0 overflow-clip">
           {panel.hits.length > 0 ? (
             <div className="border-t border-hairline">
-              <div ref={panelRef} className={cn("scroll-pt-5 scroll-pb-10 px-xs", SEARCH_LIST_CLASS, FADE_BOTH, "[--fade-size:40px]")}>
+              <div ref={panelRef} className={cn("scroll-pt-5 scroll-pb-10 px-xs [scrollbar-width:none]!", SEARCH_LIST_CLASS, FADE_OUT, "[--fade-size:40px] [--fade-head-size:20px]")}>
                 <SearchResultList
                   hits={panel.hits}
                   query={panel.text}

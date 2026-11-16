@@ -25,7 +25,7 @@ export function PrimaryButton({
         // states differ the way a real key does.
         "shadow-[0_1px_0.75px_0_oklch(0_0_0/28%),0_1px_2px_0_oklch(0_0_0/16%)]",
         "inset-shadow-[0_1px_0_0_oklch(1_0_0/12%)] dark:inset-shadow-[0_1px_0_0_oklch(0_0_0/10%)]",
-        "transition duration-(--duration-fast) active:translate-y-px active:inset-shadow-none",
+        "transition duration-(--duration-fast) pointer-hover:brightness-115 active:translate-y-px active:brightness-100 active:inset-shadow-none",
         "disabled:cursor-wait motion-reduce:transition-none",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         className,
