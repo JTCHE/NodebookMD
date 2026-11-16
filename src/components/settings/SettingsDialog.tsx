@@ -47,10 +47,10 @@ export function openSettings() {
 
 const SECTIONS = [
   { key: "general", label: "General", icon: Icons.settings },
-  { key: "houdini", label: "Houdini Integration", icon: Icons.groupNodes },
-  { key: "mcp", label: "Houdini MCP", icon: Icons.newWindow },
+  { key: "houdini", label: "Houdini help", icon: Icons.groupNodes },
+  { key: "mcp", label: "Houdini MCP", icon: Icons.agents },
   { key: "obsidian", label: "Obsidian", icon: Icons.obsidian },
-  { key: "usage", label: "Usage data", icon: Icons.recent },
+  { key: "usage", label: "Usage data", icon: Icons.privacy },
 ] as const;
 type SectionKey = (typeof SECTIONS)[number]["key"];
 
@@ -83,7 +83,7 @@ export function SettingsDialog() {
       closeAt="top-[calc(var(--spacing-lg)-6px)] right-[calc(var(--spacing-lg)-10px)]"
       // One height on every tab, so the dialog never jumps, and room for the
       // six agents Houdini MCP supports, the longest list with a known end
-      // (see `Section`). Houdini Integration has no such end, so a longer
+      // (see `Section`). Houdini help has no such end, so a longer
       // list scrolls. It stands tall enough to cover the page's heading.
       className="h-[min(520px,100%)] w-full max-w-[760px] flex-row"
     >
@@ -219,18 +219,20 @@ function HelpSection() {
         )
       : null;
   return (
-    <Section title="Houdini Integration">
+    <Section title="Houdini help">
+      {/* Houdini writes its preferences when it closes, so a change made while it is open is lost. Said once, over the list. */}
+      {houdiniOpen && series && series.length > 0 && (
+        <p className="mt-xs rounded-lg bg-neutral-100 px-ms py-sm text-label text-neutral-700">Close Houdini to change these.</p>
+      )}
       {series?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
       {series?.map((name) => {
         const release = releases?.find((one) => one.release === name);
-        // Houdini writes its preferences when it closes, so a change made while it is open is lost.
-        const locked = houdiniOpen ? "Close Houdini to change this" : undefined;
         return (
-          <Row key={name} label={`Houdini ${name}`} fact={locked ?? helpTarget(release)}>
+          <Row key={name} label={`F1 in Houdini ${name} opens ${APP_NAME}`} fact={helpTarget(release)}>
             <Toggle
               checked={!!release?.external && !!release.ours}
               disabled={!release || houdiniOpen}
-              title={release ? locked : helpTarget(release)}
+              title={helpTarget(release)}
               onChange={(next) => void flip(name, next)}
               label={`F1 in Houdini ${name} opens ${APP_NAME}`}
             />
@@ -312,12 +314,15 @@ function McpSection() {
           key={agent.key}
           label={agent.label}
           fact={
-            agent.link === "ours" && (
+            agent.link === "ours" ? (
               <span className="inline-flex items-center gap-xs text-neutral-800">
                 <Icons.chosen className="size-3 text-brand" />
                 Connected
               </span>
-            )
+            ) : agent.link === "other" ? (
+              // Replace must say what it replaces.
+              "Another Houdini MCP is set up"
+            ) : undefined
           }
         >
           <button type="button" disabled={busy !== ""} className={BUTTON} onClick={() => void install(agent)}>
