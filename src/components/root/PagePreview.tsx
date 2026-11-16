@@ -12,7 +12,7 @@ import { pageKind } from "@/lib/ranking";
 
 /** The page is drawn at this fraction of its size, the same in every window
     width, so a wider card shows more of the page and never bigger type. */
-const SCALE = 0.75;
+const SCALE = 0.6;
 /** Enough blocks to fill the window; the rest is never seen. */
 const BLOCKS = 8;
 

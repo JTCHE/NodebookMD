@@ -375,7 +375,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
                 setQuery("");
                 inputRef.current?.focus();
               })}
-              className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors pointer-hover:bg-foreground/[0.06] pointer-hover:text-foreground active:bg-foreground/[0.1] focus-ring"
+              className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-[5px] text-muted-foreground transition-colors pointer-hover:bg-foreground/[0.06] pointer-hover:text-foreground active:bg-foreground/[0.1] focus-ring"
             >
               <Icons.dismiss className="size-icon" />
             </button>
@@ -422,7 +422,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
                       </button>
                     </li>
                   ))}
-                  {rows.length > 0 && <li aria-hidden="true" className="mx-4 my-xs border-t border-hairline" />}
+                  {rows.length > 0 && <li aria-hidden="true" className="my-xs border-t border-hairline" />}
                 </>
               ) : null
             }
@@ -438,7 +438,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
 
         {/* The keys act on rows; with none, they say nothing. */}
         {showList && (
-          <SearchHints className="px-4 py-2">
+          <SearchHints className="px-4 py-2" single={skip + rows.length === 1}>
             {!empty && results.length > 0 && <span>{results.length === 1 ? "1 page" : `${results.length} pages`}</span>}
           </SearchHints>
         )}
