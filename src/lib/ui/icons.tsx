@@ -97,7 +97,8 @@ function CaptionClose({ className }: { className?: string }) {
   );
 }
 
-/** The keep-on-top pin. The head is one closed box, so a `fill-current`
+/** The keep-on-top pin. The font's pin leans left; it is mirrored so its
+    needle points down-right, as the search handle beside it does. The head is one closed box, so a `fill-current`
     class fills it for the pinned state. It sits on the maximize square's
     grid: strokes on half units, 10 units from edge to edge. */
 function CaptionPin({ className }: { className?: string }) {
@@ -134,7 +135,7 @@ const SYSTEM_GLYPHS = navigator.userAgent.includes("Windows");
 /** Caption glyphs are made for 10px. A general glyph, as the search and the
     pin, is drawn thinner, for a larger size: at 12px its stroke is one full
     device pixel and its optical size matches the maximize square. */
-function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement, size = 10, lift = size === 10 ? 0 : 0.03) {
+function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement, size = 10, lift = size === 10 ? 0 : 0.03, mirror = false) {
   if (!SYSTEM_GLYPHS) return Drawn;
   return function SystemGlyph({ className }: { className?: string }) {
     return (
@@ -148,7 +149,7 @@ function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) =
         style={{
           fontFamily: "'Segoe Fluent Icons', 'Segoe MDL2 Assets'",
           fontSize: size,
-          transform: `translate3d(0, ${-lift}em, 0)`,
+          transform: `translate3d(0, ${-lift}em, 0)${mirror ? " scaleX(-1)" : ""}`,
           // A general glyph is drawn for 16px, so at this size its stroke is
           // under one pixel. The outline brings it to the caption glyphs' weight.
           WebkitTextStroke: size === 10 ? undefined : "0.3px currentColor",
@@ -208,8 +209,8 @@ export const Icons = {
   collapseAll: ChevronsDownUp,
 
   /* Window */
-  pin: systemGlyph("\uE718", CaptionPin, 10.5),
-  pinned: systemGlyph("\uE842", CaptionPinned, 10.5),
+  pin: systemGlyph("\uE718", CaptionPin, 10.5, undefined, true),
+  pinned: systemGlyph("\uE842", CaptionPinned, 10.5, undefined, true),
   captionSearch: systemGlyph("\uE721", CaptionSearch, 11.5, 0.02),
   versionPicker: ChevronsUpDown,
 
