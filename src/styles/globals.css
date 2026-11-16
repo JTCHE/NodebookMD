@@ -581,8 +581,8 @@ img.markdown-media {
   position: absolute;
   top: 1px;
   right: 1px;
-  /* Above the 4px scroll bar, so the fade does not cover it. */
-  bottom: 5px;
+  /* Above the scroll bar (CodeBlock.tsx), so the fade does not cover it. */
+  bottom: var(--fade-bottom, 5px);
   width: var(--md);
   border-radius: 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0;
   background: linear-gradient(to right, transparent, var(--code-ground) 55%);
@@ -594,8 +594,8 @@ img.markdown-media {
   position: absolute;
   z-index: 1;
   top: 1px;
-  /* Above the 4px scroll bar, so the fade does not cover it. */
-  bottom: 5px;
+  /* Above the scroll bar (CodeBlock.tsx), so the fade does not cover it. */
+  bottom: var(--fade-bottom, 5px);
   left: 1px;
   width: calc(var(--md) * 1.5);
   border-radius: calc(var(--radius-lg) - 1px) 0 0 calc(var(--radius-lg) - 1px);
@@ -1190,14 +1190,16 @@ pre code.hljs {
   /* Opaque and above the panel's edge fade: the caption does not scroll, so
      it does not fade. */
   z-index: 2;
-  background: var(--caption-ground);
+  background: color-mix(in srgb, var(--code-ground), white 3%);
   border-top: 1px solid oklch(1 0 0 / 7%);
 }
-/* The scroll bar hangs under the caption, outside the box that clips it.
-   The panel paints the caption colour there, so the bar strip is no hole. */
-.vex-signature-card:has(> .vex-signature-caption) {
-  --caption-ground: color-mix(in srgb, var(--code-ground), white 3%);
-  background: linear-gradient(to top, var(--caption-ground) var(--md), var(--code-ground) var(--md));
+/* The card clips; its rows scroll in their own box (remark-vex.ts). */
+.vex-signature-card:has(> .vex-signature-rows) {
+  overflow: hidden;
+}
+.vex-signature-rows {
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 .vex-signature-caption strong {
   color: oklch(0.92 0 0);
