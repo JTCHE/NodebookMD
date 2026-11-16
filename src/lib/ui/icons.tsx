@@ -134,7 +134,7 @@ const SYSTEM_GLYPHS = navigator.userAgent.includes("Windows");
 /** Caption glyphs are made for 10px. A general glyph, as the search and the
     pin, is drawn thinner, for a larger size: at 12px its stroke is one full
     device pixel and its optical size matches the maximize square. */
-function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement, size = 10, lift = size === 10 ? 0 : 0.12) {
+function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement, size = 10, lift = size === 10 ? 0 : 0.03) {
   if (!SYSTEM_GLYPHS) return Drawn;
   return function SystemGlyph({ className }: { className?: string }) {
     return (
@@ -149,6 +149,9 @@ function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) =
           fontFamily: "'Segoe Fluent Icons', 'Segoe MDL2 Assets'",
           fontSize: size,
           transform: `translate3d(0, ${-lift}em, 0)`,
+          // A general glyph is drawn for 16px, so at this size its stroke is
+          // under one pixel. The outline brings it to the caption glyphs' weight.
+          WebkitTextStroke: size === 10 ? undefined : "0.25px currentColor",
         }}
       >
         {codepoint}
