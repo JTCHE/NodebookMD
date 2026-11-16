@@ -181,6 +181,8 @@ a {
 }
 
 :root {
+  /* The code panel: a warm near-black, dark in both themes. */
+  --code-ground: oklch(0.16 0.008 60);
   --page-x: 1.5rem;
   --radius: 8px;
   --icon-stroke: 1px;
@@ -536,7 +538,7 @@ img.markdown-media {
 /* Fenced examples and VEX signature cards. No vertical bar: the last row hangs under the horizontal one. */
 .code-panel {
   --code-copy-clearance: 3rem;
-  background: oklch(0.13 0 0);
+  background: var(--code-ground);
   border: 1px solid oklch(1 0 0 / 10%);
   border-radius: var(--radius-lg);
   overflow-x: auto;
@@ -553,7 +555,7 @@ img.markdown-media {
   bottom: 1px;
   width: var(--md);
   border-radius: 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0;
-  background: linear-gradient(to right, transparent, oklch(0.13 0 0));
+  background: linear-gradient(to right, transparent, var(--code-ground));
   pointer-events: none;
 }
 /* The same fade on the left, once the panel is scrolled (CodeBlock.tsx). */
@@ -566,7 +568,7 @@ img.markdown-media {
   left: 1px;
   width: var(--md);
   border-radius: calc(var(--radius-lg) - 1px) 0 0 calc(var(--radius-lg) - 1px);
-  background: linear-gradient(to left, transparent, oklch(0.13 0 0));
+  background: linear-gradient(to left, transparent, var(--code-ground));
   pointer-events: none;
 }
 
@@ -597,11 +599,11 @@ pre code[class] {
    numbers pale lime, bindings pink. None is the brand's orange. */
 .hljs-keyword,
 .vex-token-output {
-  color: oklch(0.74 0.13 305);
+  color: oklch(0.74 0.14 325);
   font-weight: 500;
 }
 .vex-argument-ampersand {
-  color: oklch(0.74 0.13 305);
+  color: oklch(0.74 0.14 325);
 }
 .hljs-type,
 .hljs-built_in,
@@ -613,7 +615,7 @@ pre code[class] {
 }
 .hljs-number,
 .hljs-literal {
-  color: oklch(0.88 0.12 125);
+  color: oklch(0.83 0.08 60);
 }
 .hljs-binding {
   color: oklch(0.78 0.12 350);
@@ -633,7 +635,7 @@ pre code[class] {
   color: oklch(0.87 0.1 95);
 }
 .hljs-title.class_ {
-  color: oklch(0.8 0.1 180);
+  color: oklch(0.8 0.12 165);
 }
 .hljs-variable,
 .hljs-property {
