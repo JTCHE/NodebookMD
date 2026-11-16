@@ -6,12 +6,23 @@
  */
 import { useSyncExternalStore } from "react";
 
-export type Accent = "brand" | "neutral" | "blue" | "custom";
-export const ACCENTS: Accent[] = ["brand", "neutral", "blue", "custom"];
-export const ACCENT_LABEL: Record<Accent, string> = { brand: "Brand", neutral: "Neutral", blue: "Blue", custom: "Custom" };
+export type Accent = "neutral" | "red" | "brand" | "yellow" | "green" | "blue" | "purple" | "pink" | "custom";
+/** Neutral first, then the colours around the wheel, then a hue of your own. */
+export const ACCENTS: Accent[] = ["neutral", "red", "brand", "yellow", "green", "blue", "purple", "pink", "custom"];
+export const ACCENT_LABEL: Record<Accent, string> = {
+  neutral: "Neutral",
+  red: "Red",
+  brand: "Orange",
+  yellow: "Yellow",
+  green: "Green",
+  blue: "Blue",
+  purple: "Purple",
+  pink: "Pink",
+  custom: "Custom",
+};
 
 /** The hue of each fixed accent, in oklch degrees. Neutral has no strength. */
-const HUE: Record<Exclude<Accent, "custom">, number> = { brand: 52, neutral: 52, blue: 255 };
+const HUE: Record<Exclude<Accent, "custom">, number> = { neutral: 52, red: 25, brand: 52, yellow: 90, green: 150, blue: 255, purple: 300, pink: 350 };
 export const HUE_DEFAULT = 300;
 
 const ACCENT_KEY = "nodebookmd.accent";
@@ -48,6 +59,8 @@ function paint() {
   const root = document.documentElement.style;
   root.setProperty("--accent-hue", String(hueOf(accent, readHue())));
   root.setProperty("--accent-strength", accent === "neutral" ? "0" : "1");
+  // Controls read this to take the accent: a switch that is on, a focus ring.
+  document.documentElement.dataset.accent = accent;
   for (const notify of listeners) notify();
 }
 

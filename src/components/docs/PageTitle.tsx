@@ -35,7 +35,7 @@ export function PageTitle({ name, nodeType, icon }: PageTitleProps) {
           // its gap must go too, or the name sits off the content edge.
           className="-m-1 shrink-0 cursor-zoom-in rounded-md p-1 focus-ring [&:not(:has([data-doc-icon]))]:hidden"
         >
-          <DocIconClient src={icon} alt="" className="size-8 translate-y-[1.5px] select-none" priority />
+          <DocIconClient src={icon} alt="" className="size-8 translate-y-[3px] select-none" priority />
         </button>
       )}
       <div className="min-w-0 overflow-hidden">

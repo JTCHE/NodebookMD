@@ -44,6 +44,16 @@ html {
   }
 }
 
+/* An accent with a colour reaches the controls: switches, focus rings, the
+   caret and native inputs. */
+:root[data-accent]:not([data-accent="neutral"]) {
+  --accent-fill: var(--brand);
+  --accent-knob: white;
+  --ring: color-mix(in oklch, var(--brand) 70%, transparent);
+  accent-color: var(--brand);
+  caret-color: var(--brand);
+}
+
 /* Every scroll bar: a 4px rounded thumb with no track and no arrows. Drawn
    with the webkit parts, not scrollbar-width: "thin" is still 11px wide. */
 ::-webkit-scrollbar {
@@ -225,6 +235,10 @@ a {
   /* The brand as text: 4.6:1 on white, where --brand is 3.1:1. */
   --brand-700: oklch(0.575 calc(0.147 * var(--accent-strength, 1)) var(--accent-hue, 52));
   --brand-foreground: oklch(0.985 0 0);
+  /* What a control that is on draws with: the ink when the accent is
+     neutral, the accent when it has a colour. */
+  --accent-fill: var(--neutral-950);
+  --accent-knob: var(--neutral-0);
 
   /* A chip on the panel: one step lighter than its ground. */
   --raised: var(--neutral-0);
@@ -885,14 +899,16 @@ pre code.hljs {
 }
 
 .callout-tip {
-  --callout-color: oklch(0.6 0.14 150);
+  /* A tip is the app's own advice, so it takes the accent. */
+  --callout-color: var(--brand-700);
   --callout-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5'/%3E%3Cpath d='M9 18h6'/%3E%3Cpath d='M10 22h4'/%3E%3C/svg%3E");
-  --callout-surface: rgb(247, 251, 248);
-  --callout-code: rgb(232, 243, 233);
+  --callout-surface: color-mix(in oklch, var(--brand) 4%, white);
+  --callout-code: color-mix(in oklch, var(--brand) 10%, white);
 }
 :root[data-theme="dark"] .callout-tip {
-  --callout-surface: rgb(25, 28, 25);
-  --callout-code: rgb(17, 24, 18);
+  --callout-color: var(--brand);
+  --callout-surface: color-mix(in oklch, var(--brand) 6%, oklch(0.16 0 0));
+  --callout-code: color-mix(in oklch, var(--brand) 8%, oklch(0.12 0 0));
 }
 .callout-warning {
   --callout-color: oklch(0.7 0.15 75);

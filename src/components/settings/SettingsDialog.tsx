@@ -13,6 +13,7 @@ import { invoke, inTauri } from "@/lib/backend";
 import { COMMAND_KEY, IS_MAC, isCommand, useHotkey } from "@/lib/hotkeys";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
+import { Hint } from "@/components/ui/Hint";
 import { Modal } from "@/components/ui/Modal";
 import { SidebarRow } from "@/components/shell/sidebar/SidebarRow";
 import { Toggle } from "@/components/ui/Toggle";
@@ -29,7 +30,6 @@ import {
   MEASURE_MIN,
   TEXT_SIZES,
   TEXT_SIZE_LABEL,
-  resetReading,
   setMeasure,
   setTextSize,
   useMeasure,
@@ -173,7 +173,7 @@ function Section({ title, action, children }: { title: string; action?: ReactNod
     runs only as wide as the content, never to the dialog's edges. A fact
     lifts the label by half its own line, so a first row with one starts
     that much lower: the label stands as far under the title on every tab. */
-function Row({ label, fact, children }: { label: string; fact?: ReactNode; children?: ReactNode }) {
+function Row({ label, fact, onReset, children }: { label: string; fact?: ReactNode; onReset?: () => void; children?: ReactNode }) {
   return (
     <div
       className={cn(
@@ -185,6 +185,18 @@ function Row({ label, fact, children }: { label: string; fact?: ReactNode; child
         <span className="truncate text-title text-neutral-950">{label}</span>
         {fact && <span className="truncate text-meta text-neutral-500">{fact}</span>}
       </span>
+      {onReset && <ResetButton label={label} onReset={onReset} />}
+      {children}
+    </div>
+  );
+}
+
+/** Rows that belong together, under a small title. The line under the last
+    row of a group is left out, as at the end of a tab. */
+function Group({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col not-first:mt-lg">
+      <p className="pb-2xs text-meta font-medium text-neutral-500">{title}</p>
       {children}
     </div>
   );
@@ -201,18 +213,20 @@ const BUTTON =
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** Puts a tab back to its defaults. It shows only when a setting on the
-    tab differs from its default, on the title's line. It gives its padding
-    back, so its text ends on the content's right edge. */
-function RestoreButton({ onRestore }: { onRestore: () => void }) {
+/** Puts one setting back to its default. A row has it only while its
+    setting differs from the default, just left of the control. */
+function ResetButton({ label, onReset }: { label: string; onReset: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onRestore}
-      className="-mr-sm h-7 shrink-0 cursor-interactive rounded-md px-sm text-label text-neutral-600 transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-    >
-      Restore defaults
-    </button>
+    <Hint label="Reset to default">
+      <button
+        type="button"
+        aria-label={`Reset ${label.toLowerCase()} to default`}
+        onClick={onReset}
+        className="grid size-7 shrink-0 cursor-interactive place-items-center rounded-md text-neutral-500 transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        <Icons.reset className="size-3.5" aria-hidden="true" />
+      </button>
+    </Hint>
   );
 }
 
@@ -528,21 +542,9 @@ function GeneralSection() {
   return (
     <Section
       title="General"
-      // The look of the app comes back to the system's; what the app does at
-      // start and at close is a choice about the machine, and stays.
-      action={
-        theme !== "system" || motion !== "system" || accent !== "brand" || hue !== HUE_DEFAULT ? (
-          <RestoreButton
-            onRestore={() => {
-              setTheme("system");
-              setMotion("system");
-              resetAccent();
-            }}
-          />
-        ) : null
-      }
     >
-      <Row label="Theme">
+      <Group title="Appearance">
+      <Row label="Theme" onReset={theme !== "system" ? () => setTheme("system") : undefined}>
         <Segmented
           label="Theme"
           value={theme}
@@ -553,24 +555,24 @@ function GeneralSection() {
           onChange={setTheme}
         />
       </Row>
-      <Row label="Accent">
-        <AccentPicker value={accent} hue={hue} />
-      </Row>
-      {accent === "custom" && (
-        <Row label="Hue">
+      {/* The custom hue is part of the accent, so its slider is in the
+          accent's row, not a row of its own. */}
+      <Row label="Accent" onReset={accent !== "brand" || hue !== HUE_DEFAULT ? resetAccent : undefined}>
+        {accent === "custom" && (
           <input
             type="range"
             aria-label="Hue"
-            className="slider slider-hue w-[200px]"
+            className="slider slider-hue w-[96px]"
             style={{ "--hue-wheel": `linear-gradient(to right, ${HUE_WHEEL})` } as React.CSSProperties}
             min={0}
             max={360}
             value={hue}
             onChange={(event) => setHue(Number(event.target.value))}
           />
-        </Row>
-      )}
-      <Row label="Reduce motion">
+        )}
+        <AccentPicker value={accent} hue={hue} />
+      </Row>
+      <Row label="Reduce motion" onReset={motion !== "system" ? () => setMotion("system") : undefined}>
         <Segmented
           label="Reduce motion"
           value={motion}
@@ -581,8 +583,9 @@ function GeneralSection() {
           onChange={setMotion}
         />
       </Row>
+      </Group>
       {inTauri && (
-        <>
+        <Group title="Window">
           <Row label="Reopen tabs at start">
             <Toggle
               checked={restore}
@@ -601,7 +604,7 @@ function GeneralSection() {
               <Toggle checked={login} onChange={(next) => void flipLogin(next)} label="Open at login" />
             )}
           </Row>
-        </>
+        </Group>
       )}
     </Section>
   );
@@ -614,9 +617,8 @@ function ReadingSection() {
   return (
     <Section
       title="Reading"
-      action={size !== "default" || measure !== MEASURE_DEFAULT ? <RestoreButton onRestore={resetReading} /> : null}
     >
-      <Row label="Page text size">
+      <Row label="Page text size" onReset={size !== "default" ? () => setTextSize("default") : undefined}>
         <Segmented
           label="Page text size"
           value={size}
@@ -633,6 +635,7 @@ function ReadingSection() {
         <Row
           label="Page width"
           fact={`About ${measure} characters a line${measure === MEASURE_DEFAULT ? ", the default" : ""}`}
+          onReset={measure !== MEASURE_DEFAULT ? () => setMeasure(MEASURE_DEFAULT) : undefined}
         >
           <input
             type="range"
