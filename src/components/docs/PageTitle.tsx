@@ -30,7 +30,9 @@ export function PageTitle({ name, nodeType, icon }: PageTitleProps) {
           aria-label={`Show the ${name} icon`}
           data-icon={icon}
           onClick={(event) => openPicture(event.currentTarget, { src: localIconUrl(icon), alt: `${name} icon`, icon, ground: "none" })}
-          className="-m-1 shrink-0 cursor-zoom-in rounded-md p-1 focus-ring"
+          // An icon that fails to load renders nothing; the empty button and
+          // its gap must go too, or the name sits off the content edge.
+          className="-m-1 shrink-0 cursor-zoom-in rounded-md p-1 focus-ring [&:not(:has([data-doc-icon]))]:hidden"
         >
           <DocIconClient src={icon} alt="" className="size-8 select-none" priority />
         </button>
