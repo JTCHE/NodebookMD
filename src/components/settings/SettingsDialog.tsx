@@ -259,7 +259,7 @@ function HelpSection() {
   return (
     <Section title="Houdini help">
       {/* Houdini writes its preferences when it closes, so a change made while it is open is lost. Said once, over the list. */}
-      {!houdiniOpen && series && series.length > 0 && (
+      {series && series.length > 0 && (
         <p className="mt-xs mb-sm text-label text-neutral-500">F1 in each Houdini opens its help in {APP_NAME}.</p>
       )}
       {houdiniOpen && series && series.length > 0 && (

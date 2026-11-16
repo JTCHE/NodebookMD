@@ -195,7 +195,7 @@ export function SidebarRow({
       {/* A page row has no arrow and no slot for one, so its chip pads its
           icon like any row. Its flag stands at the end, where a kept page
           says so without moving its name. */}
-      {kept && <Icons.bookmark className="ml-2xs size-glyph shrink-0 text-neutral-600" strokeWidth={2} aria-hidden="true" />}
+      {kept && <Icons.bookmark className="ml-2xs size-glyph shrink-0 fill-current text-neutral-600" strokeWidth={2} aria-hidden="true" />}
 
       {count !== undefined && (
         <span className="shrink-0 text-[11px] text-neutral-600 tabular-nums opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none">
