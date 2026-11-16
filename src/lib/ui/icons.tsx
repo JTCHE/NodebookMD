@@ -11,6 +11,7 @@
  * Sizes are NOT set here. A role is used at 10px in a tree row and at 15px in a
  * list row, so the caller states the size and this file states the shape.
  */
+import { cn } from "@/lib/utils";
 import {
   AppWindow,
   Plus,
@@ -35,7 +36,6 @@ import {
   ListFilter,
   Workflow,
   PanelLeft,
-  Pin,
   Play,
   Search,
   Settings,
@@ -97,6 +97,66 @@ function CaptionClose({ className }: { className?: string }) {
   );
 }
 
+/** The keep-on-top pin. The head is one closed box, so a `fill-current`
+    class fills it for the pinned state. It sits on the maximize square's
+    grid: strokes on half units, 10 units from edge to edge. */
+function CaptionPin({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 10 10" className={className} fill="none" stroke="currentColor" shapeRendering="crispEdges" overflow="visible" aria-hidden="true">
+      <rect x="2.5" y="0.5" width="5" height="4" />
+      <path d="M0.5 5.5h9M5 5.5v4" />
+    </svg>
+  );
+}
+
+/** The pin with its head filled, for the pinned state. */
+function CaptionPinned({ className }: { className?: string }) {
+  return <CaptionPin className={cn(className, "fill-current")} />;
+}
+
+/** The search, on the same grid: a closed octagon for the lens, as a circle
+    cannot be sharp at 10px, and a 45° handle. */
+function CaptionSearch({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 10 10" className={className} fill="none" stroke="currentColor" overflow="visible" aria-hidden="true">
+      <path d="M2.5 0.5h3l2 2v3l-2 2h-3l-2-2v-3zM6.5 6.5l3 3" />
+    </svg>
+  );
+}
+
+/** On Windows the caption glyphs come from the system's own icon font, the
+    one Windows draws its caption buttons with. Its glyphs are hinted for each
+    display scale, so they stay sharp where a drawn line falls between
+    device pixels. Windows 10 has the same glyphs in Segoe MDL2 Assets.
+    Elsewhere the drawn glyph stands in. */
+const SYSTEM_GLYPHS = navigator.userAgent.includes("Windows");
+
+/** Caption glyphs are made for 10px. A general glyph, as the search and the
+    pin, is drawn thinner, for a larger size: at 13px its stroke is one full
+    device pixel and its ring is as tall as the maximize square. */
+function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement, size = 10) {
+  if (!SYSTEM_GLYPHS) return Drawn;
+  return function SystemGlyph({ className }: { className?: string }) {
+    return (
+      <span
+        aria-hidden="true"
+        className={cn(className, "grid place-items-center leading-none")}
+        // A larger glyph's ink sits low in its em box; the lift puts it on
+        // the window controls' centre line. Its own layer makes Chromium
+        // draw it in grey antialiasing, as Windows draws its caption glyphs,
+        // with no ClearType colour fringe.
+        style={{
+          fontFamily: "'Segoe Fluent Icons', 'Segoe MDL2 Assets'",
+          fontSize: size,
+          transform: `translate3d(0, ${size === 10 ? 0 : -0.12}em, 0)`,
+        }}
+      >
+        {codepoint}
+      </span>
+    );
+  };
+}
+
 /** The Obsidian mark, so the app's way out to Obsidian reads as Obsidian. */
 function ObsidianIcon({ className }: { className?: string }) {
   // Drawn as a stroke, like the lucide icons beside it: the gem's outline and
@@ -125,10 +185,10 @@ export const Icons = {
   newTab: Plus,
 
   /* Window caption */
-  captionMinimize: CaptionMinimize,
-  captionMaximize: CaptionMaximize,
-  captionRestore: CaptionRestore,
-  captionClose: CaptionClose,
+  captionMinimize: systemGlyph("\uE921", CaptionMinimize),
+  captionMaximize: systemGlyph("\uE922", CaptionMaximize),
+  captionRestore: systemGlyph("\uE923", CaptionRestore),
+  captionClose: systemGlyph("\uE8BB", CaptionClose),
 
   /* Disclosure */
   expanded: ChevronDown,
@@ -145,7 +205,9 @@ export const Icons = {
   collapseAll: ChevronsDownUp,
 
   /* Window */
-  pin: Pin,
+  pin: systemGlyph("\uE718", CaptionPin, 13),
+  pinned: systemGlyph("\uE842", CaptionPinned, 13),
+  captionSearch: systemGlyph("\uE721", CaptionSearch, 13),
   versionPicker: ChevronsUpDown,
 
   /* Content */

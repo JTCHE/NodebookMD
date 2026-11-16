@@ -11,6 +11,7 @@ import { DeepLinks } from "./components/shell/DeepLinks";
 import { startTheme } from "./lib/ui/theme";
 import { startMotion } from "./lib/ui/motion";
 import { startReading } from "./lib/ui/reading";
+import { startAccent } from "./lib/ui/accent";
 import { startPress } from "./lib/ui/press";
 import { startBlurCheck } from "./lib/ui/blur";
 import { startIconStroke } from "./lib/ui/icon-stroke";
@@ -33,6 +34,7 @@ if (await invoke<boolean>("clean_start").catch(() => false)) {
 startTheme();
 startMotion();
 startReading();
+startAccent();
 startBlurCheck();
 startIconStroke();
 

@@ -36,6 +36,8 @@ import {
   useTextSize,
 } from "@/lib/ui/reading";
 import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
+import { HUE_DEFAULT, resetAccent, setHue, useAccent, useHue } from "@/lib/ui/accent";
+import { AccentPicker, HUE_WHEEL } from "@/components/settings/AccentPicker";
 import { MOTION_CHOICES, MOTION_LABEL, setMotion, useMotionChoice } from "@/lib/ui/motion";
 import { LINK_FORMATS, linkFormat, setLinkFormat, type LinkFormat } from "@/lib/link";
 import { restoresTabs, setRestoresTabs } from "@/lib/tabs";
@@ -498,6 +500,8 @@ const CLOSE_TO_TRAY = "close_to_tray";
 function GeneralSection() {
   const theme = useThemeChoice();
   const motion = useMotionChoice();
+  const accent = useAccent();
+  const hue = useHue();
   const [tray, setTray] = useState<boolean | null>(null);
   const [login, setLogin] = useState<boolean | null>(null);
   const [restore, setRestore] = useState(restoresTabs);
@@ -527,11 +531,12 @@ function GeneralSection() {
       // The look of the app comes back to the system's; what the app does at
       // start and at close is a choice about the machine, and stays.
       action={
-        theme !== "system" || motion !== "system" ? (
+        theme !== "system" || motion !== "system" || accent !== "brand" || hue !== HUE_DEFAULT ? (
           <RestoreButton
             onRestore={() => {
               setTheme("system");
               setMotion("system");
+              resetAccent();
             }}
           />
         ) : null
@@ -548,6 +553,23 @@ function GeneralSection() {
           onChange={setTheme}
         />
       </Row>
+      <Row label="Accent">
+        <AccentPicker value={accent} hue={hue} />
+      </Row>
+      {accent === "custom" && (
+        <Row label="Hue">
+          <input
+            type="range"
+            aria-label="Hue"
+            className="slider slider-hue w-[200px]"
+            style={{ "--hue-wheel": `linear-gradient(to right, ${HUE_WHEEL})` } as React.CSSProperties}
+            min={0}
+            max={360}
+            value={hue}
+            onChange={(event) => setHue(Number(event.target.value))}
+          />
+        </Row>
+      )}
       <Row label="Reduce motion">
         <Segmented
           label="Reduce motion"

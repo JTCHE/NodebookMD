@@ -23,7 +23,7 @@ use include_dir::{Dir, include_dir};
 use rusqlite::Connection;
 use tiny_http::{Header, Response, Server};
 
-use crate::{db, help, index, install, library};
+use crate::{db, help, install, library};
 
 /// The built front-end, inside the binary, so the server has no files to find.
 static APP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/../dist");
@@ -52,8 +52,11 @@ pub fn start(
     let (listener, port) = bind()?;
     let server = Server::from_listener(listener, None).map_err(|e| e.to_string())?;
     std::thread::spawn(move || {
-        // A cook must always win the core, the same as the index pass.
-        index::background_priority();
+        // Normal priority, not the index pass's background mode: a request
+        // here is a reader who pressed F1 and waits on the page, often while
+        // a cook holds every core. Background mode also drops I/O and memory
+        // priority, so the page then waited for the whole cook. The thread
+        // sleeps between requests, so it takes no time from a cook.
         let db = db::open(&data).map(Mutex::new);
         for request in server.incoming_requests() {
             // A browser names the site of the page that sent a request. The

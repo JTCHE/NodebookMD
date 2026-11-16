@@ -44,11 +44,11 @@ html {
   }
 }
 
-/* Every scroll bar: a 6px rounded thumb with no track and no arrows. Drawn
+/* Every scroll bar: a 4px rounded thumb with no track and no arrows. Drawn
    with the webkit parts, not scrollbar-width: "thin" is still 11px wide. */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track,
 ::-webkit-scrollbar-corner {
@@ -58,7 +58,7 @@ html {
   display: none;
 }
 ::-webkit-scrollbar-thumb {
-  border-radius: 3px;
+  border-radius: 2px;
   background: var(--neutral-300);
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -215,11 +215,13 @@ a {
   --neutral-800: oklch(0.269 0 0);
   --neutral-900: oklch(0.205 0 0);
   --neutral-950: oklch(0.145 0 0);
-  --brand: oklch(0.680 0.174 52);
-  --brand-bright: oklch(0.720 0.185 52);
+  /* The accent (lib/ui/accent.ts) sets the hue and the strength; the
+     brand's own orange is hue 52 at full strength. */
+  --brand: oklch(0.680 calc(0.174 * var(--accent-strength, 1)) var(--accent-hue, 52));
+  --brand-bright: oklch(0.720 calc(0.185 * var(--accent-strength, 1)) var(--accent-hue, 52));
 
   /* The brand as text: 4.6:1 on white, where --brand is 3.1:1. */
-  --brand-700: oklch(0.575 0.147 52);
+  --brand-700: oklch(0.575 calc(0.147 * var(--accent-strength, 1)) var(--accent-hue, 52));
   --brand-foreground: oklch(0.985 0 0);
 
   /* A chip on the panel: one step lighter than its ground. */
@@ -380,10 +382,10 @@ svg[stroke="currentColor"] * {
     rgb(0 0 0 / 0.55) calc(100% - var(--depth) * 0.5),
     rgb(0 0 0 / 0.25) calc(100% - var(--depth) * 0.25),
     rgb(0 0 0 / calc(1 - var(--fade-below, 1))) 100%
-  );
+  ), linear-gradient(black, black);
 }
 .fade-in {
-  mask-image: linear-gradient(to top, black calc(100% - 72px), rgb(0 0 0 / 0.85) calc(100% - 54px), rgb(0 0 0 / 0.55) calc(100% - 36px), rgb(0 0 0 / 0.25) calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(to top, black calc(100% - 72px), rgb(0 0 0 / 0.85) calc(100% - 54px), rgb(0 0 0 / 0.55) calc(100% - 36px), rgb(0 0 0 / 0.25) calc(100% - 18px), transparent 100%), linear-gradient(black, black);
 }
 .fade-both {
   --top: var(--fade-top, 0px);
@@ -402,7 +404,21 @@ svg[stroke="currentColor"] * {
     rgb(0 0 0 / 0.45) calc(100% - 16px),
     rgb(0 0 0 / 0.15) calc(100% - 8px),
     transparent 100%
-  );
+  ), linear-gradient(black, black);
+}
+
+/* A mask also hides the scroll bar. A second, solid layer keeps the bar's
+   strip whole, so a fade never eats the thumb. */
+.fade-out,
+.fade-in,
+.fade-both {
+  mask-size:
+    100% 100%,
+    4px 100%;
+  mask-position:
+    0 0,
+    100% 0;
+  mask-repeat: no-repeat;
 }
 
 /* auto 16 / 9 holds a box until the file gives its own size. */
@@ -538,19 +554,27 @@ pre code[class] {
   display: block;
   background: transparent;
   border: none;
-  padding: var(--md);
+  /* The line-height's half-leading adds to the top and the foot, so they
+     take less padding to look as wide as the sides. Max-content width keeps
+     the right padding at the end of a scrolled line. */
+  width: max-content;
+  min-width: 100%;
+  padding: calc(var(--md) - 4px) var(--md);
   color: oklch(0.88 0 0);
   font-size: 0.84em;
   line-height: 1.7;
 }
 
+/* One hue for each role, as an editor's dark theme: keywords violet, types
+   blue, calls warm yellow, classes teal, names pale blue, strings green,
+   numbers pale lavender, bindings pink. None is the brand's orange. */
 .hljs-keyword,
 .vex-token-output {
-  color: oklch(0.72 0.14 245);
-  font-weight: 600;
+  color: oklch(0.74 0.13 305);
+  font-weight: 500;
 }
 .vex-argument-ampersand {
-  color: oklch(0.72 0.14 245);
+  color: oklch(0.74 0.13 305);
 }
 .hljs-type,
 .hljs-built_in,
@@ -558,11 +582,14 @@ pre code[class] {
 .vex-argument-type,
 .vex-return-arrow,
 .vex-return-type {
-  color: oklch(0.66 0.08 242.84);
+  color: oklch(0.7 0.1 245);
 }
 .hljs-number,
 .hljs-literal {
-  color: oklch(0.8 0.13 55);
+  color: oklch(0.84 0.06 285);
+}
+.hljs-binding {
+  color: oklch(0.78 0.12 350);
 }
 .hljs-string,
 .hljs-attr,
@@ -576,11 +603,17 @@ pre code[class] {
 .hljs-function .hljs-title,
 .hljs-title.function_,
 .vex-token-function {
-  color: oklch(0.71 0.13 308.92);
+  color: oklch(0.87 0.1 95);
+}
+.hljs-title.class_ {
+  color: oklch(0.8 0.1 180);
+}
+.hljs-variable,
+.hljs-property {
+  color: oklch(0.86 0.07 230);
 }
 /* Not --foreground: the code panel is dark in both themes. */
 .hljs-params,
-.hljs-variable,
 .vex-token-argument {
   color: oklch(0.93 0 0);
 }
@@ -1292,6 +1325,10 @@ span.doc-icon.inline-icon-large {
 /* In dark the raised ground is the track's grey; the knob is the switch's light knob. */
 [data-theme="dark"] .slider::-webkit-slider-thumb {
   background: oklch(0.92 0 0);
+}
+/* The hue slider's track is the colour wheel, so the knob sits on its hue. */
+.slider-hue::-webkit-slider-runnable-track {
+  background: var(--hue-wheel);
 }
 .slider:focus-visible {
   outline: none;

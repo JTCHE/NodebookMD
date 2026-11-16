@@ -198,11 +198,27 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
         className="h-full min-w-[48px] flex-1"
       />
 
+      <SearchButton />
       <PinButton corner={nativeFrame && !fullscreen} />
       <WindowControls />
 
       {menuAt && <TitleBarMenu at={menuAt} port={port} onClose={() => setMenuAt(null)} />}
     </header>
+  );
+}
+
+/** Opens the search, for a reader who does not know the shortcut. It
+    presses the shortcut itself, so the search on a page and the field on
+    the home page each answer it as they answer the key. */
+function SearchButton() {
+  const press = () =>
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true, cancelable: true }));
+  return (
+    <Hint label="Search" keys={`${COMMAND_KEY}+K`} className="h-full">
+      <button type="button" tabIndex={-1} aria-label="Search" className={CAPTION_BUTTON} onMouseDown={(event) => event.preventDefault()} onClick={press}>
+        <Icons.captionSearch className="size-glyph" />
+      </button>
+    </Hint>
   );
 }
 
@@ -237,7 +253,7 @@ function PinButton({ corner }: { corner: boolean }) {
     >
       {/* Drawn as a caption button: the same box, ink and glyph size as the
           three beside it, so the four read as one set. */}
-      <Icons.pin className={cn("size-glyph", pinned && "fill-current")} />
+      {pinned ? <Icons.pinned className="size-glyph" /> : <Icons.pin className="size-glyph" />}
     </button>
     </Hint>
   );

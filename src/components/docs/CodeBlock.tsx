@@ -3,21 +3,23 @@ import hljs from "highlight.js/lib/core";
 import c from "highlight.js/lib/languages/c";
 import python from "highlight.js/lib/languages/python";
 import type { CodeLanguage } from "@/lib/markdown/types";
+import { colourNames } from "./code-names";
 import "./CodeBlock.css";
 
-const withFunctionCalls = (languageFactory: typeof c) => (highlightJs: Parameters<typeof c>[0]) => {
-  const language = languageFactory(highlightJs);
-  language.contains.unshift({
-    className: "title function_",
-    begin: /\b[A-Za-z_]\w*(?=\s*\()/,
-    relevance: 0,
-  });
-  return language;
-};
+hljs.registerLanguage("c", c);
+hljs.registerLanguage("python", python);
 
-hljs.registerLanguage("c", withFunctionCalls(c));
-hljs.registerLanguage("python", withFunctionCalls(python));
-hljs.registerAliases(["vex", "hscript"], { languageName: "c" });
+/** The words a language owns: its keywords, built-ins and literals. */
+function ownedWords(name: string): Set<string> {
+  const keywords = (hljs.getLanguage(name)?.keywords ?? {}) as Record<string, unknown>;
+  return new Set(
+    Object.entries(keywords)
+      .filter(([kind]) => kind !== "$pattern")
+      .flatMap(([, words]) => (typeof words === "string" ? words.split(/\s+/) : Array.isArray(words) ? words.map(String) : []))
+      .map((word) => word.split("|")[0]),
+  );
+}
+hljs.registerAliases(["vex", "hscript", "cpp", "c++"], { languageName: "c" });
 
 interface CodePanelProps {
   children: React.ReactNode;
@@ -33,8 +35,12 @@ export function CodePanel({ children, language }: CodePanelProps) {
   useLayoutEffect(() => {
     const code = panelRef.current?.querySelector("code");
     if (!code || (code as HTMLElement).dataset.highlighted) return;
-    if (language) code.className = `language-${language}`;
+    // A block that names its own language (`#!python` in the source) keeps
+    // it. The page's language is for a block that names none.
+    if (language && !/language-/.test(code.className)) code.className = `language-${language}`;
     hljs.highlightElement(code as HTMLElement);
+    const name = /language-(\S+)/.exec(code.className)?.[1];
+    if (name && hljs.getLanguage(name)) colourNames(code as HTMLElement, ownedWords(name));
   }, [language]);
 
   // A panel that scrolls hangs its bar over the code's bottom padding instead

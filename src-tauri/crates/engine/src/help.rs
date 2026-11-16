@@ -177,8 +177,18 @@ pub fn icon_layered(install_root: &Path, packages: &[PathBuf], name: &str) -> Re
             }
         }
     }
+    // A node whose own icon is not in the install (Fractal Noise COP names
+    // `COP_fractalnoise`, and no such file ships) shows the digital asset
+    // icon in Houdini. Show the same one.
+    let context = clean.split_once('/').map(|(context, _)| context).unwrap_or("");
+    if NODE_CONTEXTS.contains(&context) {
+        return icon(install_root, "MISC/digital_asset.svg");
+    }
     Err(format!("no icon {name}"))
 }
+
+/// The icon folders that hold one icon for each node type.
+const NODE_CONTEXTS: [&str; 11] = ["OBJ", "SOP", "DOP", "COP", "COP2", "LOP", "VOP", "ROP", "CHOP", "TOP", "SHOP"];
 
 /// Reads one asset, named the way `assets::resolve` writes it.
 ///

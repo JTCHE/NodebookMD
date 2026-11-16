@@ -290,7 +290,7 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
 }
 
 /** What a page in the help is called and what it is about. */
-export function DocTooltip({ slug, summaryOnly = false, anchor, ...anchored }: Anchored & { slug: string; summaryOnly?: boolean; anchor?: string | null }) {
+export function DocTooltip({ slug, anchor, ...anchored }: Anchored & { slug: string; anchor?: string | null }) {
   // undefined while the answer is on its way; null for a page the build does
   // not have.
   const [meta, setMeta] = useState<MetaEntry | null | undefined>(() => known(slug));
@@ -344,12 +344,11 @@ export function DocTooltip({ slug, summaryOnly = false, anchor, ...anchored }: A
   if (failed) return null;
 
   const summary = meta?.summary;
-  if (summaryOnly && !summary) return null;
 
   // A link to a whole page shows the page itself, as the home page cards do.
-  // A method signature (an anchor on a HOM page) and a summary-only tip stay
-  // as text: they name a part.
-  if (meta && !summaryOnly && !signature && !(anchor && slug.startsWith("hom/"))) {
+  // A method signature (an anchor on a HOM page) stays as text: it names a
+  // part.
+  if (meta && !signature && !(anchor && slug.startsWith("hom/"))) {
     return (
       <PreviewCard {...anchored}>
         <PagePreview path={slug} title={meta.title} />
@@ -381,9 +380,9 @@ export function DocTooltip({ slug, summaryOnly = false, anchor, ...anchored }: A
   );
 }
 
-/** The page tooltip of a row in a list. It opens on the app's one hover
-    rule (lib/ui/hover-tip) and goes on a press. The row already shows the name, so a page with no summary
-    gets no tooltip. Spread `pointer` on the link and render
+/** The page tooltip of a row in a list: the same page card a link in a
+    page opens. It opens on the app's one hover rule (lib/ui/hover-tip) and
+    goes on a press. Spread `pointer` on the link and render
     `tip` beside it — not in it: a link sets its ref after the layout effects of
     its children, so a box inside it measures nothing. */
 export function useRowTip<T extends HTMLElement>(slug: string, side: Anchored["side"]) {
@@ -397,7 +396,7 @@ export function useRowTip<T extends HTMLElement>(slug: string, side: Anchored["s
       // A press is the answer to the question the tooltip was for.
       onPointerDown: hide,
     },
-    tip: shown ? <DocTooltip slug={slug} anchorRef={anchorRef} side={side} summaryOnly /> : null,
+    tip: shown ? <DocTooltip slug={slug} anchorRef={anchorRef} side={side} /> : null,
   };
 }
 
