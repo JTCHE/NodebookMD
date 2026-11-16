@@ -202,8 +202,11 @@ a {
 }
 
 :root {
+  /* Every grey and every surface takes this small chroma on the accent hue,
+     so the whole app leans to the accent. Neutral sets the strength to 0. */
+  --tint: calc(0.005 * var(--accent-strength, 1));
   /* The code panel: a near-black, dark in both themes. */
-  --code-ground: oklch(0.15 0 0);
+  --code-ground: oklch(0.15 var(--tint) var(--accent-hue, 52));
   --page-x: 1.5rem;
   --radius: 8px;
   --icon-stroke: 1px;
@@ -226,18 +229,18 @@ a {
   --duration-slow: 420ms;
   --easing-quint: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --neutral-0: oklch(1 0 0);
-  --neutral-50: oklch(0.985 0 0);
-  --neutral-100: oklch(0.97 0 0);
-  --neutral-200: oklch(0.922 0 0);
-  --neutral-300: oklch(0.87 0 0);
-  --neutral-400: oklch(0.708 0 0);
-  --neutral-500: oklch(0.556 0 0);
-  --neutral-600: oklch(0.44 0 0);
-  --neutral-700: oklch(0.35 0 0);
-  --neutral-800: oklch(0.269 0 0);
-  --neutral-900: oklch(0.205 0 0);
-  --neutral-950: oklch(0.145 0 0);
+  --neutral-0: oklch(1 var(--tint) var(--accent-hue, 52));
+  --neutral-50: oklch(0.985 var(--tint) var(--accent-hue, 52));
+  --neutral-100: oklch(0.97 var(--tint) var(--accent-hue, 52));
+  --neutral-200: oklch(0.922 var(--tint) var(--accent-hue, 52));
+  --neutral-300: oklch(0.87 var(--tint) var(--accent-hue, 52));
+  --neutral-400: oklch(0.708 var(--tint) var(--accent-hue, 52));
+  --neutral-500: oklch(0.556 var(--tint) var(--accent-hue, 52));
+  --neutral-600: oklch(0.44 var(--tint) var(--accent-hue, 52));
+  --neutral-700: oklch(0.35 var(--tint) var(--accent-hue, 52));
+  --neutral-800: oklch(0.269 var(--tint) var(--accent-hue, 52));
+  --neutral-900: oklch(0.205 var(--tint) var(--accent-hue, 52));
+  --neutral-950: oklch(0.145 var(--tint) var(--accent-hue, 52));
   /* The accent (lib/ui/accent.ts) sets the hue and the strength; the
      brand's own orange is hue 52 at full strength. */
   --brand: oklch(0.680 calc(0.174 * var(--accent-strength, 1)) var(--accent-hue, 52));
@@ -292,22 +295,23 @@ a {
 
 :root[data-theme="dark"] {
   color-scheme: dark;
+  --tint: calc(0.009 * var(--accent-strength, 1));
   /* The ramp reverses. Elevation steps are stated, because a raised surface does not mirror. */
-  --neutral-0: oklch(0.145 0 0);
-  --neutral-50: oklch(0.175 0 0);
-  --neutral-100: oklch(0.205 0 0);
-  --neutral-200: oklch(0.269 0 0);
-  --neutral-300: oklch(0.35 0 0);
-  --neutral-400: oklch(0.44 0 0);
-  --neutral-500: oklch(0.556 0 0);
-  --neutral-600: oklch(0.708 0 0);
-  --neutral-700: oklch(0.87 0 0);
-  --neutral-800: oklch(0.922 0 0);
-  --neutral-900: oklch(0.97 0 0);
-  --neutral-950: oklch(0.985 0 0);
+  --neutral-0: oklch(0.145 var(--tint) var(--accent-hue, 52));
+  --neutral-50: oklch(0.175 var(--tint) var(--accent-hue, 52));
+  --neutral-100: oklch(0.205 var(--tint) var(--accent-hue, 52));
+  --neutral-200: oklch(0.269 var(--tint) var(--accent-hue, 52));
+  --neutral-300: oklch(0.35 var(--tint) var(--accent-hue, 52));
+  --neutral-400: oklch(0.44 var(--tint) var(--accent-hue, 52));
+  --neutral-500: oklch(0.556 var(--tint) var(--accent-hue, 52));
+  --neutral-600: oklch(0.708 var(--tint) var(--accent-hue, 52));
+  --neutral-700: oklch(0.87 var(--tint) var(--accent-hue, 52));
+  --neutral-800: oklch(0.922 var(--tint) var(--accent-hue, 52));
+  --neutral-900: oklch(0.97 var(--tint) var(--accent-hue, 52));
+  --neutral-950: oklch(0.985 var(--tint) var(--accent-hue, 52));
   --raised: var(--neutral-200);
   --hairline: oklch(1 0 0 / 10%);
-  --chrome: oklch(0.118 0 0);
+  --chrome: oklch(0.118 var(--tint) var(--accent-hue, 52));
   --scrim-wash: oklch(0 0 0 / 80%);
   --elevation-field: 0 12px 28px 0 oklch(0 0 0 / 45%);
   --elevation-pane: 0 4px 12px 0 oklch(0 0 0 / 45%);
@@ -792,7 +796,7 @@ kbd {
 }
 
 .prose :where(pre):not(:where([class~="not-prose"] *)) {
-  background: oklch(0.13 0 0);
+  background: oklch(0.13 var(--tint) var(--accent-hue, 52));
   padding: 0;
 }
 
@@ -923,8 +927,8 @@ pre code.hljs {
 }
 :root[data-theme="dark"] .callout-tip {
   --callout-color: var(--brand);
-  --callout-surface: color-mix(in srgb, var(--brand) 6%, oklch(0.16 0 0));
-  --callout-code: color-mix(in srgb, var(--brand) 8%, oklch(0.12 0 0));
+  --callout-surface: color-mix(in srgb, var(--brand) 6%, oklch(0.16 var(--tint) var(--accent-hue, 52)));
+  --callout-code: color-mix(in srgb, var(--brand) 8%, oklch(0.12 var(--tint) var(--accent-hue, 52)));
 }
 .callout-warning {
   --callout-color: oklch(0.7 0.15 75);
@@ -1165,8 +1169,14 @@ pre code.hljs {
   /* Opaque and above the panel's edge fade: the caption does not scroll, so
      it does not fade. */
   z-index: 2;
-  background: color-mix(in srgb, var(--code-ground), white 3%);
+  background: var(--caption-ground);
   border-top: 1px solid oklch(1 0 0 / 7%);
+}
+/* The scroll bar hangs under the caption, outside the box that clips it.
+   The panel paints the caption colour there, so the bar strip is no hole. */
+.vex-signature-card:has(> .vex-signature-caption) {
+  --caption-ground: color-mix(in srgb, var(--code-ground), white 3%);
+  background: linear-gradient(to top, var(--caption-ground) var(--md), var(--code-ground) var(--md));
 }
 .vex-signature-caption strong {
   color: oklch(0.92 0 0);
