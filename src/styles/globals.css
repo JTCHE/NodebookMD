@@ -1119,11 +1119,12 @@ pre code.hljs {
 /* Centered in the summary's left padding. */
 .hom-method-chevron {
   position: absolute;
-  left: calc((var(--md) + 1px - 0.75rem) / 2);
-  top: 0.875rem;
-  width: 0.75rem;
-  height: 0.75rem;
-  color: var(--muted-foreground);
+  left: calc((var(--md) + 1px - 0.875rem) / 2);
+  /* On the signature's cap height, and as grey as the caption. */
+  top: 0.8125rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--neutral-500);
 }
 
 /* Block: an inline svg adds space under its baseline. */
@@ -1175,11 +1176,11 @@ pre code.hljs {
   --clip-fade: 24px;
   mask-image: linear-gradient(black calc(100% - var(--clip-fade)), transparent);
   transition:
-    block-size 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
-    --clip-fade 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    block-size 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    --clip-fade 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
     opacity 200ms ease-out,
-    translate 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
-    content-visibility 280ms allow-discrete;
+    translate 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    content-visibility 260ms allow-discrete;
 }
 .hom-method[open]::details-content {
   block-size: auto;
@@ -1206,8 +1207,8 @@ pre code.hljs {
     linear-gradient(to left, transparent, black var(--edge-fade));
   mask-composite: intersect;
   transition:
-    height 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
-    --clip-fade 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    height 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    --clip-fade 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
     /* The end fade is for the one closed line: it comes back only once the
        caption is down to that line. */
     --edge-fade 120ms ease-out 200ms;
@@ -1217,12 +1218,12 @@ pre code.hljs {
   --clip-fade: 0px;
   --edge-fade: 0px;
   transition:
-    height 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
-    --clip-fade 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    height 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    --clip-fade 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
     --edge-fade 100ms ease-out;
 }
 .hom-method-chevron {
-  transition: transform 280ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 :root[data-motion="reduce"] .hom-method::details-content,
 :root[data-motion="reduce"] .hom-method > summary::before,
