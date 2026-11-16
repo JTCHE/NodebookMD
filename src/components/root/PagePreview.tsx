@@ -24,10 +24,10 @@ function holdsCode(node: { type: string; tagName?: string; properties?: { classN
   return (node.children ?? []).some((child) => holdsCode(child as typeof node));
 }
 
-/** `scale` is larger in a tooltip: a small box is read, not glanced at. */
-export function PagePreview({ path, title, scale = SCALE }: { path: string; title: string; scale?: number }) {
-  const [page, setPage] = useState<PageView | undefined>(() => known(path));
-
+/** A picture of page content: laid out at a page width, drawn at `scale`,
+    faded at its foot. The home cards and the link tooltips both draw in it.
+    `scale` is larger in a tooltip: a small box is read, not glanced at. */
+export function PreviewFrame({ scale = SCALE, children }: { scale?: number; children: React.ReactNode }) {
   // The page is laid out as wide as the window, divided by the scale. A
   // percentage width resolves against the zoomed box and overflows it.
   const box = useRef<HTMLDivElement>(null);
@@ -39,6 +39,22 @@ export function PagePreview({ path, title, scale = SCALE }: { path: string; titl
     observer.observe(element);
     return () => observer.disconnect();
   }, [scale]);
+
+  // The fade is set here, not inherited: the list around the cards turns its own fade off at its ends.
+  return (
+    <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-clip select-none [--fade-above:0] [--fade-below:1] [--fade-size:32px]">
+      <article
+        className="prose prose-neutral dark:prose-invert max-w-none px-[calc(var(--spacing-ms)/var(--scale))] pt-[calc(var(--spacing-ms)/var(--scale))] lg:px-[calc(var(--spacing-md)/var(--scale))] lg:pt-[calc(var(--spacing-md)/var(--scale))]"
+        style={{ width: width || undefined, zoom: scale, "--scale": scale } as React.CSSProperties}
+      >
+        {children}
+      </article>
+    </div>
+  );
+}
+
+export function PagePreview({ path, title, scale }: { path: string; title: string; scale?: number }) {
+  const [page, setPage] = useState<PageView | undefined>(() => known(path));
 
   useEffect(() => {
     if (page?.tree) return;
@@ -53,13 +69,8 @@ export function PagePreview({ path, title, scale = SCALE }: { path: string; titl
   // smear, and the prose around it says what the page is.
   const blocks = page?.tree?.children.filter((block) => !holdsCode(block)).slice(0, BLOCKS) ?? [];
   const tree = page?.tree && { ...page.tree, children: blocks };
-  // The fade is set here, not inherited: the list around the cards turns its own fade off at its ends.
   return (
-    <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-clip select-none [--fade-above:0] [--fade-below:1] [--fade-size:32px]">
-      <article
-        className="prose prose-neutral dark:prose-invert max-w-none px-[calc(var(--spacing-ms)/var(--scale))] pt-[calc(var(--spacing-ms)/var(--scale))] lg:px-[calc(var(--spacing-md)/var(--scale))] lg:pt-[calc(var(--spacing-md)/var(--scale))]"
-        style={{ width: width || undefined, zoom: scale, "--scale": scale } as React.CSSProperties}
-      >
+    <PreviewFrame scale={scale}>
         {/* The page's own breadcrumb line, so the window reads as the top of a page. */}
         <p className="m-0 mb-4 text-xs text-muted-foreground">{path.split("/").slice(0, -1).join("  ›  ")}</p>
         <div className="not-prose">
@@ -67,7 +78,6 @@ export function PagePreview({ path, title, scale = SCALE }: { path: string; titl
         </div>
         {page?.summary && <p className="m-0 mt-3 text-sm text-muted-foreground">{page.summary}</p>}
         {tree && <Body tree={tree} components={markdownComponents} whole />}
-      </article>
-    </div>
+    </PreviewFrame>
   );
 }

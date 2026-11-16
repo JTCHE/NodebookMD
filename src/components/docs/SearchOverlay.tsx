@@ -10,10 +10,10 @@ import {
 import { SCRIM } from "@/components/ui/Modal";
 import { createPortal, flushSync } from "react-dom";
 import { useLocation, useNavigate } from "react-router";
-import { FADE_OUT } from "@/lib/ui/overflow";
+import { showToast } from "@/components/ui/toast-notification";
+import { FADE_OUT, useOverflow } from "@/lib/ui/overflow";
 import { cn } from "@/lib/utils";
 import { SearchHints } from "@/components/search/SearchHints";
-import { showToast } from "@/components/ui/toast-notification";
 import { findAnchor, jumpTo } from "@/components/docs/toc/measure";
 import { invoke, inTauri } from "@/lib/backend";
 import { COMMAND_KEY, isCommand, isTyping, useHotkey, usePagePaste } from "@/lib/hotkeys";
@@ -291,7 +291,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
     if (!words) return;
     const hit = await resolve(trimmed, hits[0]);
     if (!hit) {
-      showToast(`Nothing in this Houdini build matches “${trimmed}”.`, "error");
+      // The panel already says no page matches; Enter adds nothing to it.
       tell(-1);
       return;
     }
@@ -320,6 +320,10 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
     }
   }
 
+  // The fade shows only on an edge with rows behind it.
+  const listRef = useRef<HTMLDivElement>(null);
+  useOverflow(listRef, [results, open]);
+
   if (!open) return null;
 
   const showList = skip > 0 || rows.length > 0;
@@ -340,11 +344,11 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
       <div
         // transform-gpu keeps the panel on a layer of its own, so a keystroke
         // does not draw the page under it again.
-        className="w-full max-w-[32rem] mx-4 bg-background border rounded-xl shadow-2xl overflow-hidden pointer-events-auto transform-gpu"
+        className="w-full max-w-[32rem] mx-4 bg-popover border border-hairline rounded-xl shadow-pane overflow-hidden pointer-events-auto transform-gpu"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative flex items-center border-b">
-          {field.scope && <span className="pl-3"><ScopeChip scope={field.scope} /></span>}
+          {field.scope && <span className="pl-[9px]"><ScopeChip scope={field.scope} /></span>}
           <input
             ref={inputRef}
             type="search"
@@ -379,6 +383,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
         </div>
 
         {showList && (
+          <div ref={listRef} className={cn("scroll-pt-4 scroll-pb-10", SEARCH_LIST_CLASS, FADE_OUT, "[--fade-size:32px] [--fade-head-size:16px]")}>
           <SearchResultList
             hits={results}
             query={empty ? "" : field.text}
@@ -388,7 +393,6 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
             selected={selected - skip}
             onSelect={(index) => setPicked(index + skip)}
             onActivate={(row, rank, event) => openRow(row, rank, event ? tabFor(event) : null)}
-            className={cn(SEARCH_LIST_CLASS, FADE_OUT, "[--fade-size:32px] [--fade-head-size:16px]")}
             rowRounded={false}
             header={
               empty && recent.length > 0 ? (
@@ -418,10 +422,12 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
                       </button>
                     </li>
                   ))}
+                  {rows.length > 0 && <li aria-hidden="true" className="mx-4 my-xs border-t border-hairline" />}
                 </>
               ) : null
             }
           />
+          </div>
         )}
 
         {nothing && (
@@ -430,9 +436,12 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
           </p>
         )}
 
-        <SearchHints className="px-4 py-2">
-          {!empty && results.length > 0 && <span>{results.length === 1 ? "1 page" : `${results.length} pages`}</span>}
-        </SearchHints>
+        {/* The keys act on rows; with none, they say nothing. */}
+        {showList && (
+          <SearchHints className="px-4 py-2">
+            {!empty && results.length > 0 && <span>{results.length === 1 ? "1 page" : `${results.length} pages`}</span>}
+          </SearchHints>
+        )}
       </div>
       </div>
     </div>,
