@@ -361,12 +361,9 @@ function TabChip({
           ? cn(
             "z-10 bg-background text-neutral-950",
             // Concave feet, as large as the tab's own top corners: the tab
-            // flows into the page instead of standing on it. The first tab has
-            // the sheet's edge at its left, so it needs no left foot.
-            "after:pointer-events-none after:absolute after:bottom-0 after:left-full after:size-(--radius-lg) after:content-['']",
-            "after:bg-[radial-gradient(circle_at_100%_0,transparent_calc(var(--radius-lg)-0.5px),var(--background)_var(--radius-lg))]",
-            index > 0 &&
-              "before:pointer-events-none before:absolute before:right-full before:bottom-0 before:size-(--radius-lg) before:content-[''] before:bg-[radial-gradient(circle_at_0_0,transparent_calc(var(--radius-lg)-0.5px),var(--background)_var(--radius-lg))]",
+            // flows into the page instead of standing on it. `globals.css`
+            // draws them, and morphs the one next to a hovered tab.
+            "tab-feet",
           )
           : "text-neutral-500 pointer-hover:bg-neutral-200/70 pointer-hover:text-neutral-900 dark:pointer-hover:bg-foreground/[0.035]",
       )}

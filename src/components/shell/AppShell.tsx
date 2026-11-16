@@ -205,7 +205,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div
           className={cn(
             "relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background",
-                                    "print:block print:overflow-visible print:border-0",
+            docked && "rounded-tl-lg",
+            "print:block print:overflow-visible print:border-0",
           )}
         >
           {children}

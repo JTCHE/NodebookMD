@@ -875,7 +875,7 @@ pre code.hljs {
   border: none;
   border-radius: var(--radius-xl);
   /* The surface fades down, as the open method row does. */
-  background: linear-gradient(var(--callout-surface), color-mix(in oklab, var(--callout-surface) 30%, transparent));
+  background: linear-gradient(var(--callout-surface), color-mix(in oklab, var(--callout-surface) 70%, transparent));
   font-size: 0.9rem;
   color: var(--foreground);
   box-shadow:
@@ -1161,22 +1161,73 @@ pre code.hljs {
 .hom-method {
   interpolate-size: allow-keywords;
 }
+@property --clip-fade {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+/* The moving edge fades instead of cutting glyphs; at rest it is sharp. */
 .hom-method::details-content {
   block-size: 0;
   overflow: clip;
+  opacity: 0;
+  translate: 0 -4px;
+  --clip-fade: 24px;
+  mask-image: linear-gradient(black calc(100% - var(--clip-fade)), transparent);
   transition:
-    block-size 260ms var(--ease-out-quint),
-    content-visibility 260ms allow-discrete;
+    block-size 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    --clip-fade 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 200ms ease-out,
+    translate 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    content-visibility 280ms allow-discrete;
 }
 .hom-method[open]::details-content {
   block-size: auto;
+  opacity: 1;
+  translate: 0 0;
+  --clip-fade: 0px;
+}
+@property --edge-fade {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+/* The caption's extra lines open inside the same motion: its height runs
+   from one line to all of them, so no row moves before the body does. No
+   line clamp: a clamp switches at once and makes the rows jump. Closed, the
+   one line fades at its end; the clip edge fades as the body's does. */
+.hom-method .hom-method-caption {
+  height: 1lh;
+  overflow: clip;
+  --clip-fade: 0.6lh;
+  --edge-fade: 4rem;
+  mask-image:
+    linear-gradient(black calc(100% - var(--clip-fade)), transparent),
+    linear-gradient(to left, transparent, black var(--edge-fade));
+  mask-composite: intersect;
+  transition:
+    height 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    --clip-fade 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    /* The end fade is for the one closed line: it comes back only once the
+       caption is down to that line. */
+    --edge-fade 120ms ease-out 200ms;
+}
+.hom-method[open] .hom-method-caption {
+  height: auto;
+  --clip-fade: 0px;
+  --edge-fade: 0px;
+  transition:
+    height 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    --clip-fade 280ms cubic-bezier(0.25, 0.8, 0.25, 1),
+    --edge-fade 100ms ease-out;
 }
 .hom-method-chevron {
-  transition: transform 260ms var(--ease-out-quint);
+  transition: transform 280ms cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 :root[data-motion="reduce"] .hom-method::details-content,
 :root[data-motion="reduce"] .hom-method > summary::before,
-:root[data-motion="reduce"] .hom-method-chevron {
+:root[data-motion="reduce"] .hom-method-chevron,
+:root[data-motion="reduce"] .hom-method .hom-method-caption {
   transition: none;
 }
 /* Monochrome: code is one grey ramp too, by weight and shade, not by hue. */
@@ -1202,20 +1253,10 @@ pre code.hljs {
   font-size: 0.8125rem;
   line-height: 1.6;
 }
-/* The closed row cuts its caption to one line; the open row shows the
-   full text as body prose, in the same place. */
-.hom-method:not([open]) .hom-method-caption {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.hom-method[open] .hom-method-caption {
-  margin-top: var(--ms);
-  color: var(--foreground);
-  font-size: 1rem;
-  line-height: 1.75;
-}
+/* The closed row cuts its caption to one line; the open row shows it all,
+   in the same type, so nothing reflows while the body slides in. */
+
+
 /* The body belongs to its own row: it sits close under the summary and far
    from the next row. */
 .hom-method-body {
@@ -1239,8 +1280,8 @@ pre code.hljs {
   display: none;
 }
 /* In a row's caption a value is plain monospace: the chip would make the
-   line taller and pull the eye off the method names. The open row keeps it. */
-.hom-method:not([open]) .hom-method-caption code {
+   line taller and pull the eye off the method names. Open or closed, one look. */
+.hom-method .hom-method-caption code {
   padding: 0;
   border: 0;
   background: none;
@@ -1596,4 +1637,54 @@ span.doc-icon.inline-icon-large {
   .heading-copy {
     display: none;
   }
+}
+
+/* The active tab's concave feet. A hovered neighbour has a fill of its own
+   with round top corners; the foot on its side shrinks away, so the page
+   colour does not cut a notch into that fill. */
+@property --foot-left {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --foot-right {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+.tab-feet::before,
+.tab-feet::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  pointer-events: none;
+  transition:
+    --foot-left var(--duration-fast) var(--ease-out-quint),
+    --foot-right var(--duration-fast) var(--ease-out-quint);
+}
+.tab-feet::before {
+  --foot-left: var(--radius-lg);
+  right: 100%;
+  width: var(--foot-left);
+  height: var(--foot-left);
+  background: radial-gradient(circle at 0 0, transparent calc(var(--foot-left) - 0.5px), var(--background) var(--foot-left));
+}
+.tab-feet::after {
+  --foot-right: var(--radius-lg);
+  left: 100%;
+  width: var(--foot-right);
+  height: var(--foot-right);
+  background: radial-gradient(circle at 100% 0, transparent calc(var(--foot-right) - 0.5px), var(--background) var(--foot-right));
+}
+@media (hover: hover) {
+  [role="tab"]:hover + .tab-feet::before {
+    --foot-left: 0px;
+  }
+  .tab-feet:has(+ [role="tab"]:hover)::after {
+    --foot-right: 0px;
+  }
+}
+:root[data-motion="reduce"] .tab-feet::before,
+:root[data-motion="reduce"] .tab-feet::after {
+  transition: none;
 }
