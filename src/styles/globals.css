@@ -874,7 +874,8 @@ pre code.hljs {
   padding: 0.85rem var(--md);
   border: none;
   border-radius: var(--radius-xl);
-  background: var(--callout-surface);
+  /* The surface fades down, as the open method row does. */
+  background: linear-gradient(var(--callout-surface), color-mix(in oklab, var(--callout-surface) 30%, transparent));
   font-size: 0.9rem;
   color: var(--foreground);
   box-shadow:
@@ -1132,12 +1133,51 @@ pre code.hljs {
   height: 100%;
 }
 /* The open row's hover fill fades down into its body, so it does not end
-   on a hard edge above the text it opened. */
+   on a hard edge above the text it opened. A gradient cannot transition,
+   so it sits on a layer that fades by opacity. */
+.hom-method > summary {
+  isolation: isolate;
+}
+.hom-method > summary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(var(--neutral-100), transparent);
+  opacity: 0;
+  transition: opacity 220ms var(--ease-out-quint);
+  pointer-events: none;
+}
 @media (hover: hover) {
   .hom-method[open] > summary:hover {
     background-color: transparent;
-    background-image: linear-gradient(var(--neutral-100), transparent);
   }
+  .hom-method[open] > summary:hover::before {
+    opacity: 1;
+  }
+}
+/* The body opens and closes by its height, clipped, not in one jump. */
+.hom-method {
+  interpolate-size: allow-keywords;
+}
+.hom-method::details-content {
+  block-size: 0;
+  overflow: clip;
+  transition:
+    block-size 260ms var(--ease-out-quint),
+    content-visibility 260ms allow-discrete;
+}
+.hom-method[open]::details-content {
+  block-size: auto;
+}
+.hom-method-chevron {
+  transition: transform 260ms var(--ease-out-quint);
+}
+:root[data-motion="reduce"] .hom-method::details-content,
+:root[data-motion="reduce"] .hom-method > summary::before,
+:root[data-motion="reduce"] .hom-method-chevron {
+  transition: none;
 }
 /* Monochrome: code is one grey ramp too, by weight and shade, not by hue. */
 :root[data-accent="monochrome"] :is([class*="hljs-"], [class*="vex-token-"], .vex-argument-ampersand) {
