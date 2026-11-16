@@ -9,7 +9,7 @@
     opacity: 1;
   }
   /* The bar of the panel shows while the pointer is anywhere on the block. */
-  .group:hover .code-panel {
+  .group:hover :is(.code-panel, .vex-signature-rows) {
     --scroll-thumb: var(--neutral-300);
   }
 }

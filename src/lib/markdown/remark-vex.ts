@@ -137,6 +137,8 @@ export function remarkVex({ enabled }: { enabled: boolean }) {
           }
           if (!rows.length) break;
 
+          // Only the rows scroll, in their own box: the scroll bar sits under
+          // the code, and the caption stays still.
           // A captioned group becomes its own card so the caption cannot be
           // read as belonging to a neighbouring overload.
           if (isCaption(blocks[i])) {
@@ -144,9 +146,9 @@ export function remarkVex({ enabled }: { enabled: boolean }) {
             (caption.data ??= {}).hName = 'div';
             caption.data.hProperties = { ...caption.data.hProperties, className: 'vex-signature-caption' };
             i++;
-            groups.push(box('vexGroup', 'vex-signature-card code-panel', [...rows, caption]));
+            groups.push(box('vexGroup', 'vex-signature-card code-panel', [box('vexRows', 'vex-signature-rows', rows), caption]));
           } else {
-            groups.push(box('vexGroup', 'vex-signature-card code-panel', rows));
+            groups.push(box('vexGroup', 'vex-signature-card code-panel', [box('vexRows', 'vex-signature-rows', rows)]));
           }
         }
         argIndex = indexArguments(current);

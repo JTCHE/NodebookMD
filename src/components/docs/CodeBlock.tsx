@@ -47,13 +47,19 @@ export function CodePanel({ children, language }: CodePanelProps) {
   // of adding a lip under it: the last row gives back the bar's height. The
   // height is read, not assumed, because the bar is the platform's.
   useLayoutEffect(() => {
-    const scroller = panelRef.current?.querySelector<HTMLElement>(".code-panel");
+    // A VEX signature card scrolls its rows only, not its caption.
+    const scroller =
+      panelRef.current?.querySelector<HTMLElement>(".vex-signature-rows") ??
+      panelRef.current?.querySelector<HTMLElement>(".code-panel");
     const last = scroller?.lastElementChild as HTMLElement | null | undefined;
     if (!scroller || !last) return;
     const hang = () => {
       const bar = scroller.offsetHeight - scroller.clientHeight - 2 * scroller.clientTop;
       last.style.marginBottom = bar > 0 ? `${-bar}px` : "";
       // The right edge fades only when there is more to scroll to.
+      // The edge fades end above the bar, wherever the scroller ends.
+      const below = panel.getBoundingClientRect().bottom - scroller.getBoundingClientRect().bottom;
+      panel.style.setProperty("--fade-bottom", `${below + bar + 1}px`);
       if (scroller.scrollWidth > scroller.clientWidth) panel.dataset.overflow = "";
       else delete panel.dataset.overflow;
     };
