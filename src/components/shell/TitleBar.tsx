@@ -210,12 +210,16 @@ export function TitleBar({ docked, sidebarOpen, onToggleSidebar, showTrail, bare
 /** Opens the search, for a reader who does not know the shortcut. It
     presses the shortcut itself, so the search on a page and the field on
     the home page each answer it as they answer the key. */
+/** Search and pin are tools, not window controls: narrower, so the two read
+    as a pair beside the three wide caption buttons. */
+const TOOL_WIDTH = "w-9";
+
 function SearchButton() {
   const press = () =>
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true, cancelable: true }));
   return (
     <Hint label="Search" keys={`${COMMAND_KEY}+K`} className="h-full">
-      <button type="button" tabIndex={-1} aria-label="Search" className={CAPTION_BUTTON} onMouseDown={(event) => event.preventDefault()} onClick={press}>
+      <button type="button" tabIndex={-1} aria-label="Search" className={cn(CAPTION_BUTTON, TOOL_WIDTH)} onMouseDown={(event) => event.preventDefault()} onClick={press}>
         <Icons.captionSearch className="size-glyph" />
       </button>
     </Hint>
@@ -248,7 +252,7 @@ function PinButton({ corner }: { corner: boolean }) {
       tabIndex={-1}
       aria-label={pinned ? "Stop keeping on top" : "Keep on top"}
       aria-pressed={pinned}
-      className={cn(CAPTION_BUTTON, corner && "rounded-tr-xl", pinned && "text-brand")}
+      className={cn(CAPTION_BUTTON, TOOL_WIDTH, corner && "rounded-tr-xl", pinned && "text-brand")}
       onClick={toggle}
     >
       {/* Drawn as a caption button: the same box, ink and glyph size as the

@@ -350,10 +350,11 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
           gap beside a pinned header still scrolls the list under it. */}
       {pinned.length > 0 && (
         <div
-          style={{ paddingRight: gutter }}
+          // It stops at the scroll bar's gutter, so the bar shows beside it.
+          style={{ right: gutter }}
           // No edge of its own: the list hides its rows under the stack and
           // fades them in below it (`--fade-top`).
-          className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-chrome"
+          className="pointer-events-none absolute left-0 top-0 z-20 bg-chrome"
           data-pinned=""
         >
           {pinned.map((line) => folderRow(line, true))}
