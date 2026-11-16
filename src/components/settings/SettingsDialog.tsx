@@ -22,7 +22,7 @@ import { TELEMETRY } from "@/components/onboarding/Onboarding";
 import { useVaults } from "@/components/obsidian/ObsidianDialog";
 import { APP_NAME, REPO } from "@/lib/brand";
 import { openWeb } from "@/lib/web";
-import { clearLibrary } from "@/lib/store/library";
+import { clearLibrary, useLibrary } from "@/lib/store/library";
 import {
   MEASURES,
   MEASURE_LABEL,
@@ -199,13 +199,6 @@ const BUTTON =
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-50 active:bg-neutral-100 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** A quiet action on a title's line. It gives its padding back, so its text
-    ends on the content's right edge, where the row controls end. */
-const GHOST_BUTTON =
-  "-mr-sm h-7 shrink-0 cursor-interactive rounded-md px-sm text-label font-medium text-neutral-700 " +
-  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 " +
-  "disabled:cursor-wait disabled:bg-transparent disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
-
 /** A fact the switch cannot show: a release that never ran has no
     preferences to write, so its switch stays off and greyed; F1 that opens
     another server is off too, but not Houdini's own help. */
@@ -242,7 +235,7 @@ function HelpSection() {
     <Section title="Houdini help">
       {/* Houdini writes its preferences when it closes, so a change made while it is open is lost. Said once, over the list. */}
       {houdiniOpen && series && series.length > 0 && (
-        <p className="mt-xs rounded-lg bg-neutral-100 px-ms py-sm text-label text-neutral-700">Close Houdini to change these.</p>
+        <p className="-mx-ms mt-xs rounded-lg bg-neutral-100 px-ms py-sm text-label text-neutral-700">Close Houdini to change these.</p>
       )}
       {series?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
       {series?.map((name) => {
@@ -276,7 +269,6 @@ interface Agent {
     again on Scan again. */
 function McpSection() {
   const [agents, setAgents] = useState<Agent[] | null>(null);
-  const [scanning, setScanning] = useState(false);
   const [busy, setBusy] = useState("");
 
   // The quiet read, on open and on focus; Scan again says it is working.
@@ -287,10 +279,6 @@ function McpSection() {
         .then(setAgents),
     [],
   );
-  function scanAgain() {
-    setScanning(true);
-    void scan().finally(() => setScanning(false));
-  }
   useEffect(() => {
     void scan();
     window.addEventListener("focus", scan);
@@ -311,19 +299,12 @@ function McpSection() {
   }
 
   return (
-    <Section
-      title="Houdini MCP"
-      action={
-        <button type="button" disabled={scanning} className={GHOST_BUTTON} onClick={scanAgain}>
-          {scanning ? "Scanning…" : "Scan again"}
-        </button>
-      }
-    >
+    <Section title="Houdini MCP">
       {agents === null && <Empty>Looking for agents…</Empty>}
       {agents?.length === 0 && (
         <Empty>
           No supported agent found on this machine. Houdini MCP works with Claude, Codex, Gemini CLI, Cursor, opencode
-          and pi. Install one, then scan again.
+          and pi. Install one, then come back to this window.
         </Empty>
       )}
       {agents?.map((agent) => (
@@ -564,7 +545,7 @@ function ReadingSection() {
 
 /** A button that empties a list, after a second press: the first press
     turns it into "Press again", which goes back after a few seconds. */
-function ClearButton({ label, onClear }: { label: string; onClear: () => void }) {
+function ClearButton({ label, disabled, onClear }: { label: string; disabled: boolean; onClear: () => void }) {
   const [armed, setArmed] = useState(false);
   useEffect(() => {
     if (!armed) return;
@@ -574,7 +555,8 @@ function ClearButton({ label, onClear }: { label: string; onClear: () => void })
   return (
     <button
       type="button"
-      className={cn(BUTTON, armed && "text-destructive")}
+      disabled={disabled}
+      className={cn(BUTTON, "disabled:cursor-default", armed && "text-destructive")}
       onClick={() => {
         if (!armed) return setArmed(true);
         setArmed(false);
@@ -589,6 +571,8 @@ function ClearButton({ label, onClear }: { label: string; onClear: () => void })
 /** What the app sends, and what it keeps: the telemetry switch, one click
     from off at any time, and the reader's own lists. */
 function PrivacySection() {
+  const library = useLibrary();
+  const count = (pages: number) => (pages === 1 ? "1 page" : `${pages} pages`);
   const [on, setOn] = useState<boolean | null>(null);
   useEffect(() => {
     void invoke<string | null>("get_setting", { key: TELEMETRY })
@@ -615,12 +599,15 @@ function PrivacySection() {
           Show
         </button>
       </Row>
-      <Row label="Recent pages">
-        <ClearButton label="Clear" onClear={() => void clearLibrary(false)} />
-      </Row>
-      <Row label="Bookmarks">
-        <ClearButton label="Clear" onClear={() => void clearLibrary(true)} />
-      </Row>
+      {/* What cannot come back sits apart, on a tint, with how much would go. */}
+      <div className="-mx-ms mt-md rounded-lg bg-neutral-100 px-ms">
+        <Row label="Recent pages" fact={count(library.recents.length)}>
+          <ClearButton label="Clear" disabled={library.recents.length === 0} onClear={() => void clearLibrary(false)} />
+        </Row>
+        <Row label="Bookmarks" fact={count(library.bookmarks.length)}>
+          <ClearButton label="Clear" disabled={library.bookmarks.length === 0} onClear={() => void clearLibrary(true)} />
+        </Row>
+      </div>
     </Section>
   );
 }
