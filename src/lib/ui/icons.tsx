@@ -46,6 +46,7 @@ import {
   type LucideIcon,
   Bot,
   ShieldCheck,
+  TriangleAlert,
   Type,
   Info,
 } from "lucide-react";
@@ -154,6 +155,7 @@ export const Icons = {
   recent: Clock,
   agents: Bot,
   privacy: ShieldCheck,
+  warning: TriangleAlert,
   reading: Type,
   about: Info,
   /** A page the help holds no icon for. */

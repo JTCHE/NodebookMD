@@ -104,15 +104,16 @@ export function SettingsDialog() {
       className="h-[min(520px,100%)] w-full max-w-[760px] flex-row"
     >
       {/* The sections are places, as the sidebar's rows are, on the panel's
-          own ground. The inset is one value on every side: with the row's own
-          8px it puts the mark on the content's axis, and the first row,
-          30px tall, centres on the title's capitals. */}
-      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 p-[calc(var(--spacing-lg)-var(--spacing-sm))]">
+          own ground. The inset is one value on every side, and the window
+          corner (rounded-xl, 12px) less that inset is the row corner, so the
+          two curves are concentric. */}
+      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 p-sm">
         {SECTIONS.map((one) => (
           <SidebarRow
             key={one.key}
             label={one.label}
             bare
+            className="rounded-[4px]"
             selected={shown === one.key}
             mark={
               <one.icon className={cn("size-icon", shown === one.key ? "text-neutral-900" : "text-neutral-500")} />
@@ -196,7 +197,7 @@ function Empty({ children }: { children: ReactNode }) {
     sunk into it. Geist sits high in its line: 1px at the top centres it. */
 const BUTTON =
   "h-row min-w-[80px] shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-px text-center text-label font-medium dark:font-normal text-neutral-900 shadow-chip " +
-  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-50 active:bg-neutral-100 " +
+  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
 /** A fact the switch cannot show: a release that never ran has no
@@ -235,7 +236,10 @@ function HelpSection() {
     <Section title="Houdini help">
       {/* Houdini writes its preferences when it closes, so a change made while it is open is lost. Said once, over the list. */}
       {houdiniOpen && series && series.length > 0 && (
-        <p className="mt-xs text-label text-muted-foreground">F1 opens {APP_NAME} in these installs. Close Houdini to change them.</p>
+        <p role="status" className="mt-xs flex items-center gap-sm rounded-lg border border-hairline bg-neutral-100 px-ms py-sm text-label text-neutral-900">
+          <Icons.warning className="size-icon shrink-0 text-neutral-700" />
+          Houdini is open. Close it to change these switches.
+        </p>
       )}
       {series?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
       {series?.map((name) => {
@@ -267,8 +271,12 @@ interface Agent {
     installed it. Read again each time the window gets the focus, so an agent
     installed while Settings is open shows when the reader comes back, and
     again on Scan again. */
+/** The last read, kept for the next visit to the tab, so the list shows at
+    once and the new read only updates it. */
+let lastAgents: Agent[] | null = null;
+
 function McpSection() {
-  const [agents, setAgents] = useState<Agent[] | null>(null);
+  const [agents, setAgents] = useState<Agent[] | null>(lastAgents);
   const [busy, setBusy] = useState("");
 
   // The quiet read, on open and on focus; Scan again says it is working.
@@ -276,7 +284,10 @@ function McpSection() {
     () =>
       invoke<Agent[]>("mcp_agents")
         .catch(() => [])
-        .then(setAgents),
+        .then((list) => {
+          lastAgents = list;
+          setAgents(list);
+        }),
     [],
   );
   useEffect(() => {
@@ -495,14 +506,14 @@ function GeneralSection() {
       </Row>
       {inTauri && (
         <>
-          <Row label="Open tabs again at start">
+          <Row label="Reopen tabs at start">
             <Toggle
               checked={restore}
               onChange={(next) => {
                 setRestoresTabs(next);
                 setRestore(next);
               }}
-              label="Open tabs again at start"
+              label="Reopen tabs at start"
             />
           </Row>
           <Row label={trayLabel}>
@@ -523,9 +534,9 @@ function ReadingSection() {
   const measure = useMeasure();
   return (
     <Section title="Reading">
-      <Row label="Text size">
+      <Row label="Page text size">
         <Segmented
-          label="Text size"
+          label="Page text size"
           value={size}
           options={TEXT_SIZES.map((choice) => ({ value: choice, label: TEXT_SIZE_LABEL[choice] }))}
           onChange={setTextSize}
@@ -556,7 +567,11 @@ function ClearButton({ label, disabled, onClear }: { label: string; disabled: bo
     <button
       type="button"
       disabled={disabled}
-      className={cn(BUTTON, "disabled:cursor-default", armed && "text-destructive")}
+      className={cn(
+        BUTTON,
+        "text-destructive disabled:cursor-default",
+        armed && "border-transparent bg-destructive text-white pointer-hover:bg-destructive active:bg-destructive",
+      )}
       onClick={() => {
         if (!armed) return setArmed(true);
         setArmed(false);
@@ -599,15 +614,15 @@ function PrivacySection() {
           Show
         </button>
       </Row>
-      {/* What cannot come back sits apart, on a tint, with how much would go. */}
-      <div className="-mx-ms mt-md rounded-[18px] bg-neutral-100 px-ms [corner-shape:squircle]">
-        <Row label="Recent pages" fact={count(library.recents.length)}>
-          <ClearButton label="Clear" disabled={library.recents.length === 0} onClear={() => void clearLibrary(false)} />
-        </Row>
-        <Row label="Bookmarks" fact={count(library.bookmarks.length)}>
-          <ClearButton label="Clear" disabled={library.bookmarks.length === 0} onClear={() => void clearLibrary(true)} />
-        </Row>
-      </div>
+      {/* The reader's own lists never leave the machine; the heading says so,
+          apart from the usage data above it. */}
+      <h3 className="mt-lg text-meta text-neutral-500">Kept on this computer only</h3>
+      <Row label="Recent pages" fact={count(library.recents.length)}>
+        <ClearButton label="Clear" disabled={library.recents.length === 0} onClear={() => void clearLibrary(false)} />
+      </Row>
+      <Row label="Bookmarks" fact={count(library.bookmarks.length)}>
+        <ClearButton label="Clear" disabled={library.bookmarks.length === 0} onClear={() => void clearLibrary(true)} />
+      </Row>
     </Section>
   );
 }
