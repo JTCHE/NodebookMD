@@ -354,7 +354,7 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
           style={{ right: gutter }}
           // No edge of its own: the list hides its rows under the stack and
           // fades them in below it (`--fade-top`).
-          className="pointer-events-none absolute left-0 top-0 z-20 bg-chrome"
+          className="pointer-events-none absolute left-0 top-0 z-20 bg-chrome pr-1"
           data-pinned=""
         >
           {pinned.map((line) => folderRow(line, true))}
@@ -376,7 +376,8 @@ export function PageTree({ groups, currentPath, bookmarked, className }: PageTre
         // axis. The right edge is the bar's: `.thin-scroll` holds its place
         // whether the list scrolls or not, so a list that starts to scroll
         // does not step its own rows sideways.
-        className="-ml-slack flex-1 pl-slack"
+        // `pr-1` keeps a chosen row's chip clear of the bar.
+        className="-ml-slack flex-1 pl-slack pr-1"
       >
         {(line) =>
           line.kind === "folder" ? (
