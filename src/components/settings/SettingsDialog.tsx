@@ -195,7 +195,7 @@ function Row({ label, fact, onReset, children }: { label: string; fact?: ReactNo
     row of a group is left out, as at the end of a tab. */
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col not-first:mt-lg">
+    <div className="mt-sm flex flex-col not-first:mt-lg">
       <p className="pb-2xs text-meta font-medium text-neutral-500">{title}</p>
       {children}
     </div>

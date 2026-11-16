@@ -905,6 +905,10 @@ pre code.hljs {
   --callout-surface: color-mix(in srgb, var(--brand) 4%, white);
   --callout-code: color-mix(in srgb, var(--brand) 10%, white);
 }
+/* With no accent colour, a tip's title is the ink, not a grey under the text. */
+:root[data-accent="neutral"] .callout-tip {
+  --callout-color: var(--foreground);
+}
 :root[data-theme="dark"] .callout-tip {
   --callout-color: var(--brand);
   --callout-surface: color-mix(in srgb, var(--brand) 6%, oklch(0.16 0 0));
@@ -1382,6 +1386,11 @@ span.doc-icon.inline-icon-large {
 /* The hue slider's track is the colour wheel, so the knob sits on its hue. */
 .slider-hue::-webkit-slider-runnable-track {
   background: var(--hue-wheel);
+}
+/* The knob shows the hue it holds. */
+.slider-hue::-webkit-slider-thumb,
+[data-theme="dark"] .slider-hue::-webkit-slider-thumb {
+  background: var(--brand);
 }
 .slider:focus-visible {
   outline: none;

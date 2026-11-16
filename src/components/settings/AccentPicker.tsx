@@ -30,11 +30,10 @@ export function AccentPicker({ value, hue }: { value: Accent; hue: number }) {
           onClick={() => setAccent(accent)}
           className={cn(
             "size-5 shrink-0 cursor-interactive rounded-full ring-1 ring-foreground/10 ring-inset",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            // The chosen swatch has a ring of the ink, apart from its colour
-            // by the ground's. Both are inside the swatch, so the last one
-            // ends on the content's right edge, as the controls above do.
-            value === accent && "shadow-[inset_0_0_0_2px_var(--foreground),inset_0_0_0_4px_var(--background)]",
+            "transition-transform duration-(--duration-fast) motion-reduce:transition-none pointer-hover:scale-110 active:scale-95",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+            // The chosen swatch keeps its full size, with a ring outside it.
+            value === accent && "outline-2 outline-offset-2 outline-foreground/70",
           )}
           style={{ background: swatch(accent, hue) }}
         />
