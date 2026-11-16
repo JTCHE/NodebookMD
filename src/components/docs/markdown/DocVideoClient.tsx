@@ -47,6 +47,7 @@ const VolumeLowIcon = icon("M18 9.00009C18.6277 9.83575 18.9996 10.8745 18.9996 
 const MutedIcon = icon("M16 9.50009L21 14.5001M21 9.50009L16 14.5001M4.6 9.00009H5.5012C6.05213 9.00009 6.32759 9.00009 6.58285 8.93141C6.80903 8.87056 7.02275 8.77046 7.21429 8.63566C7.43047 8.48353 7.60681 8.27191 7.95951 7.84868L10.5854 4.69758C11.0211 4.17476 11.2389 3.91335 11.4292 3.88614C11.594 3.86258 11.7597 3.92258 11.8712 4.04617C12 4.18889 12 4.52917 12 5.20973V18.7904C12 19.471 12 19.8113 11.8712 19.954C11.7597 20.0776 11.594 20.1376 11.4292 20.114C11.239 20.0868 11.0211 19.8254 10.5854 19.3026L7.95951 16.1515C7.60681 15.7283 7.43047 15.5166 7.21429 15.3645C7.02275 15.2297 6.80903 15.1296 6.58285 15.0688C6.32759 15.0001 6.05213 15.0001 5.5012 15.0001H4.6C4.03995 15.0001 3.75992 15.0001 3.54601 14.8911C3.35785 14.7952 3.20487 14.6422 3.10899 14.4541C3 14.2402 3 13.9601 3 13.4001V10.6001C3 10.04 3 9.76001 3.10899 9.54609C3.20487 9.35793 3.35785 9.20495 3.54601 9.10908C3.75992 9.00009 4.03995 9.00009 4.6 9.00009Z");
 const ExpandIcon = icon("M14 10L21 3M21 3H16.5M21 3V7.5M10 14L3 21M3 21H7.5M3 21L3 16.5");
 const CompressIcon = icon("M14 10L21 3M14 10H18.5M14 10V5.5M10 14L3 21M10 14H5.5M10 14L10 18.5");
+const ReplayIcon = icon("M3 12a9 9 0 1 0 2.64-6.36L3 8.3M3 3v5.3h5.3");
 
 /** Controls stay up this long after the pointer stops, while the clip plays. */
 const IDLE_MS = 2000;
@@ -92,6 +93,10 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
   const [volume, setVolume] = useState(1);
   const [fullscreen, setFullscreen] = useState(false);
   const [hover, setHover] = useState<{ x: number; label: string } | null>(null);
+  const [ended, setEnded] = useState(false);
+  // Each play or pause draws a short pulse of its glyph in the centre. The
+  // count is the key, so a new press restarts the animation.
+  const [pulse, setPulse] = useState<{ count: number; playing: boolean } | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const seekRef = useRef<HTMLInputElement>(null);
@@ -151,6 +156,7 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
   const togglePlay = () => {
     const video = videoRef.current;
     if (!video) return;
+    setPulse((was) => ({ count: (was?.count ?? 0) + 1, playing: video.paused }));
     if (video.paused) video.play().catch(() => {});
     else video.pause();
   };
@@ -249,6 +255,7 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
         }}
         onPlay={() => {
           setPaused(false);
+          setEnded(false);
           wake();
           // The clip elements are the register, so nothing has to be kept in
           // step with them.
@@ -260,21 +267,41 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
           setPaused(true);
           sync();
         }}
+        onEnded={() => setEnded(true)}
+        onSeeking={(event) => setEnded(event.currentTarget.ended)}
       />
 
       {loading && <span className="pointer-events-none absolute inset-0 m-auto size-10 animate-spin rounded-full border-3 border-(--video-track) border-t-(--video-control) motion-reduce:animate-none" aria-hidden="true" />}
+
+      {paused && !loading && !pulse && (
+        <span className="video-center video-rest" aria-hidden="true">
+          {ended ? <ReplayIcon /> : <PlayIcon className="translate-x-[2px]" />}
+        </span>
+      )}
+      {pulse && (
+        <span key={pulse.count} className="video-center video-pulse" aria-hidden="true" onAnimationEnd={() => setPulse(null)}>
+          {pulse.playing ? <PlayIcon className="translate-x-[2px]" /> : <PauseIcon />}
+        </span>
+      )}
 
       <ProgressiveBlur side="bottom" strength={12} steps={6} className="video-blur" />
 
       <div className="video-controls">
         <div
-          className="relative flex h-6 px-2"
+          // The track starts on the play glyph's left edge: the bar's padding
+          // plus the glyph's inset in its round button.
+          className="video-seek relative flex h-6 px-[calc((2.25rem-1.125rem)/2)]"
           onPointerMove={(event) => {
+            const track = seekRef.current!.getBoundingClientRect();
+            const fraction = Math.min(1, Math.max(0, (event.clientX - track.left) / track.width));
+            seekRef.current!.style.setProperty("--hover", `${fraction * 100}%`);
             const rect = event.currentTarget.getBoundingClientRect();
-            const fraction = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
             setHover({ x: event.clientX - rect.left, label: clock(fraction * duration) });
           }}
-          onPointerLeave={() => setHover(null)}
+          onPointerLeave={() => {
+            seekRef.current?.style.removeProperty("--hover");
+            setHover(null);
+          }}
         >
           {hover && (
             <span className="video-seek-preview" style={{ left: `clamp(1rem, ${hover.x}px, calc(100% - 1rem))` }}>
@@ -299,8 +326,8 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
         </div>
 
         <div className="video-bar">
-          <ControlButton label={paused ? "Play" : "Pause"} onClick={togglePlay}>
-            {paused ? <PlayIcon className="translate-x-px" /> : <PauseIcon />}
+          <ControlButton label={ended ? "Replay" : paused ? "Play" : "Pause"} onClick={togglePlay}>
+            {ended ? <ReplayIcon /> : paused ? <PlayIcon className="translate-x-px" /> : <PauseIcon />}
           </ControlButton>
           <div className="video-volume">
             <ControlButton label={muted ? "Unmute" : "Mute"} onClick={toggleMute}>

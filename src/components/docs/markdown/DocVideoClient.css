@@ -1,6 +1,6 @@
 /* The video player of DocVideoClient. The controls sit on the picture, so they are light in both themes. */
 .markdown-video {
-  --video-control: rgb(255 255 255 / 70%);
+  --video-control: rgb(255 255 255 / 85%);
   --video-control-hover: rgb(255 255 255);
   --video-track: rgb(255 255 255 / 30%);
   --video-controls-height: 4.5rem;
@@ -50,15 +50,20 @@
   justify-content: flex-end;
   padding: 0 0.5rem 0.25rem;
   background: linear-gradient(to top, rgb(0 0 0 / 60%), rgb(0 0 0 / 0%));
-  transition: opacity var(--duration-base) var(--ease-out-quint);
+  transition:
+    opacity var(--duration-base) var(--ease-out-quint),
+    translate var(--duration-base) var(--ease-out-quint);
 }
 
-/* Idle playback hides the controls and stops the blur, which costs GPU work on each frame. */
-.markdown-video[data-idle]:not(:has(:focus-visible)) .video-controls {
+/* The controls and the blur show only while the pointer is on the clip or
+   the focus is in it, and hide in idle playback. The blur costs GPU work on
+   each frame, so it goes with them. */
+.markdown-video:is([data-idle], :not(:hover)):not(:has(:focus-visible)) .video-controls {
   opacity: 0;
+  translate: 0 4px;
   pointer-events: none;
 }
-.markdown-video[data-idle]:not(:has(:focus-visible)) .video-blur {
+.markdown-video:is([data-idle], :not(:hover)):not(:has(:focus-visible)) .video-blur {
   --progressive-blur-opacity: 0;
   visibility: hidden;
   transition:
@@ -72,17 +77,93 @@
   }
 }
 
-.video-seek-preview {
-  position: absolute;
-  bottom: 100%;
-  translate: -50% 0;
+/* One tooltip look for the seek preview and the buttons: a raised dark
+   chip with a light edge, so it reads on a black frame too. */
+.video-seek-preview,
+.video-button::after {
   padding: 0.125rem 0.375rem;
   border-radius: var(--radius-sm);
-  background-color: black;
+  background-color: rgb(28 28 28 / 92%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
   font-size: var(--text-xs);
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--video-control-hover);
+  white-space: nowrap;
   pointer-events: none;
+}
+.video-seek-preview {
+  position: absolute;
+  bottom: calc(50% + 0.5rem);
+  translate: -50% 0;
+}
+
+/* The seek row: the track grows under the pointer, and a ghost fill runs
+   from the playhead to the pointer (--hover, set in DocVideoClient). */
+.markdown-video .video-seek input[type="range"]::-webkit-slider-runnable-track {
+  transition: height var(--duration-fast);
+  background: linear-gradient(
+    to right,
+    var(--video-control-hover) var(--fill, 0%),
+    rgb(255 255 255 / 50%) var(--fill, 0%),
+    rgb(255 255 255 / 50%) max(var(--fill, 0%), var(--hover, 0%)),
+    var(--video-track) max(var(--fill, 0%), var(--hover, 0%))
+  );
+}
+.markdown-video .video-seek:hover input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+}
+.markdown-video .video-seek:hover input[type="range"]::-webkit-slider-thumb {
+  margin-top: -3px;
+}
+
+/* The big play glyph at rest, and the short pulse on play and pause. */
+.video-center {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: auto;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background-color: rgb(0 0 0 / 45%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
+  backdrop-filter: blur(8px);
+  color: white;
+  pointer-events: none;
+}
+.video-center svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.video-pulse {
+  animation: video-pulse 500ms ease-out forwards;
+}
+@keyframes video-pulse {
+  from {
+    opacity: 1;
+    scale: 0.85;
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 1.25;
+  }
+}
+.video-rest {
+  transition: opacity var(--duration-base) var(--ease-out-quint), scale var(--duration-base) var(--ease-out-quint);
+}
+.markdown-video:hover .video-rest {
+  opacity: 0;
+  scale: 0.9;
+}
+:root[data-motion="reduce"] .video-pulse {
+  animation: none;
+  opacity: 0;
 }
 
 .video-bar {
@@ -115,39 +196,35 @@
   width: 1.125rem;
   height: 1.125rem;
 }
+/* Above the seek row, centred on the glyph. */
 .video-button::after {
   content: attr(aria-label);
   position: absolute;
-  bottom: calc(100% + 0.25rem);
+  bottom: calc(100% + 1.75rem);
   left: 50%;
-  translate: -50% 0;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-sm);
-  background-color: black;
-  color: var(--video-control-hover);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  white-space: nowrap;
+  translate: -50% 2px;
   opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--duration-fast);
+  transition:
+    opacity var(--duration-fast),
+    translate var(--duration-fast);
 }
 .video-button:hover::after {
   opacity: 1;
-  transition-delay: 700ms;
+  translate: -50% 0;
+  transition-delay: 300ms;
 }
 .video-button:focus-visible::after {
   opacity: 1;
 }
 
-.video-bar > .video-button:first-child::after {
-  left: 0;
-  translate: none;
-}
+/* The last tip would leave the frame: it ends on the button's right edge. */
 .video-bar > .video-button:last-child::after {
   left: auto;
   right: 0;
-  translate: none;
+  translate: 0 2px;
+}
+.video-bar > .video-button:last-child:hover::after {
+  translate: 0 0;
 }
 
 .video-volume {
@@ -156,14 +233,21 @@
 }
 
 /* Clipped at zero width: WebKit draws the thumb over the clock otherwise. */
+/* The slider slides open; the clock moves with it, eased, not in a jump. */
 .video-volume input {
   width: 0;
   clip-path: inset(0);
+  transition:
+    width var(--duration-base) var(--ease-out-quint),
+    margin var(--duration-base) var(--ease-out-quint);
 }
 .video-volume:is(:hover, :focus-within) input {
   width: 4.5rem;
   margin-inline: 0.25rem 0.5rem;
-  clip-path: none;
+  clip-path: inset(-6px -8px);
+}
+:root[data-motion="reduce"] .video-volume input {
+  transition: none;
 }
 
 .video-time {
@@ -181,10 +265,12 @@
   flex: 1 1 auto;
   background: transparent;
 }
+/* Focus is a halo on the thumb, not a box round the whole row. */
 .markdown-video input[type="range"]:focus-visible {
-  outline: 2px solid var(--video-control);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  outline: none;
+}
+.markdown-video input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgb(255 255 255 / 35%);
 }
 .markdown-video input[type="range"]::-webkit-slider-runnable-track {
   height: 4px;
