@@ -780,6 +780,27 @@ fn forget_recent(state: State<Db>, id: i64) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn clear_library(state: State<Db>, bookmarks: bool) -> Result<(), String> {
+    let db = state.0.lock().map_err(|e| e.to_string())?;
+    library::clear(&db, bookmarks)
+}
+
+/// Launch at login, from Settings. The app starts in the tray, as when
+/// Houdini starts it.
+#[tauri::command]
+fn autostart(app: tauri::AppHandle) -> Result<bool, String> {
+    use tauri_plugin_autostart::ManagerExt;
+    app.autolaunch().is_enabled().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn set_autostart(app: tauri::AppHandle, on: bool) -> Result<(), String> {
+    use tauri_plugin_autostart::ManagerExt;
+    let launcher = app.autolaunch();
+    if on { launcher.enable() } else { launcher.disable() }.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn toggle_bookmark(state: State<Db>, path: String, title: String, icon: Option<String>, at: i64) -> Result<bool, String> {
     let db = state.0.lock().map_err(|e| e.to_string())?;
     library::toggle_bookmark(&db, &library::Entry { id: None, path, title, icon, at })
@@ -1255,6 +1276,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(update::plugin())
+        .plugin(tauri_plugin_autostart::Builder::new().args([tray::BACKGROUND]).build())
         .register_asynchronous_uri_scheme_protocol("hicon", |ctx, request, responder| off_main(ctx.app_handle(), request, responder, icon_response))
         .register_asynchronous_uri_scheme_protocol("himage", |ctx, request, responder| off_main(ctx.app_handle(), request, responder, asset_response))
         .setup(move |app| {
@@ -1342,6 +1364,11 @@ pub fn run() {
             bookmarks,
             record_visit,
             forget_recent,
+            clear_library,
+            autostart,
+            set_autostart,
+            update::check_update,
+            update::install_update,
             toggle_bookmark,
             get_setting,
             set_setting,

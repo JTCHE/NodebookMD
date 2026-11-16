@@ -85,6 +85,14 @@ pub fn forget(db: &Connection, id: i64) -> Result<(), String> {
     Ok(())
 }
 
+/// Empties the trail or the kept pages, from Settings > Privacy.
+pub fn clear(db: &Connection, bookmarks: bool) -> Result<(), String> {
+    let table = if bookmarks { "bookmarks" } else { "recents" };
+    db.execute(&format!("DELETE FROM user.{table}"), [])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 /// Keeps a page, or lets it go. Returns what the page is after the call.
 pub fn toggle_bookmark(db: &Connection, entry: &Entry) -> Result<bool, String> {
     let removed = db

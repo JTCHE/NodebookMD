@@ -12,6 +12,7 @@
  * the app name in the title bar.
  */
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { DatabaseZap, FileText, Server, Settings, Trash2 } from "lucide-react";
 import { invoke } from "@/lib/backend";
 import { showToast } from "@/components/ui/toast-notification";
@@ -56,13 +57,15 @@ export function TitleBarMenu({ at, port, onClose }: { at: { x: number; y: number
     window.location.reload();
   }
 
-  return (
+  // On the body, as the tab menu is: the title bar is its own stacking
+  // layer, and a menu inside it went under the page bar.
+  return createPortal(
     <MenuList
       ref={panel}
       label={APP_NAME}
       onClose={onClose}
       style={{ top: at.y, left: at.x }}
-      className="fixed z-50 min-w-52"
+      className="fixed z-[80] min-w-52"
       groups={[
         [{ label: "Settings", icon: Settings, keys: SETTINGS_KEYS, run: openSettings }],
         [
@@ -87,6 +90,7 @@ export function TitleBarMenu({ at, port, onClose }: { at: { x: number; y: number
           { label: "Reset user data", icon: Trash2, run: resetUserData },
         ],
       ]}
-    />
+    />,
+    document.body,
   );
 }

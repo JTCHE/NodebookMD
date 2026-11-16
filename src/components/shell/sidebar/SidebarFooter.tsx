@@ -5,6 +5,7 @@
  * It is pinned to the bottom rather than following the tree, so settings and
  * the theme switch are in the same place whether the tree is open or shut.
  */
+import { REPO } from "@/lib/brand";
 import { SETTINGS_KEYS, openSettings } from "@/components/settings/SettingsDialog";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/lib/ui/icons";
@@ -13,7 +14,7 @@ import { SidebarRow } from "./SidebarRow";
 import { version } from "../../../../src-tauri/tauri.conf.json";
 
 /* Bugs go to GitHub issues, in the reader's own browser. See spec: Bug Filing Button. */
-const ISSUES = "https://github.com/JTCHE/NodebookMD/issues/new";
+const ISSUES = `${REPO}/issues/new`;
 
 /* Square, with the 16px glyph 8px in, as a row pads: the first one
    stands on the panel's axis. */

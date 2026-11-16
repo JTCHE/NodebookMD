@@ -20,7 +20,21 @@ import { Segmented, TRACK } from "@/components/ui/Segmented";
 import { showToast } from "@/components/ui/toast-notification";
 import { TELEMETRY } from "@/components/onboarding/Onboarding";
 import { useVaults } from "@/components/obsidian/ObsidianDialog";
-import { APP_NAME } from "@/lib/brand";
+import { APP_NAME, REPO } from "@/lib/brand";
+import { openWeb } from "@/lib/web";
+import { clearLibrary, useLibrary } from "@/lib/store/library";
+import {
+  MEASURE_DEFAULT,
+  MEASURE_MAX,
+  MEASURE_MIN,
+  TEXT_SIZES,
+  TEXT_SIZE_LABEL,
+  resetReading,
+  setMeasure,
+  setTextSize,
+  useMeasure,
+  useTextSize,
+} from "@/lib/ui/reading";
 import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
 import { MOTION_CHOICES, MOTION_LABEL, setMotion, useMotionChoice } from "@/lib/ui/motion";
 import { LINK_FORMATS, linkFormat, setLinkFormat, type LinkFormat } from "@/lib/link";
@@ -45,12 +59,16 @@ export function openSettings() {
   window.dispatchEvent(new Event(OPEN));
 }
 
+// What the reader wants to change, in the order they look for it: the app,
+// the page, Houdini, agents, what leaves the app, their data, the app itself.
 const SECTIONS = [
   { key: "general", label: "General", icon: Icons.settings },
-  { key: "houdini", label: "Houdini Integration", icon: Icons.groupNodes },
-  { key: "mcp", label: "Houdini MCP", icon: Icons.newWindow },
-  { key: "obsidian", label: "Obsidian", icon: Icons.obsidian },
-  { key: "usage", label: "Usage data", icon: Icons.recent },
+  { key: "reading", label: "Reading", icon: Icons.reading },
+  { key: "houdini", label: "Houdini help", icon: Icons.groupNodes },
+  { key: "mcp", label: "Houdini MCP", icon: Icons.agents },
+  { key: "export", label: "Export", icon: Icons.obsidian },
+  { key: "privacy", label: "Privacy", icon: Icons.privacy },
+  { key: "about", label: "About", icon: Icons.about },
 ] as const;
 type SectionKey = (typeof SECTIONS)[number]["key"];
 
@@ -83,24 +101,22 @@ export function SettingsDialog() {
       closeAt="top-[calc(var(--spacing-lg)-6px)] right-[calc(var(--spacing-lg)-10px)]"
       // One height on every tab, so the dialog never jumps, and room for the
       // six agents Houdini MCP supports, the longest list with a known end
-      // (see `Section`). Houdini Integration has no such end, so a longer
+      // (see `Section`). Houdini help has no such end, so a longer
       // list scrolls. It stands tall enough to cover the page's heading.
-      className="h-[min(520px,100%)] w-full max-w-[760px] flex-row"
+      className="h-[min(520px,100%)] w-full max-w-[760px] flex-row rounded-[calc(var(--radius-md)+var(--spacing-sm))]"
     >
       {/* The sections are places, as the sidebar's rows are, on the panel's
-          own ground. The inset is one value on every side: with the row's own
-          8px it puts the mark on the content's axis, and the first row,
-          30px tall, centres on the title's capitals. */}
-      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 p-[calc(var(--spacing-lg)-var(--spacing-sm))]">
+          own ground, the sidebar's. The inset is one value on every side,
+          and the window corner is the row corner plus that inset (see the
+          dialog's class), so the two curves are concentric. */}
+      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-chrome p-sm">
         {SECTIONS.map((one) => (
           <SidebarRow
             key={one.key}
             label={one.label}
             bare
             selected={shown === one.key}
-            mark={
-              <one.icon className={cn("size-icon", shown === one.key ? "text-neutral-900" : "text-neutral-500")} />
-            }
+            mark={<one.icon className={cn("size-icon", shown === one.key ? "text-neutral-900" : "text-neutral-500")} />}
             onClick={() => setShown(one.key)}
           />
         ))}
@@ -108,6 +124,8 @@ export function SettingsDialog() {
       <div className="flex min-w-0 flex-1 flex-col">
         {shown === "general" ? (
           <GeneralSection />
+        ) : shown === "reading" ? (
+          <ReadingSection />
         ) : !inTauri ? (
           <Section title={section.label}>
             <Empty>Settings live in the {APP_NAME} app, not in Houdini's help pane.</Empty>
@@ -116,10 +134,12 @@ export function SettingsDialog() {
           <HelpSection />
         ) : shown === "mcp" ? (
           <McpSection />
-        ) : shown === "obsidian" ? (
-          <ObsidianSection />
+        ) : shown === "export" ? (
+          <ExportSection />
+        ) : shown === "privacy" ? (
+          <PrivacySection />
         ) : (
-          <UsageSection />
+          <AboutSection />
         )}
       </div>
     </Modal>
@@ -175,16 +195,34 @@ function Empty({ children }: { children: ReactNode }) {
 /** The one button that acts: raised off the ground, as a choice's track is
     sunk into it. Geist sits high in its line: 1px at the top centres it. */
 const BUTTON =
-  "h-row min-w-[80px] shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-px text-center text-label font-medium text-neutral-900 shadow-chip " +
-  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-50 active:bg-neutral-100 " +
+  "h-row min-w-[80px] shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-px text-center text-label font-medium dark:font-normal text-neutral-900 shadow-chip " +
+  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 active:bg-neutral-200 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** A quiet action on a title's line. It gives its padding back, so its text
-    ends on the content's right edge, where the row controls end. */
-const GHOST_BUTTON =
-  "-mr-sm h-7 shrink-0 cursor-interactive rounded-md px-sm text-label font-medium text-neutral-700 " +
-  "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 " +
-  "disabled:cursor-wait disabled:bg-transparent disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
+/** Puts a tab back to its defaults. It shows only when a setting on the
+    tab differs from its default, on the title's line. It gives its padding
+    back, so its text ends on the content's right edge. */
+function RestoreButton({ onRestore }: { onRestore: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onRestore}
+      className="-mr-sm h-7 shrink-0 cursor-interactive rounded-md px-sm text-label text-neutral-600 transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-100 pointer-hover:text-neutral-950 active:bg-neutral-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
+      Restore defaults
+    </button>
+  );
+}
+
+/** A button that opens a web page outside the app, and says so with its arrow. */
+function WebButton({ url }: { url: string }) {
+  return (
+    <button type="button" className={cn(BUTTON, "inline-flex items-center justify-center gap-2xs")} onClick={() => void openWeb(url)}>
+      Open
+      <Icons.external className="size-3.5 text-neutral-500" aria-hidden="true" />
+    </button>
+  );
+}
 
 /** A fact the switch cannot show: a release that never ran has no
     preferences to write, so its switch stays off and greyed; F1 that opens
@@ -219,20 +257,31 @@ function HelpSection() {
         )
       : null;
   return (
-    <Section title="Houdini Integration">
+    <Section title="Houdini help">
+      {/* Houdini writes its preferences when it closes, so a change made while it is open is lost. Said once, over the list. */}
+      {series && series.length > 0 && (
+        <p className="mt-xs mb-sm text-label text-neutral-500">F1 in each Houdini opens its help in {APP_NAME}.</p>
+      )}
+      {houdiniOpen && series && series.length > 0 && (
+        <p
+          role="status"
+          className="-mx-ms mt-xs mb-sm flex items-center gap-sm rounded-lg border border-hairline bg-neutral-100 px-ms py-sm text-label text-neutral-900"
+        >
+          <Icons.warning className="size-icon shrink-0 text-neutral-700" />
+          Houdini is open. Close it to change these switches.
+        </p>
+      )}
       {series?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
       {series?.map((name) => {
         const release = releases?.find((one) => one.release === name);
-        // Houdini writes its preferences when it closes, so a change made while it is open is lost.
-        const locked = houdiniOpen ? "Close Houdini to change this" : undefined;
         return (
-          <Row key={name} label={`Houdini ${name}`} fact={locked ?? helpTarget(release)}>
+          <Row key={name} label={`Houdini ${name}`} fact={helpTarget(release)}>
             <Toggle
               checked={!!release?.external && !!release.ours}
               disabled={!release || houdiniOpen}
-              title={release ? locked : helpTarget(release)}
+              title={helpTarget(release)}
               onChange={(next) => void flip(name, next)}
-              label={`F1 in Houdini ${name} opens ${APP_NAME}`}
+              label={`Houdini ${name}`}
             />
           </Row>
         );
@@ -252,9 +301,12 @@ interface Agent {
     installed it. Read again each time the window gets the focus, so an agent
     installed while Settings is open shows when the reader comes back, and
     again on Scan again. */
+/** The last read, kept for the next visit to the tab, so the list shows at
+    once and the new read only updates it. */
+let lastAgents: Agent[] | null = null;
+
 function McpSection() {
-  const [agents, setAgents] = useState<Agent[] | null>(null);
-  const [scanning, setScanning] = useState(false);
+  const [agents, setAgents] = useState<Agent[] | null>(lastAgents);
   const [busy, setBusy] = useState("");
 
   // The quiet read, on open and on focus; Scan again says it is working.
@@ -262,13 +314,12 @@ function McpSection() {
     () =>
       invoke<Agent[]>("mcp_agents")
         .catch(() => [])
-        .then(setAgents),
+        .then((list) => {
+          lastAgents = list;
+          setAgents(list);
+        }),
     [],
   );
-  function scanAgain() {
-    setScanning(true);
-    void scan().finally(() => setScanning(false));
-  }
   useEffect(() => {
     void scan();
     window.addEventListener("focus", scan);
@@ -289,19 +340,15 @@ function McpSection() {
   }
 
   return (
-    <Section
-      title="Houdini MCP"
-      action={
-        <button type="button" disabled={scanning} className={GHOST_BUTTON} onClick={scanAgain}>
-          {scanning ? "Scanning…" : "Scan again"}
-        </button>
-      }
-    >
+    <Section title="Houdini MCP">
+      <p className="mt-xs mb-sm text-label text-neutral-500">
+        Lets an agent read these docs and drive Houdini. Restart the agent after a change.
+      </p>
       {agents === null && <Empty>Looking for agents…</Empty>}
       {agents?.length === 0 && (
         <Empty>
           No supported agent found on this machine. Houdini MCP works with Claude, Codex, Gemini CLI, Cursor, opencode
-          and pi. Install one, then scan again.
+          and pi. Install one, then come back to this window.
         </Empty>
       )}
       {agents?.map((agent) => (
@@ -312,12 +359,15 @@ function McpSection() {
           key={agent.key}
           label={agent.label}
           fact={
-            agent.link === "ours" && (
+            agent.link === "ours" ? (
               <span className="inline-flex items-center gap-xs text-neutral-800">
                 <Icons.chosen className="size-3 text-brand" />
                 Connected
               </span>
-            )
+            ) : agent.link === "other" ? (
+              // Replace must say what it replaces.
+              "Another Houdini MCP is set up. Replace puts this one in its place"
+            ) : undefined
           }
         >
           <button type="button" disabled={busy !== ""} className={BUTTON} onClick={() => void install(agent)}>
@@ -351,7 +401,7 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
           // vault. The chevron stands as far in from the right as the text
           // from the left.
           TRACK,
-          "max-w-[280px] cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
+          "max-w-[280px] cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium dark:font-normal text-neutral-950",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200/60",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         )}
@@ -376,8 +426,17 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
   );
 }
 
-/** What Send to Obsidian does with a page's pictures, and which vault they go to. */
-function ObsidianSection() {
+/** What leaves the app: the form of a copied link, and what Send to
+    Obsidian does with a page's pictures and which vault they go to. */
+function ExportSection() {
+  const [format, setFormat] = useState<LinkFormat | null>(null);
+  useEffect(() => {
+    void linkFormat().then(setFormat);
+  }, []);
+  async function pickFormat(next: LinkFormat) {
+    await setLinkFormat(next);
+    setFormat(next);
+  }
   const [choice, setChoice] = useState<PicturesChoice | null>(null);
   const [vault, setVault] = useState<string | null>(null);
   useEffect(() => {
@@ -395,16 +454,35 @@ function ObsidianSection() {
   }
 
   const choices: { value: PicturesChoice; label: string }[] = [
-    { value: "ask", label: "Ask each time" },
-    { value: "bring", label: "Bring them" },
+    { value: "ask", label: "Ask" },
+    { value: "bring", label: "Copy" },
     { value: "text", label: "Text only" },
   ];
   return (
-    <Section title="Obsidian">
-      <Row label="Pictures">
-        <Segmented label="Pictures" value={choice} options={choices} onChange={(next) => void pick(next)} />
+    <Section title="Export">
+      <Row label="Copied links">
+        {/* What each form looks like is in its tooltip, for the reader who
+              asks; the row itself stays one line. */}
+        <Segmented
+          label="Copied links"
+          value={format}
+          options={(Object.keys(LINK_FORMATS) as LinkFormat[]).map((key) => ({
+            value: key,
+            label: LINK_FORMATS[key].label,
+            hint: LINK_FORMATS[key].example,
+          }))}
+          onChange={(next) => void pickFormat(next)}
+        />
       </Row>
-      <Row label="Vault">
+      <Row label="Images sent to Obsidian">
+        <Segmented
+          label="Images sent to Obsidian"
+          value={choice}
+          options={choices}
+          onChange={(next) => void pick(next)}
+        />
+      </Row>
+      <Row label="Obsidian vault">
         <VaultSelect value={vault} onChange={(path) => void keep(path)} />
       </Row>
     </Section>
@@ -420,20 +498,22 @@ const CLOSE_TO_TRAY = "close_to_tray";
 function GeneralSection() {
   const theme = useThemeChoice();
   const motion = useMotionChoice();
-  const [format, setFormat] = useState<LinkFormat | null>(null);
   const [tray, setTray] = useState<boolean | null>(null);
+  const [login, setLogin] = useState<boolean | null>(null);
   const [restore, setRestore] = useState(restoresTabs);
   useEffect(() => {
-    void linkFormat().then(setFormat);
-    if (inTauri)
-      void invoke<string | null>("get_setting", { key: CLOSE_TO_TRAY })
-        .then((value) => setTray(value !== "false"))
-        .catch(() => setTray(true));
+    if (!inTauri) return;
+    void invoke<string | null>("get_setting", { key: CLOSE_TO_TRAY })
+      .then((value) => setTray(value !== "false"))
+      .catch(() => setTray(true));
+    void invoke<boolean>("autostart").then(setLogin, () => setLogin(false));
   }, []);
 
-  async function pickFormat(next: LinkFormat) {
-    await setLinkFormat(next);
-    setFormat(next);
+  async function flipLogin(next: boolean) {
+    await invoke("set_autostart", { on: next }).then(
+      () => setLogin(next),
+      (reason) => showToast(String(reason), "error"),
+    );
   }
   async function flipTray(next: boolean) {
     await invoke("set_setting", { key: CLOSE_TO_TRAY, value: String(next) });
@@ -442,7 +522,21 @@ function GeneralSection() {
 
   const trayLabel = IS_MAC ? "Keep running in the menu bar" : "Keep running in the tray";
   return (
-    <Section title="General">
+    <Section
+      title="General"
+      // The look of the app comes back to the system's; what the app does at
+      // start and at close is a choice about the machine, and stays.
+      action={
+        theme !== "system" || motion !== "system" ? (
+          <RestoreButton
+            onRestore={() => {
+              setTheme("system");
+              setMotion("system");
+            }}
+          />
+        ) : null
+      }
+    >
       <Row label="Theme">
         <Segmented
           label="Theme"
@@ -458,38 +552,32 @@ function GeneralSection() {
         <Segmented
           label="Reduce motion"
           value={motion}
-          options={MOTION_CHOICES.map((choice) => ({ value: choice, label: MOTION_LABEL[choice] }))}
-          onChange={setMotion}
-        />
-      </Row>
-      <Row label="Copied links">
-        {/* What each form looks like is in its tooltip, for the reader who
-              asks; the row itself stays one line. */}
-        <Segmented
-          label="Copied links"
-          value={format}
-          options={(Object.keys(LINK_FORMATS) as LinkFormat[]).map((key) => ({
-            value: key,
-            label: LINK_FORMATS[key].label,
-            hint: LINK_FORMATS[key].example,
+          options={MOTION_CHOICES.map((choice) => ({
+            value: choice,
+            label: MOTION_LABEL[choice],
           }))}
-          onChange={(next) => void pickFormat(next)}
+          onChange={setMotion}
         />
       </Row>
       {inTauri && (
         <>
-          <Row label="Open tabs again at start">
+          <Row label="Reopen tabs at start">
             <Toggle
               checked={restore}
               onChange={(next) => {
                 setRestoresTabs(next);
                 setRestore(next);
               }}
-              label="Open tabs again at start"
+              label="Reopen tabs at start"
             />
           </Row>
           <Row label={trayLabel}>
             {tray !== null && <Toggle checked={tray} onChange={(next) => void flipTray(next)} label={trayLabel} />}
+          </Row>
+          <Row label="Open at login">
+            {login !== null && (
+              <Toggle checked={login} onChange={(next) => void flipLogin(next)} label="Open at login" />
+            )}
           </Row>
         </>
       )}
@@ -497,8 +585,86 @@ function GeneralSection() {
   );
 }
 
-/** The telemetry switch, one click from off at any time. */
-function UsageSection() {
+/** The text size and the measure of a docs page. */
+function ReadingSection() {
+  const size = useTextSize();
+  const measure = useMeasure();
+  return (
+    <Section
+      title="Reading"
+      action={size !== "default" || measure !== MEASURE_DEFAULT ? <RestoreButton onRestore={resetReading} /> : null}
+    >
+      <Row label="Page text size">
+        <Segmented
+          label="Page text size"
+          value={size}
+          options={TEXT_SIZES.map((choice) => ({
+            value: choice,
+            label: TEXT_SIZE_LABEL[choice],
+          }))}
+          onChange={setTextSize}
+        />
+      </Row>
+      {/* While the knob is held, Settings steps aside and the page shows the
+          new width behind this one row (see globals.css). */}
+      <div data-preview-keep className="-mx-ms rounded-lg px-ms">
+        <Row
+          label="Page width"
+          fact={`About ${measure} characters a line${measure === MEASURE_DEFAULT ? ", the default" : ""}`}
+        >
+          <input
+            type="range"
+            aria-label="Page width"
+            className="slider w-[200px]"
+            min={MEASURE_MIN}
+            max={MEASURE_MAX}
+            value={measure}
+            onChange={(event) => setMeasure(Number(event.target.value))}
+            onDoubleClick={() => setMeasure(MEASURE_DEFAULT)}
+            onPointerDown={() => (document.documentElement.dataset.previewing = "")}
+            onPointerUp={() => delete document.documentElement.dataset.previewing}
+            onLostPointerCapture={() => delete document.documentElement.dataset.previewing}
+          />
+        </Row>
+      </div>
+    </Section>
+  );
+}
+
+/** A button that empties a list, after a second press: the first press
+    turns it into "Press again", which goes back after a few seconds. */
+function ClearButton({ label, disabled, onClear }: { label: string; disabled: boolean; onClear: () => void }) {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) return;
+    const timer = setTimeout(() => setArmed(false), 3000);
+    return () => clearTimeout(timer);
+  }, [armed]);
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      className={cn(
+        BUTTON,
+        "text-destructive disabled:cursor-default",
+        armed && "border-transparent bg-destructive text-white pointer-hover:bg-destructive active:bg-destructive",
+      )}
+      onClick={() => {
+        if (!armed) return setArmed(true);
+        setArmed(false);
+        onClear();
+      }}
+    >
+      {armed ? "Press again" : label}
+    </button>
+  );
+}
+
+/** What the app sends, and what it keeps: the telemetry switch, one click
+    from off at any time, and the reader's own lists. */
+function PrivacySection() {
+  const library = useLibrary();
+  const count = (pages: number) => (pages === 1 ? "1 page" : `${pages} pages`);
   const [on, setOn] = useState<boolean | null>(null);
   useEffect(() => {
     void invoke<string | null>("get_setting", { key: TELEMETRY })
@@ -512,19 +678,88 @@ function UsageSection() {
   }
 
   return (
-    <Section title="Usage data">
-      <Row label="Send anonymous usage data">
-        {on !== null && <Toggle checked={on} onChange={(next) => void flip(next)} label="Send anonymous usage data" />}
+    <Section title="Privacy">
+      <div>
+        <Row label="Send anonymous usage data">
+          {on !== null && (
+            <Toggle checked={on} onChange={(next) => void flip(next)} label="Send anonymous usage data" />
+          )}
+        </Row>
+        <Row label="What is sent">
+          <button
+            type="button"
+            className={BUTTON}
+            onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason), "error"))}
+          >
+            Show
+          </button>
+        </Row>
+      </div>
+      {/* The reader's own lists never leave the machine; the heading says so,
+          apart from the usage data above it. */}
+      <h3 className="mt-lg text-meta text-neutral-500">Kept on this computer only</h3>
+      <Row label="Recent pages" fact={count(library.recents.length)}>
+        <ClearButton label="Clear" disabled={library.recents.length === 0} onClear={() => void clearLibrary(false)} />
       </Row>
-      <Row label="What is sent">
-        <button
-          type="button"
-          className={BUTTON}
-          onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason), "error"))}
-        >
-          Show
+      <Row label="Bookmarks" fact={count(library.bookmarks.length)}>
+        <ClearButton label="Clear" disabled={library.bookmarks.length === 0} onClear={() => void clearLibrary(true)} />
+      </Row>
+    </Section>
+  );
+}
+
+/** Updates install at start unless the reader turns that off (`AUTO_KEY` in `update.rs`). */
+const AUTO_UPDATE = "auto_update";
+
+/** Which version this is, and the way to the next one. */
+function AboutSection() {
+  const [version, setVersion] = useState("");
+  const [auto, setAuto] = useState<boolean | null>(null);
+  const [found, setFound] = useState<string | null | undefined>(undefined);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    void import("@tauri-apps/api/app").then(({ getVersion }) => getVersion()).then(setVersion, () => {});
+    void invoke<string | null>("get_setting", { key: AUTO_UPDATE })
+      .then((value) => setAuto(value !== "0"))
+      .catch(() => setAuto(true));
+  }, []);
+
+  async function flipAuto(next: boolean) {
+    await invoke("set_setting", { key: AUTO_UPDATE, value: next ? "1" : "0" });
+    setAuto(next);
+  }
+  async function check() {
+    setBusy(true);
+    try {
+      if (found) await invoke("install_update");
+      else setFound(await invoke<string | null>("check_update"));
+    } catch (reason) {
+      showToast(String(reason), "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const state = found ? `${found} is ready` : found === null ? "Up to date" : undefined;
+  return (
+    <Section title="About">
+      <Row label={`${APP_NAME} ${version}`} fact={state}>
+        <button type="button" disabled={busy} className={BUTTON} onClick={() => void check()}>
+          {busy ? (found ? "Installing…" : "Checking…") : found ? "Install" : "Check for updates"}
         </button>
       </Row>
+      <Row label="Install updates at start">
+        {auto !== null && (
+          <Toggle checked={auto} onChange={(next) => void flipAuto(next)} label="Install updates at start" />
+        )}
+      </Row>
+      <Row label="Release notes">
+        <WebButton url={`${REPO}/releases`} />
+      </Row>
+      <Row label="Report a problem">
+        <WebButton url={`${REPO}/issues/new`} />
+      </Row>
+      <Row label="Licence" fact="MIT, free to use and to change" />
     </Section>
   );
 }

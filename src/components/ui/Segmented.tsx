@@ -71,10 +71,10 @@ export function Segmented<T extends string>({
             onMouseDown={(event) => event.preventDefault()}
             className={cn(
               // Geist sits high in its line: 1px at the top centres its capitals.
-              "relative h-full w-full min-w-0 cursor-interactive rounded-md px-sm pt-px text-center text-label font-medium whitespace-nowrap",
+              "relative h-full w-full min-w-0 cursor-interactive rounded-md px-sm pt-px text-center text-label font-medium dark:font-normal whitespace-nowrap",
               "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
               "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-              chosen ? "text-neutral-950" : "text-neutral-500 pointer-hover:text-neutral-900",
+              chosen ? "text-neutral-950" : "text-neutral-500 dark:text-neutral-600 pointer-hover:bg-foreground/[0.05] pointer-hover:text-neutral-900 active:bg-foreground/[0.08]",
             )}
           >
             {one.label}

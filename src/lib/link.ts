@@ -7,9 +7,9 @@ import { sideFxUrl } from "./sidefx";
  * comes back to the same page and section.
  */
 export const LINK_FORMATS = {
-  path: { label: "Path", example: "docs/houdini/nodes/sop/box" },
+  path: { label: "Docs path", example: "docs/houdini/nodes/sop/box" },
   app: { label: "App link", example: "nodebookmd://docs/houdini/nodes/sop/box" },
-  sidefx: { label: "SideFX website", example: "https://www.sidefx.com/docs/houdini/nodes/sop/box" },
+  sidefx: { label: "SideFX", example: "https://www.sidefx.com/docs/houdini/nodes/sop/box" },
 } as const;
 export type LinkFormat = keyof typeof LINK_FORMATS;
 

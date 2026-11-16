@@ -122,11 +122,11 @@ export function SidebarRow({
       // The row you are on is a chip lifted off the panel, not a tinted band:
       // the panel is already a shade of the page, so a tint would have to be
       // darker than the page to read at all.
-      // A bare row, in Settings, sits in a panel with no other chip near
-      // it, so its fill alone says it is chosen.
+      // The chip rests a step under full white, so a hover on it goes one
+      // step lighter, never darker.
       // Hover is a tint of the panel, never the chip: a hovered row must not
       // read as a second row you are on.
-      raised ? cn("bg-raised dark:bg-neutral-300", !bare && "shadow-chip ring-1 ring-inset ring-foreground/[0.14] dark:ring-0", "pointer-hover:bg-neutral-100 dark:pointer-hover:brightness-125") : "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045]",
+      raised ? "bg-raised/60 shadow-chip ring-1 ring-inset ring-foreground/[0.14] pointer-hover:bg-raised dark:bg-neutral-300 dark:ring-0 dark:pointer-hover:bg-neutral-300 dark:pointer-hover:brightness-125" : "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045]",
       // Focus is an accent ring inside the row's own shape: plain to see,
       // and never mistaken for hover or the chip.
       "focus-ring",
@@ -156,7 +156,8 @@ export function SidebarRow({
           icon carries its own aspect ratio and an app glyph does not, and
           without the box the two draw rows of different heights. */}
       {(mark !== undefined || icon !== undefined) && (
-        <span className="grid size-icon shrink-0 place-items-center" aria-hidden="true">
+        // An icon is heavy at the top; 1px up centres it on the label.
+        <span className="grid size-icon shrink-0 -translate-y-px place-items-center" aria-hidden="true">
           {mark === undefined && icon !== undefined ? (
             icon ? (
               <DocIconClient
@@ -194,7 +195,7 @@ export function SidebarRow({
       {/* A page row has no arrow and no slot for one, so its chip pads its
           icon like any row. Its flag stands at the end, where a kept page
           says so without moving its name. */}
-      {kept && <Icons.bookmark className="ml-2xs size-glyph shrink-0 text-neutral-600" strokeWidth={2} aria-hidden="true" />}
+      {kept && <Icons.bookmark className="ml-2xs size-glyph shrink-0 fill-current text-neutral-600" strokeWidth={2} aria-hidden="true" />}
 
       {count !== undefined && (
         <span className="shrink-0 text-[11px] text-neutral-600 tabular-nums opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 motion-reduce:transition-none">

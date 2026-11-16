@@ -10,7 +10,7 @@ import { useSyncExternalStore } from "react";
 
 export type MotionChoice = "system" | "reduce" | "full";
 
-export const MOTION_CHOICES: MotionChoice[] = ["system", "reduce", "full"];
+export const MOTION_CHOICES: MotionChoice[] = ["reduce", "full", "system"];
 
 export const MOTION_LABEL: Record<MotionChoice, string> = { system: "System", reduce: "On", full: "Off" };
 

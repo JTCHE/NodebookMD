@@ -44,6 +44,12 @@ import {
   Monitor,
   Sun,
   type LucideIcon,
+  Bot,
+  ShieldCheck,
+  TriangleAlert,
+  ArrowUpRight,
+  Type,
+  Info,
 } from "lucide-react";
 
 export type IconComponent = LucideIcon | ((props: { className?: string }) => React.ReactElement);
@@ -148,6 +154,12 @@ export const Icons = {
   chosen: Check,
   dismiss: X,
   recent: Clock,
+  agents: Bot,
+  privacy: ShieldCheck,
+  warning: TriangleAlert,
+  external: ArrowUpRight,
+  reading: Type,
+  about: Info,
   /** A page the help holds no icon for. */
   page: FileText,
   /** A section the help holds no icon for. A section holds pages, so the page

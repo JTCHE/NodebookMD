@@ -113,6 +113,12 @@ export function forget(id: number) {
   void invoke("forget_recent", { id });
 }
 
+/** Empties the trail, or the kept pages. */
+export async function clearLibrary(bookmarks: boolean) {
+  commit(bookmarks ? { ...snapshot, bookmarks: [] } : { ...snapshot, recents: [] });
+  await invoke("clear_library", { bookmarks });
+}
+
 export function isBookmarked(path: string): boolean {
   return snapshot.bookmarks.some((entry) => entry.path === path);
 }
