@@ -19,7 +19,7 @@ export type ThemeChoice = Theme | "system";
 
 /** The choices in the order the footer button steps through them. The
     settings and the command list read the same list. */
-export const THEME_CHOICES: ThemeChoice[] = ["light", "dark", "system"];
+export const THEME_CHOICES: ThemeChoice[] = ["system", "light", "dark"];
 
 export const THEME_LABEL: Record<ThemeChoice, string> = { light: "Light", dark: "Dark", system: "System" };
 
