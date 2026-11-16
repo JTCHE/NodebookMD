@@ -611,14 +611,14 @@ pre code[class] {
 .vex-argument-type,
 .vex-return-arrow,
 .vex-return-type {
-  color: oklch(0.72 0.12 280);
+  color: oklch(0.72 0.12 245);
 }
 .hljs-number,
 .hljs-literal {
-  color: oklch(0.83 0.08 60);
+  color: oklch(0.86 0.08 130);
 }
 .hljs-binding {
-  color: oklch(0.78 0.12 20);
+  color: oklch(0.78 0.12 345);
 }
 .hljs-string,
 .hljs-attr,
