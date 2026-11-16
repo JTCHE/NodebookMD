@@ -253,7 +253,7 @@ function PinButton({ corner }: { corner: boolean }) {
     >
       {/* Drawn as a caption button: the same box, ink and glyph size as the
           three beside it, so the four read as one set. */}
-      <Icons.pin className={cn("size-glyph", pinned && "fill-current")} />
+      {pinned ? <Icons.pinned className="size-glyph" /> : <Icons.pin className="size-glyph" />}
     </button>
     </Hint>
   );

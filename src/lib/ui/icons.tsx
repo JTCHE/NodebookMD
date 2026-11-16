@@ -11,6 +11,7 @@
  * Sizes are NOT set here. A role is used at 10px in a tree row and at 15px in a
  * list row, so the caller states the size and this file states the shape.
  */
+import { cn } from "@/lib/utils";
 import {
   AppWindow,
   Plus,
@@ -96,28 +97,53 @@ function CaptionClose({ className }: { className?: string }) {
   );
 }
 
-/** The keep-on-top pin, drawn as a caption glyph: the same 10px grid, 1px
-    stroke and snapped edges as the window controls beside it, so it is as
-    sharp as they are. Its lines are all square to the grid, as theirs are. */
+/** The keep-on-top pin. The head is one closed box, so a `fill-current`
+    class fills it for the pinned state. It sits on the maximize square's
+    grid: strokes on half units, 10 units from edge to edge. */
 function CaptionPin({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 10 10" className={className} fill="none" stroke="currentColor" shapeRendering="crispEdges" overflow="visible" aria-hidden="true">
-      <path d="M3 0h4M3 0v5M7 0v5M1 5h8M5 5v5" />
+      <rect x="2.5" y="0.5" width="5" height="4" />
+      <path d="M0.5 5.5h9M5 5.5v4" />
     </svg>
   );
 }
 
-/** The search, drawn as a caption glyph for the title bar, beside the pin. */
+/** The pin with its head filled, for the pinned state. */
+function CaptionPinned({ className }: { className?: string }) {
+  return <CaptionPin className={cn(className, "fill-current")} />;
+}
+
+/** The search, on the same grid: a closed octagon for the lens, as a circle
+    cannot be sharp at 10px, and a 45° handle. */
 function CaptionSearch({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 10 10" className={className} fill="none" stroke="currentColor" overflow="visible" aria-hidden="true">
-      {/* The lens is an octagon: its straight sides snap to the grid as the
-          maximize square does, and its corners and handle are 45° lines, as
-          sharp as the close cross. A circle can be neither. */}
-      <path d="M2.5 0h3M8 2.5v3M5.5 8h-3M0 5.5v-3" shapeRendering="crispEdges" />
-      <path d="M0 2.5L2.5 0M5.5 0L8 2.5M8 5.5L5.5 8M2.5 8L0 5.5M7 7l3 3" />
+      <path d="M2.5 0.5h3l2 2v3l-2 2h-3l-2-2v-3zM6.5 6.5l3 3" />
     </svg>
   );
+}
+
+/** On Windows the caption glyphs come from the system's own icon font, the
+    one Windows draws its caption buttons with. Its glyphs are hinted for each
+    display scale, so they stay sharp where a drawn line falls between
+    device pixels. Windows 10 has the same glyphs in Segoe MDL2 Assets.
+    Elsewhere the drawn glyph stands in. */
+const SYSTEM_GLYPHS = navigator.userAgent.includes("Windows");
+
+function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement) {
+  if (!SYSTEM_GLYPHS) return Drawn;
+  return function SystemGlyph({ className }: { className?: string }) {
+    return (
+      <span
+        aria-hidden="true"
+        className={cn(className, "grid place-items-center text-[10px] leading-none")}
+        style={{ fontFamily: "'Segoe Fluent Icons', 'Segoe MDL2 Assets'" }}
+      >
+        {codepoint}
+      </span>
+    );
+  };
 }
 
 /** The Obsidian mark, so the app's way out to Obsidian reads as Obsidian. */
@@ -148,10 +174,10 @@ export const Icons = {
   newTab: Plus,
 
   /* Window caption */
-  captionMinimize: CaptionMinimize,
-  captionMaximize: CaptionMaximize,
-  captionRestore: CaptionRestore,
-  captionClose: CaptionClose,
+  captionMinimize: systemGlyph("\uE921", CaptionMinimize),
+  captionMaximize: systemGlyph("\uE922", CaptionMaximize),
+  captionRestore: systemGlyph("\uE923", CaptionRestore),
+  captionClose: systemGlyph("\uE8BB", CaptionClose),
 
   /* Disclosure */
   expanded: ChevronDown,
@@ -168,8 +194,9 @@ export const Icons = {
   collapseAll: ChevronsDownUp,
 
   /* Window */
-  pin: CaptionPin,
-  captionSearch: CaptionSearch,
+  pin: systemGlyph("\uE718", CaptionPin),
+  pinned: systemGlyph("\uE840", CaptionPinned),
+  captionSearch: systemGlyph("\uE721", CaptionSearch),
   versionPicker: ChevronsUpDown,
 
   /* Content */
