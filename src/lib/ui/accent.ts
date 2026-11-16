@@ -6,14 +6,18 @@
  */
 import { useSyncExternalStore } from "react";
 
-export type Accent = "neutral" | "red" | "brand" | "yellow" | "green" | "blue" | "purple" | "pink" | "custom";
-/** The default first, as in every choice in Settings; then the colours
-    around the wheel, no colour, and a hue of your own. */
-/** The default first. */
-export const ACCENTS: Accent[] = ["neutral", "brand", "red", "yellow", "green", "blue", "purple", "pink", "custom"];
-export const ACCENT_DEFAULT: Accent = "neutral";
+export type Accent = "original" | "monochrome" | "red" | "brand" | "yellow" | "green" | "blue" | "purple" | "pink" | "custom";
+/** The default first, as in every choice in Settings. Original is the grey
+    app with its trademark orange logo and green tips; Monochrome has no
+    colour at all. Then the colours around the wheel, and a hue of your own. */
+export const ACCENTS: Accent[] = ["original", "monochrome", "brand", "red", "yellow", "green", "blue", "purple", "pink", "custom"];
+export const ACCENT_DEFAULT: Accent = "original";
+
+/** The accents that tint nothing: the greys stay grey. */
+export const isGrey = (accent: Accent) => accent === "original" || accent === "monochrome";
 export const ACCENT_LABEL: Record<Accent, string> = {
-  neutral: "Neutral",
+  original: "Original",
+  monochrome: "Monochrome",
   red: "Red",
   brand: "Orange",
   yellow: "Yellow",
@@ -24,8 +28,8 @@ export const ACCENT_LABEL: Record<Accent, string> = {
   custom: "Custom",
 };
 
-/** The hue of each fixed accent, in oklch degrees. Neutral has no strength. */
-const HUE: Record<Exclude<Accent, "custom">, number> = { neutral: 52, red: 25, brand: 52, yellow: 90, green: 150, blue: 255, purple: 300, pink: 350 };
+/** The hue of each fixed accent, in oklch degrees. Original and Monochrome have no strength. */
+const HUE: Record<Exclude<Accent, "custom">, number> = { original: 52, monochrome: 52, red: 25, brand: 52, yellow: 90, green: 150, blue: 255, purple: 300, pink: 350 };
 export const HUE_DEFAULT = 300;
 
 const ACCENT_KEY = "nodebookmd.accent";
@@ -61,7 +65,7 @@ function paint() {
   const accent = readAccent();
   const root = document.documentElement.style;
   root.setProperty("--accent-hue", String(hueOf(accent, readHue())));
-  root.setProperty("--accent-strength", accent === "neutral" ? "0" : "1");
+  root.setProperty("--accent-strength", isGrey(accent) ? "0" : "1");
   // Controls read this to take the accent: a switch that is on, a focus ring.
   document.documentElement.dataset.accent = accent;
   for (const notify of listeners) notify();

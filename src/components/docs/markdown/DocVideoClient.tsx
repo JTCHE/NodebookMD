@@ -275,12 +275,12 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
           shift reads too far right, 4% too far left; 7% is about 1.7px. */}
       {paused && !loading && !pulse && (
         <span className="video-center video-rest" aria-hidden="true">
-          {ended ? <ReplayIcon /> : <PlayIcon className="translate-x-[7%]" />}
+          {ended ? <ReplayIcon /> : <PlayIcon className="translate-x-[calc(7%-1px)]" />}
         </span>
       )}
       {pulse && (
         <span key={pulse.count} className="video-center video-pulse" aria-hidden="true" onAnimationEnd={() => setPulse(null)}>
-          {pulse.playing ? <PlayIcon className="translate-x-[7%]" /> : <PauseIcon />}
+          {pulse.playing ? <PlayIcon className="translate-x-[calc(7%-1px)]" /> : <PauseIcon />}
         </span>
       )}
 

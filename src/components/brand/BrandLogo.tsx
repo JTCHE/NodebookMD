@@ -37,9 +37,9 @@ export function BrandLogo({ className, title }: BrandLogoProps) {
       focusable={isDecorative ? "false" : undefined}
     >
       {title ? <title>{title}</title> : null}
-      <path d={BACK_PAGE_PATH} fill="var(--brand)" opacity="0.4" />
-      <path d={MIDDLE_PAGE_PATH} fill="var(--brand)" opacity="0.7" />
-      <path d={COVER_PATH} fill="var(--brand)" />
+      <path d={BACK_PAGE_PATH} fill="var(--logo)" opacity="0.4" />
+      <path d={MIDDLE_PAGE_PATH} fill="var(--logo)" opacity="0.7" />
+      <path d={COVER_PATH} fill="var(--logo)" />
       <path d={LETTER_M_PATH} fill="var(--brand-foreground)" />
       <path d={LETTER_D_PATH} fillRule="evenodd" fill="var(--brand-foreground)" />
     </svg>

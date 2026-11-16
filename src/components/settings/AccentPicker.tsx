@@ -14,7 +14,10 @@ export const HUE_WHEEL = Array.from({ length: 13 }, (_, step) => `oklch(0.68 0.1
 
 function swatch(accent: Accent, hue: number): string {
   if (accent === "custom") return `conic-gradient(${HUE_WHEEL})`;
-  const strength = accent === "neutral" ? 0 : 1;
+  // Original: its greys and the trademark orange. Monochrome: white and black.
+  if (accent === "original") return "linear-gradient(135deg, oklch(0.68 0 0) 50%, oklch(0.68 0.174 52) 50%)";
+  if (accent === "monochrome") return "linear-gradient(135deg, oklch(0.97 0 0) 50%, oklch(0.2 0 0) 50%)";
+  const strength = 1;
   const shade = hueOf(accent, hue);
   return `linear-gradient(135deg, oklch(0.68 ${0.174 * strength} ${shade}) 50%, oklch(0.575 ${0.147 * strength} ${shade}) 50%)`;
 }
