@@ -155,7 +155,13 @@ function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) =
           WebkitTextStroke: size === 10 ? undefined : "0.3px currentColor",
         }}
       >
-        {codepoint}
+        {/* Each code point is a layer in the same cell, as the pinned pin is
+            the fill on top of the outline. */}
+        {Array.from(codepoint, (layer) => (
+          <span key={layer} style={{ gridArea: "1 / 1" }}>
+            {layer}
+          </span>
+        ))}
       </span>
     );
   };
@@ -210,7 +216,7 @@ export const Icons = {
 
   /* Window */
   pin: systemGlyph("\uE718", CaptionPin, 10.5, undefined, true),
-  pinned: systemGlyph("\uE842", CaptionPinned, 10.5, undefined, true),
+  pinned: systemGlyph("\uE718\uE842", CaptionPinned, 10.5, undefined, true),
   captionSearch: systemGlyph("\uE721", CaptionSearch, 11.5, 0.02),
   versionPicker: ChevronsUpDown,
 
