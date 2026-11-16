@@ -181,8 +181,8 @@ a {
 }
 
 :root {
-  /* The code panel: a warm near-black, dark in both themes. */
-  --code-ground: oklch(0.16 0.008 60);
+  /* The code panel: a near-black, dark in both themes. */
+  --code-ground: oklch(0.15 0 0);
   --page-x: 1.5rem;
   --radius: 8px;
   --icon-stroke: 1px;
@@ -547,7 +547,7 @@ img.markdown-media {
 /* A line longer than the panel fades out in the right padding, inside the
    border, so no glyph is cut at the edge. Over a short line the fade covers
    only empty padding. */
-.group:has(> .code-panel)::after {
+.group[data-overflow]:has(> .code-panel)::after {
   content: "";
   position: absolute;
   top: 1px;
@@ -1129,7 +1129,10 @@ pre code.hljs {
   font-size: 0.86rem;
   line-height: 1.55;
   color: oklch(0.72 0 0);
-  background: oklch(1 0 0 / 3%);
+  /* Opaque and above the panel's edge fade: the caption does not scroll, so
+     it does not fade. */
+  z-index: 2;
+  background: color-mix(in oklch, var(--code-ground), white 3%);
   border-top: 1px solid oklch(1 0 0 / 7%);
 }
 .vex-signature-caption strong {

@@ -53,11 +53,14 @@ export function CodePanel({ children, language }: CodePanelProps) {
     const hang = () => {
       const bar = scroller.offsetHeight - scroller.clientHeight - 2 * scroller.clientTop;
       last.style.marginBottom = bar > 0 ? `${-bar}px` : "";
+      // The right edge fades only when there is more to scroll to.
+      if (scroller.scrollWidth > scroller.clientWidth) panel.dataset.overflow = "";
+      else delete panel.dataset.overflow;
     };
+    const panel = panelRef.current!;
     const observer = new ResizeObserver(hang);
     observer.observe(scroller);
     // Once scrolled, the left edge fades as the right one does (globals.css).
-    const panel = panelRef.current!;
     const onScroll = () => {
       if (scroller.scrollLeft > 0) panel.dataset.scrolled = "";
       else delete panel.dataset.scrolled;
