@@ -54,9 +54,10 @@ export function VaultSelect({ value, onChange }: { value: string | null; onChang
       </button>
 
       {open && (
-        <div ref={menu} role="listbox" aria-label="Obsidian vaults" className={cn(MENU_PANEL, "w-64")}>
+        <div ref={menu} role="listbox" aria-label="Obsidian vaults" className={cn(MENU_PANEL, "w-[240px]")}>
           {all.length > 0 && (
-            <div className="max-h-[calc(var(--spacing-row)*6)] overflow-y-auto">
+            // Five and a half rows: the half row says the list goes on.
+            <div className="max-h-[184px] overflow-y-auto">
               {all.map((vault) => (
                 <button
                   key={vault.path}
@@ -74,7 +75,13 @@ export function VaultSelect({ value, onChange }: { value: string | null; onChang
             </div>
           )}
           {all.length > 0 && <div aria-hidden="true" className="mx-sm my-xs border-t border-hairline" />}
-          {all.length === 0 && <p className="px-sm py-[7px] text-row text-neutral-500">Obsidian lists no vaults</p>}
+          {all.length === 0 && (
+            // On the label axis of the item under it.
+            <p className="flex items-center gap-2.5 px-sm py-[7px] text-row text-neutral-500">
+              <span className={cn(MENU_ICON, "inline-block")} aria-hidden="true" />
+              Obsidian lists no vaults
+            </p>
+          )}
           <button type="button" role="option" aria-selected={false} onClick={pickOther} className={MENU_ITEM}>
             <FolderOpen className={MENU_ICON} aria-hidden="true" />
             <span>Other folder…</span>
