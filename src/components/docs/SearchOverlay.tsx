@@ -208,7 +208,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
     }
     return paste ? [] : matchCommands(all, query);
   }, [navigate, theme, paste, query]);
-  // The arrow keys walk the commands first, then the rows, then "Search for".
+  // The arrow keys walk the commands first, then the rows.
   // A command is picked at the start only when the query is one of its whole
   // words: "bo" is more often Box than Bookmarks.
   const skip = commands.length;
