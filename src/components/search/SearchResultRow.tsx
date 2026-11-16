@@ -120,6 +120,9 @@ function Highlight({ text, query }: { text: string; query: string }) {
   );
 }
 
+/** The name on a result row. A command row in the overlay uses it too. */
+export const ROW_TITLE = "text-sm leading-5 font-medium dark:font-normal";
+
 export function SearchResultRow({
   title,
   category,
@@ -214,7 +217,7 @@ export function SearchResultRow({
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex items-baseline gap-ms">
-          <span className="truncate text-sm leading-5 font-medium dark:font-normal">{title}</span>
+          <span className={cn("truncate", ROW_TITLE)}>{title}</span>
           {category && <span className="ml-auto max-w-[45%] shrink-0 truncate text-xs text-muted-foreground">{category}</span>}
         </span>
         {summary && <span className="truncate text-xs text-muted-foreground">{summary}</span>}

@@ -13,6 +13,8 @@ import { useLocation, useNavigate } from "react-router";
 import { showToast } from "@/components/ui/toast-notification";
 import { FADE_OUT, useOverflow } from "@/lib/ui/overflow";
 import { cn } from "@/lib/utils";
+import { Keys } from "@/components/ui/Keycap";
+import { ROW_TITLE } from "@/components/search/SearchResultRow";
 import { SearchHints } from "@/components/search/SearchHints";
 import { findAnchor, jumpTo } from "@/components/docs/toc/measure";
 import { invoke, inTauri } from "@/lib/backend";
@@ -200,7 +202,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
         label: "New window",
         words: [],
         icon: Icons.newWindow,
-        shortcut: `${COMMAND_KEY} N`,
+        shortcut: `${COMMAND_KEY}+N`,
         run: () => void invoke("new_window").catch(() => {}),
       });
     }
@@ -383,7 +385,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
         </div>
 
         {showList && (
-          <div ref={listRef} className={cn("scroll-pt-4 scroll-pb-10", SEARCH_LIST_CLASS, FADE_OUT, "[--fade-size:32px] [--fade-head-size:16px]")}>
+          <div ref={listRef} className={cn("scroll-pt-4 scroll-pb-10 [scrollbar-width:none]!", SEARCH_LIST_CLASS, FADE_OUT, "[--fade-size:32px] [--fade-head-size:16px]")}>
           <SearchResultList
             hits={results}
             query={empty ? "" : field.text}
@@ -415,9 +417,9 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
                         <span className="grid size-5 shrink-0 place-items-center text-muted-foreground">
                           <command.icon className="size-[17px]" aria-hidden="true" />
                         </span>
-                        <span className="min-w-0 flex-1 truncate text-sm font-medium">{command.label}</span>
+                        <span className={cn("min-w-0 flex-1 truncate", ROW_TITLE)}>{command.label}</span>
                         {command.shortcut && (
-                          <kbd className="shrink-0 font-sans text-xs text-muted-foreground">{command.shortcut}</kbd>
+                          <Keys keys={command.shortcut} className="shrink-0" />
                         )}
                       </button>
                     </li>

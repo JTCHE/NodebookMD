@@ -224,7 +224,7 @@ function PinButton({ corner }: { corner: boolean }) {
   });
   if (!appWindow()) return null;
   return (
-    <Hint label={pinned ? "Stop keeping on top" : "Keep on top"} keys={`${COMMAND_KEY}+${ALT_KEY}+T`}>
+    <Hint label={pinned ? "Stop keeping on top" : "Keep on top"} keys={`${COMMAND_KEY}+${ALT_KEY}+T`} className="h-full">
     <button
       type="button"
       tabIndex={-1}
