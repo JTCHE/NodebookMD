@@ -1278,7 +1278,7 @@ span.doc-icon.inline-icon-large {
 .slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 999px;
-  background: var(--neutral-200);
+  background: var(--neutral-300);
 }
 .slider::-webkit-slider-thumb {
   appearance: none;

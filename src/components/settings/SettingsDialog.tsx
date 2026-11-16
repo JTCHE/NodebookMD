@@ -341,6 +341,9 @@ function McpSection() {
 
   return (
     <Section title="Houdini MCP">
+      <p className="mt-xs mb-sm text-label text-neutral-500">
+        Lets an agent read these docs and drive Houdini. Restart the agent after a change.
+      </p>
       {agents === null && <Empty>Looking for agents…</Empty>}
       {agents?.length === 0 && (
         <Empty>
@@ -363,7 +366,7 @@ function McpSection() {
               </span>
             ) : agent.link === "other" ? (
               // Replace must say what it replaces.
-              "Another Houdini MCP is set up"
+              "Another Houdini MCP is set up. Replace puts this one in its place"
             ) : undefined
           }
         >
@@ -451,8 +454,8 @@ function ExportSection() {
   }
 
   const choices: { value: PicturesChoice; label: string }[] = [
-    { value: "ask", label: "Ask each time" },
-    { value: "bring", label: "Copy into vault" },
+    { value: "ask", label: "Ask" },
+    { value: "bring", label: "Copy" },
     { value: "text", label: "Text only" },
   ];
   return (
@@ -756,9 +759,7 @@ function AboutSection() {
       <Row label="Report a problem">
         <WebButton url={`${REPO}/issues/new`} />
       </Row>
-      <Row label="Licence" fact="MIT">
-        <WebButton url={`${REPO}/blob/main/LICENSE`} />
-      </Row>
+      <Row label="Licence" fact="MIT, free to use and to change" />
     </Section>
   );
 }
