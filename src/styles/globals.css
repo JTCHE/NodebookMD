@@ -542,6 +542,20 @@ img.markdown-media {
   overflow-x: auto;
   overflow-y: hidden;
 }
+/* A line longer than the panel fades out in the right padding, inside the
+   border, so no glyph is cut at the edge. Over a short line the fade covers
+   only empty padding. */
+.group:has(> .code-panel)::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  bottom: 1px;
+  width: var(--md);
+  border-radius: 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0;
+  background: linear-gradient(to right, transparent, oklch(0.13 0 0));
+  pointer-events: none;
+}
 
 /* The code elements that the renderer outputs always have a class. */
 pre code[class] * {

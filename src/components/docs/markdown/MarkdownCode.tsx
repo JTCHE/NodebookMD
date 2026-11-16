@@ -16,8 +16,10 @@ export const Code: Components["code"] = ({ className, children, node: _node, ...
     );
   }
   return (
+    // Neutral ink: pink is a VEX binding in a code panel, so it must not
+    // also mean "any code" in the prose around it.
     <code
-      className="bg-muted px-1.5 py-0.5 text-sm font-mono border border-border/50 rounded-sm text-pink-600 dark:text-pink-400 [overflow-wrap:anywhere] whitespace-normal"
+      className="bg-muted px-1.5 py-0.5 text-sm font-mono border border-border/50 rounded-sm text-foreground [overflow-wrap:anywhere] whitespace-normal"
       {...props}
     >
       {children}
