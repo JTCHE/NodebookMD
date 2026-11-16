@@ -134,7 +134,7 @@ const SYSTEM_GLYPHS = navigator.userAgent.includes("Windows");
 /** Caption glyphs are made for 10px. A general glyph, as the search and the
     pin, is drawn thinner, for a larger size: at 12px its stroke is one full
     device pixel and its optical size matches the maximize square. */
-function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement, size = 10) {
+function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement, size = 10, lift = size === 10 ? 0 : 0.12) {
   if (!SYSTEM_GLYPHS) return Drawn;
   return function SystemGlyph({ className }: { className?: string }) {
     return (
@@ -148,7 +148,7 @@ function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) =
         style={{
           fontFamily: "'Segoe Fluent Icons', 'Segoe MDL2 Assets'",
           fontSize: size,
-          transform: `translate3d(0, ${size === 10 ? 0 : -0.12}em, 0)`,
+          transform: `translate3d(0, ${-lift}em, 0)`,
         }}
       >
         {codepoint}
@@ -207,7 +207,7 @@ export const Icons = {
   /* Window */
   pin: systemGlyph("\uE718", CaptionPin, 11),
   pinned: systemGlyph("\uE842", CaptionPinned, 11),
-  captionSearch: systemGlyph("\uE721", CaptionSearch, 12),
+  captionSearch: systemGlyph("\uE721", CaptionSearch, 12, 0),
   versionPicker: ChevronsUpDown,
 
   /* Content */
