@@ -208,9 +208,9 @@ export const Icons = {
   collapseAll: ChevronsDownUp,
 
   /* Window */
-  pin: systemGlyph("\uE718", CaptionPin, 11),
-  pinned: systemGlyph("\uE842", CaptionPinned, 11),
-  captionSearch: systemGlyph("\uE721", CaptionSearch, 11.5, 0.05),
+  pin: systemGlyph("\uE718", CaptionPin, 10.5),
+  pinned: systemGlyph("\uE842", CaptionPinned, 10.5),
+  captionSearch: systemGlyph("\uE721", CaptionSearch, 11.5, 0.02),
   versionPicker: ChevronsUpDown,
 
   /* Content */
