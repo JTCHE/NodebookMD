@@ -51,7 +51,7 @@ export function PageHeader({ name, nodeType, icon, since, summary, markdown, ent
             room. The version sits beside Since: both say which node this is. */}
         {(summary || since || versions.length > 1) && (
           <div className="flex w-full basis-full flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
-            {summary && <p className="m-0 min-w-0 flex-1 text-sm italic text-muted-foreground">{summary}</p>}
+            {summary && <p className="m-0 min-w-0 flex-1 text-sm text-muted-foreground">{summary}</p>}
             <div className="flex shrink-0 items-center gap-2">
               <NodeVersionSelector versions={versions} path={entry.path} />
               {since && (

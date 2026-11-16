@@ -12,7 +12,7 @@ import { pageKind } from "@/lib/ranking";
 
 /** The page is drawn at this fraction of its size, the same in every window
     width, so a wider card shows more of the page and never bigger type. */
-const SCALE = 0.42; // also in the padding classes below: text inside sits on the search text axis
+const SCALE = 0.42;
 /** Enough blocks to fill the window; the rest is never seen. */
 const BLOCKS = 8;
 
@@ -24,7 +24,8 @@ function holdsCode(node: { type: string; tagName?: string; properties?: { classN
   return (node.children ?? []).some((child) => holdsCode(child as typeof node));
 }
 
-export function PagePreview({ path, title }: { path: string; title: string }) {
+/** `scale` is larger in a tooltip: a small box is read, not glanced at. */
+export function PagePreview({ path, title, scale = SCALE }: { path: string; title: string; scale?: number }) {
   const [page, setPage] = useState<PageView | undefined>(() => known(path));
 
   // The page is laid out as wide as the window, divided by the scale. A
@@ -34,10 +35,10 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
   useLayoutEffect(() => {
     const element = box.current;
     if (!element) return;
-    const observer = new ResizeObserver(() => setWidth(element.clientWidth / SCALE));
+    const observer = new ResizeObserver(() => setWidth(element.clientWidth / scale));
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [scale]);
 
   useEffect(() => {
     if (page?.tree) return;
@@ -56,8 +57,8 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
   return (
     <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-clip select-none [--fade-above:0] [--fade-below:1] [--fade-size:32px]">
       <article
-        className="prose prose-neutral dark:prose-invert max-w-none px-[calc(var(--spacing-ms)/0.42)] pt-[calc(var(--spacing-ms)/0.42)] lg:px-[calc(var(--spacing-md)/0.42)] lg:pt-[calc(var(--spacing-md)/0.42)]"
-        style={{ width: width || undefined, zoom: SCALE }}
+        className="prose prose-neutral dark:prose-invert max-w-none px-[calc(var(--spacing-ms)/var(--scale))] pt-[calc(var(--spacing-ms)/var(--scale))] lg:px-[calc(var(--spacing-md)/var(--scale))] lg:pt-[calc(var(--spacing-md)/var(--scale))]"
+        style={{ width: width || undefined, zoom: scale, "--scale": scale } as React.CSSProperties}
       >
         {/* The page's own breadcrumb line, so the window reads as the top of a page. */}
         <p className="m-0 mb-4 text-xs text-muted-foreground">{path.split("/").slice(0, -1).join("  ›  ")}</p>

@@ -350,9 +350,9 @@ export function DocTooltip({ slug, summaryOnly = false, anchor, ...anchored }: A
   // A signature and a summary-only tip stay as text: they name a part.
   if (meta && !summaryOnly && !signature && !anchor) {
     return (
-      <TooltipBox {...anchored} className={cn("w-72 border-0 bg-transparent p-0 shadow-lg", WINDOW)}>
+      <TooltipBox {...anchored} className={cn("w-80 border-0 bg-transparent p-0 shadow-lg", WINDOW)}>
         <span className="relative block h-window overflow-hidden rounded-[inherit]">
-          <PagePreview path={slug} title={meta.title} />
+          <PagePreview path={slug} title={meta.title} scale={0.6} />
         </span>
       </TooltipBox>
     );
