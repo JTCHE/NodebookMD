@@ -955,10 +955,11 @@ pre code.hljs {
   transition: filter 300ms var(--ease-out-quint);
 }
 /* Grey takes away the hue that set a dark icon apart from a dark page, so
-   in dark mode the icons lift their blacks: black reads as mid grey, white
+   in dark mode the icons lift their blacks: black reads as dark grey, white
    stays white. */
 :root[data-theme="dark"][data-accent="monochrome"] img:is([src*="hicon"], [src*="/icon/"]) {
-  filter: grayscale(1) contrast(0.5) brightness(1.6);
+  /* contrast then brightness: x becomes 0.65x + 0.35, so white stays white. */
+  filter: grayscale(1) contrast(0.48) brightness(1.35);
 }
 :root[data-accent="monochrome"] :is([role="dialog"] img, .markdown-video:not([data-paused]) video) {
   filter: none;
