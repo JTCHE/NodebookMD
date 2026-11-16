@@ -1237,6 +1237,21 @@ span.doc-icon.inline-icon-large {
 }
 
 /* Print, last, so it overrides the screen rules above. The printer sets the paper, and theme.ts prints the light theme. */
+/* Settings > Reading (lib/ui/reading.ts). The text size zooms the page column,
+   so a line keeps its count of characters; the measure sets that count. */
+:root[data-text="small"] .max-w-page {
+  zoom: 0.9;
+}
+:root[data-text="large"] .max-w-page {
+  zoom: 1.125;
+}
+:root[data-measure="narrow"] {
+  --container-page: calc(60ch + 2 * var(--page-x));
+}
+:root[data-measure="wide"] {
+  --container-page: calc(90ch + 2 * var(--page-x));
+}
+
 @page {
   margin: 1.5cm 1.3cm;
 }

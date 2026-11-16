@@ -166,6 +166,33 @@ async fn install(app: &tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
     if cfg!(debug_assertions) || !wanted(app) {
         return Ok(());
     }
+    install_now(app).await
+}
+
+/// The version a check finds, or none. Settings > About asks.
+#[tauri::command]
+pub async fn check_update(app: tauri::AppHandle) -> Result<Option<String>, String> {
+    if cfg!(debug_assertions) {
+        return Ok(None);
+    }
+    let update = app
+        .updater_builder()
+        .timeout(CHECK_LIMIT)
+        .build()
+        .map_err(|e| e.to_string())?
+        .check()
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(update.map(|found| found.version))
+}
+
+/// Installs the new version and restarts, when the reader asks in Settings.
+#[tauri::command]
+pub async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
+    install_now(&app).await.map_err(|e| e.to_string())
+}
+
+async fn install_now(app: &tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
     let Some(update) = app
         .updater_builder()
         .timeout(CHECK_LIMIT)
