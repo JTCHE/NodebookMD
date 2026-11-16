@@ -554,19 +554,27 @@ pre code[class] {
   display: block;
   background: transparent;
   border: none;
-  padding: var(--md);
+  /* The line-height's half-leading adds to the top and the foot, so they
+     take less padding to look as wide as the sides. Max-content width keeps
+     the right padding at the end of a scrolled line. */
+  width: max-content;
+  min-width: 100%;
+  padding: calc(var(--md) - 4px) var(--md);
   color: oklch(0.88 0 0);
   font-size: 0.84em;
   line-height: 1.7;
 }
 
+/* One hue for each role, as an editor's dark theme: keywords violet, types
+   blue, calls warm yellow, classes teal, names pale blue, strings green,
+   numbers pale lavender, bindings pink. None is the brand's orange. */
 .hljs-keyword,
 .vex-token-output {
-  color: oklch(0.72 0.14 245);
-  font-weight: 600;
+  color: oklch(0.74 0.13 305);
+  font-weight: 500;
 }
 .vex-argument-ampersand {
-  color: oklch(0.72 0.14 245);
+  color: oklch(0.74 0.13 305);
 }
 .hljs-type,
 .hljs-built_in,
@@ -574,11 +582,14 @@ pre code[class] {
 .vex-argument-type,
 .vex-return-arrow,
 .vex-return-type {
-  color: oklch(0.66 0.08 242.84);
+  color: oklch(0.7 0.1 245);
 }
 .hljs-number,
 .hljs-literal {
-  color: oklch(0.8 0.13 55);
+  color: oklch(0.84 0.06 285);
+}
+.hljs-binding {
+  color: oklch(0.78 0.12 350);
 }
 .hljs-string,
 .hljs-attr,
@@ -592,7 +603,7 @@ pre code[class] {
 .hljs-function .hljs-title,
 .hljs-title.function_,
 .vex-token-function {
-  color: oklch(0.71 0.13 308.92);
+  color: oklch(0.87 0.1 95);
 }
 .hljs-title.class_ {
   color: oklch(0.8 0.1 180);

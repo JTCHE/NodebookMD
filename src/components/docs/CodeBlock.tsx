@@ -3,39 +3,22 @@ import hljs from "highlight.js/lib/core";
 import c from "highlight.js/lib/languages/c";
 import python from "highlight.js/lib/languages/python";
 import type { CodeLanguage } from "@/lib/markdown/types";
+import { colourNames } from "./code-names";
 import "./CodeBlock.css";
 
-const withFunctionCalls = (languageFactory: typeof c) => (highlightJs: Parameters<typeof c>[0]) => {
-  const language = languageFactory(highlightJs);
-  // The language files name keywords, strings and numbers only. These add
-  // the names a reader tracks, as an editor colours them: a class made by a
-  // call, a function call, a name that takes a value, an object before a
-  // dot, and a member after one.
-  language.contains.unshift(
-    { className: "title class_", begin: /\b[A-Z]\w*(?=\s*\()/, relevance: 0 },
-    { className: "title function_", begin: /\b[A-Za-z_]\w*(?=\s*\()/, relevance: 0 },
-    { className: "variable", begin: /\b[A-Za-z_]\w*(?=\s*=(?!=))/, relevance: 0 },
-    { className: "variable", begin: /\b[a-z_]\w*(?=\.[A-Za-z_])/, relevance: 0 },
-    { className: "property", begin: /(?<=\.)[A-Za-z_]\w*\b/, relevance: 0 },
-  );
-  // Any other lower-case name is a variable, except a word the language
-  // itself owns. The language's own lists say which words those are.
-  const owned = Object.entries((language.keywords ?? {}) as Record<string, unknown>)
-    .filter(([kind]) => kind !== "$pattern")
-    .flatMap(([, words]) => (typeof words === "string" ? words.split(/\s+/) : Array.isArray(words) ? words : []))
-    .map(String)
-    .map((word) => word.split("|")[0])
-    .filter((word) => /^\w+$/.test(word));
-  language.contains.push({
-    className: "variable",
-    begin: new RegExp(`\\b(?!(?:${owned.join("|")})\\b)[a-z_]\\w*\\b`),
-    relevance: 0,
-  });
-  return language;
-};
+hljs.registerLanguage("c", c);
+hljs.registerLanguage("python", python);
 
-hljs.registerLanguage("c", withFunctionCalls(c));
-hljs.registerLanguage("python", withFunctionCalls(python));
+/** The words a language owns: its keywords, built-ins and literals. */
+function ownedWords(name: string): Set<string> {
+  const keywords = (hljs.getLanguage(name)?.keywords ?? {}) as Record<string, unknown>;
+  return new Set(
+    Object.entries(keywords)
+      .filter(([kind]) => kind !== "$pattern")
+      .flatMap(([, words]) => (typeof words === "string" ? words.split(/\s+/) : Array.isArray(words) ? words.map(String) : []))
+      .map((word) => word.split("|")[0]),
+  );
+}
 hljs.registerAliases(["vex", "hscript", "cpp", "c++"], { languageName: "c" });
 
 interface CodePanelProps {
@@ -56,6 +39,8 @@ export function CodePanel({ children, language }: CodePanelProps) {
     // it. The page's language is for a block that names none.
     if (language && !/language-/.test(code.className)) code.className = `language-${language}`;
     hljs.highlightElement(code as HTMLElement);
+    const name = /language-(\S+)/.exec(code.className)?.[1];
+    if (name && hljs.getLanguage(name)) colourNames(code as HTMLElement, ownedWords(name));
   }, [language]);
 
   // A panel that scrolls hangs its bar over the code's bottom padding instead
