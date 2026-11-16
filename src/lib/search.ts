@@ -23,7 +23,7 @@ export function excerptText(excerpt: string): string {
     .replace(/\\(?=[\s\p{P}]|$)/gu, "")
     // A list the snippet crossed, `- Box - Grid`, reads as its items. Only an
     // excerpt that starts on a list marker: ` - ` in prose is a dash.
-    .replace(/^\s*- (.*)$/s, (_, items: string) => items.replace(/s+- /g, " · "));
+    .replace(/^\s*- (.*)$/s, (_, items: string) => items.replace(/\s+- /g, " · "));
 }
 
 /** A table the snippet crossed, as text: its head row and the `| --- |` row
