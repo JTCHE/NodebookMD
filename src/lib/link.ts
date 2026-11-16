@@ -9,7 +9,7 @@ import { sideFxUrl } from "./sidefx";
 export const LINK_FORMATS = {
   path: { label: "Docs path", example: "docs/houdini/nodes/sop/box" },
   app: { label: "App link", example: "nodebookmd://docs/houdini/nodes/sop/box" },
-  sidefx: { label: "SideFX website", example: "https://www.sidefx.com/docs/houdini/nodes/sop/box" },
+  sidefx: { label: "SideFX", example: "https://www.sidefx.com/docs/houdini/nodes/sop/box" },
 } as const;
 export type LinkFormat = keyof typeof LINK_FORMATS;
 

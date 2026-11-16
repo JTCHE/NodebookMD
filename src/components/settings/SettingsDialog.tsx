@@ -235,7 +235,7 @@ function HelpSection() {
     <Section title="Houdini help">
       {/* Houdini writes its preferences when it closes, so a change made while it is open is lost. Said once, over the list. */}
       {houdiniOpen && series && series.length > 0 && (
-        <p className="mt-xs text-label text-muted-foreground">F1 in these opens {APP_NAME}. Close Houdini to change them.</p>
+        <p className="mt-xs text-label text-muted-foreground">F1 opens {APP_NAME} in these installs. Close Houdini to change them.</p>
       )}
       {series?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
       {series?.map((name) => {
