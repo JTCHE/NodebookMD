@@ -57,7 +57,7 @@ export function Modal({
 
   return createPortal(
     <div className="fixed inset-0 z-[70] grid place-items-center p-md" onMouseDown={onClose}>
-      <div className={SCRIM} />
+      <div data-scrim className={SCRIM} />
       <div
         role="dialog"
         aria-modal="true"

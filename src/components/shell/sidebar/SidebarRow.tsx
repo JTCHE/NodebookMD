@@ -122,11 +122,11 @@ export function SidebarRow({
       // The row you are on is a chip lifted off the panel, not a tinted band:
       // the panel is already a shade of the page, so a tint would have to be
       // darker than the page to read at all.
-      // A bare row, in Settings, is a step under the full chip, so a hover
-      // on it can go one step lighter, never darker.
+      // The chip rests a step under full white, so a hover on it goes one
+      // step lighter, never darker.
       // Hover is a tint of the panel, never the chip: a hovered row must not
       // read as a second row you are on.
-      raised ? (bare ? "bg-raised/70 shadow-chip pointer-hover:bg-raised dark:bg-foreground/[0.07] dark:pointer-hover:bg-foreground/[0.11]" : "bg-raised shadow-chip ring-1 ring-inset ring-foreground/[0.14] dark:bg-neutral-300 dark:ring-0 pointer-hover:bg-neutral-50 dark:pointer-hover:brightness-125") : "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045]",
+      raised ? "bg-raised/60 shadow-chip ring-1 ring-inset ring-foreground/[0.14] pointer-hover:bg-raised dark:bg-neutral-300 dark:ring-0 dark:pointer-hover:bg-neutral-300 dark:pointer-hover:brightness-125" : "pointer-hover:bg-foreground/[0.035] dark:pointer-hover:bg-foreground/[0.045]",
       // Focus is an accent ring inside the row's own shape: plain to see,
       // and never mistaken for hover or the chip.
       "focus-ring",
@@ -156,7 +156,8 @@ export function SidebarRow({
           icon carries its own aspect ratio and an app glyph does not, and
           without the box the two draw rows of different heights. */}
       {(mark !== undefined || icon !== undefined) && (
-        <span className="grid size-icon shrink-0 place-items-center" aria-hidden="true">
+        // An icon is heavy at the top; 1px up centres it on the label.
+        <span className="grid size-icon shrink-0 -translate-y-px place-items-center" aria-hidden="true">
           {mark === undefined && icon !== undefined ? (
             icon ? (
               <DocIconClient

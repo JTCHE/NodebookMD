@@ -1,18 +1,22 @@
 /**
- * How a docs page reads: its text size and its measure. Each is a root
- * attribute, `data-text` and `data-measure`, and `globals.css` does the rest.
+ * How a docs page reads: its text size and its measure. The size is a root
+ * attribute, `data-text`; the measure is a root variable, `--measure`, in
+ * `ch`. `globals.css` does the rest.
  * Kept in the browser, as the theme is, so the help pane reads it too.
  */
 import { useSyncExternalStore } from "react";
 
 export type TextSize = "small" | "default" | "large";
-export type Measure = "narrow" | "default" | "wide";
 
 export const TEXT_SIZES: TextSize[] = ["small", "default", "large"];
-export const MEASURES: Measure[] = ["narrow", "default", "wide"];
-
 export const TEXT_SIZE_LABEL: Record<TextSize, string> = { small: "Small", default: "Default", large: "Large" };
-export const MEASURE_LABEL: Record<Measure, string> = { narrow: "Narrow", default: "Default", wide: "Wide" };
+
+/** The measure, in `ch` of Geist. 72ch is about 105 characters of prose. */
+export const MEASURE_MIN = 52;
+export const MEASURE_MAX = 104;
+export const MEASURE_DEFAULT = 72;
+/** Characters of prose in one `ch`, for the reader's own unit. */
+export const CHARACTERS_PER_CH = 105 / 72;
 
 const TEXT_KEY = "nodebookmd.text-size";
 const MEASURE_KEY = "nodebookmd.measure";
@@ -28,9 +32,18 @@ function read<T extends string>(key: string, choices: readonly T[]): T {
 
 const listeners = new Set<() => void>();
 
+function readMeasure(): number {
+  try {
+    const value = Number(window.localStorage.getItem(MEASURE_KEY));
+    return value >= MEASURE_MIN && value <= MEASURE_MAX ? value : MEASURE_DEFAULT;
+  } catch {
+    return MEASURE_DEFAULT;
+  }
+}
+
 function paint() {
   document.documentElement.dataset.text = read(TEXT_KEY, TEXT_SIZES);
-  document.documentElement.dataset.measure = read(MEASURE_KEY, MEASURES);
+  document.documentElement.style.setProperty("--measure", `${readMeasure()}ch`);
   for (const notify of listeners) notify();
 }
 
@@ -44,7 +57,7 @@ export function startReading() {
 
 function write(key: string, value: string) {
   try {
-    if (value === "default") window.localStorage.removeItem(key);
+    if (value === "default" || value === String(MEASURE_DEFAULT)) window.localStorage.removeItem(key);
     else window.localStorage.setItem(key, value);
   } catch {
     // A blocked store loses the choice at the end of the session only.
@@ -53,7 +66,7 @@ function write(key: string, value: string) {
 }
 
 export const setTextSize = (choice: TextSize) => write(TEXT_KEY, choice);
-export const setMeasure = (choice: Measure) => write(MEASURE_KEY, choice);
+export const setMeasure = (measure: number) => write(MEASURE_KEY, String(measure));
 
 function subscribe(notify: () => void) {
   listeners.add(notify);
@@ -61,4 +74,4 @@ function subscribe(notify: () => void) {
 }
 
 export const useTextSize = () => useSyncExternalStore(subscribe, () => read(TEXT_KEY, TEXT_SIZES), () => "default" as TextSize);
-export const useMeasure = () => useSyncExternalStore(subscribe, () => read(MEASURE_KEY, MEASURES), () => "default" as Measure);
+export const useMeasure = () => useSyncExternalStore(subscribe, readMeasure, () => MEASURE_DEFAULT);

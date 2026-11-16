@@ -1239,19 +1239,61 @@ span.doc-icon.inline-icon-large {
 /* Print, last, so it overrides the screen rules above. The printer sets the paper, and theme.ts prints the light theme. */
 /* Settings > Reading (lib/ui/reading.ts). The text size zooms the page column,
    so a line keeps its count of characters; the measure sets that count. The
-   measure sets max-width itself: --container-page is an inline theme value,
-   so the utility holds a copy of it, not the variable. */
+   rule is outside the layers, so it wins over the max-w-page utility, which
+   holds a copy of --container-page, not the variable. */
 :root[data-text="small"] .max-w-page {
   zoom: 0.9;
 }
 :root[data-text="large"] .max-w-page {
   zoom: 1.125;
 }
-:root[data-measure="narrow"] .max-w-page {
-  max-width: calc(60ch + 2 * var(--page-x));
+.max-w-page {
+  max-width: calc(var(--measure, 72ch) + 2 * var(--page-x));
 }
-:root[data-measure="wide"] .max-w-page {
-  max-width: calc(90ch + 2 * var(--page-x));
+
+/* While the reader drags the page width, Settings steps aside: only the
+   slider's row stays, on its own card, and the page shows behind it. */
+:root[data-previewing] [data-scrim] {
+  opacity: 0;
+}
+:root[data-previewing] [role="dialog"] {
+  visibility: hidden;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+:root[data-previewing] [data-preview-keep] {
+  visibility: visible;
+  background: var(--background);
+  box-shadow: var(--elevation-pane);
+}
+
+/* A slider: a sunk track, as a picker's, and a raised knob, as its chip. */
+.slider {
+  appearance: none;
+  height: 20px;
+  background: transparent;
+  cursor: var(--cursor-interactive, pointer);
+}
+.slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--neutral-200);
+}
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  margin-top: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--raised);
+  box-shadow: var(--elevation-chip), 0 0 0 1px var(--hairline);
+}
+.slider:focus-visible {
+  outline: none;
+}
+.slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: var(--elevation-chip), 0 0 0 2px var(--ring);
 }
 
 @page {

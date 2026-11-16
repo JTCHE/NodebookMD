@@ -24,8 +24,10 @@ import { APP_NAME, REPO } from "@/lib/brand";
 import { openWeb } from "@/lib/web";
 import { clearLibrary, useLibrary } from "@/lib/store/library";
 import {
-  MEASURES,
-  MEASURE_LABEL,
+  CHARACTERS_PER_CH,
+  MEASURE_DEFAULT,
+  MEASURE_MAX,
+  MEASURE_MIN,
   TEXT_SIZES,
   TEXT_SIZE_LABEL,
   setMeasure,
@@ -101,23 +103,20 @@ export function SettingsDialog() {
       // six agents Houdini MCP supports, the longest list with a known end
       // (see `Section`). Houdini help has no such end, so a longer
       // list scrolls. It stands tall enough to cover the page's heading.
-      className="h-[min(520px,100%)] w-full max-w-[760px] flex-row"
+      className="h-[min(520px,100%)] w-full max-w-[760px] flex-row rounded-[calc(var(--radius-md)+var(--spacing-sm))]"
     >
       {/* The sections are places, as the sidebar's rows are, on the panel's
-          own ground. The inset is one value on every side, and the window
-          corner (rounded-xl, 12px) less that inset is the row corner, so the
-          two curves are concentric. */}
-      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-neutral-100 p-sm">
+          own ground, the sidebar's. The inset is one value on every side,
+          and the window corner is the row corner plus that inset (see the
+          dialog's class), so the two curves are concentric. */}
+      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-chrome p-sm">
         {SECTIONS.map((one) => (
           <SidebarRow
             key={one.key}
             label={one.label}
             bare
-            className="rounded-[4px]"
             selected={shown === one.key}
-            mark={
-              <one.icon className={cn("size-icon", shown === one.key ? "text-neutral-900" : "text-neutral-500")} />
-            }
+            mark={<one.icon className={cn("size-icon", shown === one.key ? "text-neutral-900" : "text-neutral-500")} />}
             onClick={() => setShown(one.key)}
           />
         ))}
@@ -236,7 +235,10 @@ function HelpSection() {
     <Section title="Houdini help">
       {/* Houdini writes its preferences when it closes, so a change made while it is open is lost. Said once, over the list. */}
       {houdiniOpen && series && series.length > 0 && (
-        <p role="status" className="mt-xs flex items-center gap-sm rounded-lg border border-hairline bg-neutral-100 px-ms py-sm text-label text-neutral-900">
+        <p
+          role="status"
+          className="mt-xs flex items-center gap-sm rounded-lg border border-hairline bg-neutral-100 px-ms py-sm text-label text-neutral-900"
+        >
           <Icons.warning className="size-icon shrink-0 text-neutral-700" />
           Houdini is open. Close it to change these switches.
         </p>
@@ -442,7 +444,12 @@ function ExportSection() {
         />
       </Row>
       <Row label="Images sent to Obsidian">
-        <Segmented label="Images sent to Obsidian" value={choice} options={choices} onChange={(next) => void pick(next)} />
+        <Segmented
+          label="Images sent to Obsidian"
+          value={choice}
+          options={choices}
+          onChange={(next) => void pick(next)}
+        />
       </Row>
       <Row label="Obsidian vault">
         <VaultSelect value={vault} onChange={(path) => void keep(path)} />
@@ -500,7 +507,10 @@ function GeneralSection() {
         <Segmented
           label="Reduce motion"
           value={motion}
-          options={MOTION_CHOICES.map((choice) => ({ value: choice, label: MOTION_LABEL[choice] }))}
+          options={MOTION_CHOICES.map((choice) => ({
+            value: choice,
+            label: MOTION_LABEL[choice],
+          }))}
           onChange={setMotion}
         />
       </Row>
@@ -520,7 +530,9 @@ function GeneralSection() {
             {tray !== null && <Toggle checked={tray} onChange={(next) => void flipTray(next)} label={trayLabel} />}
           </Row>
           <Row label="Open at login">
-            {login !== null && <Toggle checked={login} onChange={(next) => void flipLogin(next)} label="Open at login" />}
+            {login !== null && (
+              <Toggle checked={login} onChange={(next) => void flipLogin(next)} label="Open at login" />
+            )}
           </Row>
         </>
       )}
@@ -538,18 +550,35 @@ function ReadingSection() {
         <Segmented
           label="Page text size"
           value={size}
-          options={TEXT_SIZES.map((choice) => ({ value: choice, label: TEXT_SIZE_LABEL[choice] }))}
+          options={TEXT_SIZES.map((choice) => ({
+            value: choice,
+            label: TEXT_SIZE_LABEL[choice],
+          }))}
           onChange={setTextSize}
         />
       </Row>
-      <Row label="Page width">
-        <Segmented
+      {/* While the knob is held, Settings steps aside and the page shows the
+          new width behind this one row (see globals.css). */}
+      <div data-preview-keep className="-mx-ms rounded-lg px-ms">
+        <Row
           label="Page width"
-          value={measure}
-          options={MEASURES.map((choice) => ({ value: choice, label: MEASURE_LABEL[choice] }))}
-          onChange={setMeasure}
-        />
-      </Row>
+          fact={`About ${Math.round(measure * CHARACTERS_PER_CH)} characters a line${measure === MEASURE_DEFAULT ? ", the default" : ""}`}
+        >
+          <input
+            type="range"
+            aria-label="Page width"
+            className="slider w-[200px]"
+            min={MEASURE_MIN}
+            max={MEASURE_MAX}
+            value={measure}
+            onChange={(event) => setMeasure(Number(event.target.value))}
+            onDoubleClick={() => setMeasure(MEASURE_DEFAULT)}
+            onPointerDown={() => (document.documentElement.dataset.previewing = "")}
+            onPointerUp={() => delete document.documentElement.dataset.previewing}
+            onLostPointerCapture={() => delete document.documentElement.dataset.previewing}
+          />
+        </Row>
+      </div>
     </Section>
   );
 }
@@ -602,18 +631,22 @@ function PrivacySection() {
 
   return (
     <Section title="Privacy">
-      <Row label="Send anonymous usage data">
-        {on !== null && <Toggle checked={on} onChange={(next) => void flip(next)} label="Send anonymous usage data" />}
-      </Row>
-      <Row label="What is sent">
-        <button
-          type="button"
-          className={BUTTON}
-          onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason), "error"))}
-        >
-          Show
-        </button>
-      </Row>
+      <div>
+        <Row label="Send anonymous usage data">
+          {on !== null && (
+            <Toggle checked={on} onChange={(next) => void flip(next)} label="Send anonymous usage data" />
+          )}
+        </Row>
+        <Row label="What is sent">
+          <button
+            type="button"
+            className={BUTTON}
+            onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason), "error"))}
+          >
+            Show
+          </button>
+        </Row>
+      </div>
       {/* The reader's own lists never leave the machine; the heading says so,
           apart from the usage data above it. */}
       <h3 className="mt-lg text-meta text-neutral-500">Kept on this computer only</h3>
@@ -668,7 +701,9 @@ function AboutSection() {
         </button>
       </Row>
       <Row label="Install updates at start">
-        {auto !== null && <Toggle checked={auto} onChange={(next) => void flipAuto(next)} label="Install updates at start" />}
+        {auto !== null && (
+          <Toggle checked={auto} onChange={(next) => void flipAuto(next)} label="Install updates at start" />
+        )}
       </Row>
       <Row label="Release notes">
         <button type="button" className={BUTTON} onClick={() => void openWeb(`${REPO}/releases`)}>
