@@ -131,14 +131,17 @@ function CaptionSearch({ className }: { className?: string }) {
     Elsewhere the drawn glyph stands in. */
 const SYSTEM_GLYPHS = navigator.userAgent.includes("Windows");
 
-function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement) {
+/** Caption glyphs are made for 10px. A general glyph, as the search and the
+    pin, is drawn thinner, for a larger size: at 13px its stroke is one full
+    device pixel and its ring is as tall as the maximize square. */
+function systemGlyph(codepoint: string, Drawn: (props: { className?: string }) => React.ReactElement, size = 10) {
   if (!SYSTEM_GLYPHS) return Drawn;
   return function SystemGlyph({ className }: { className?: string }) {
     return (
       <span
         aria-hidden="true"
-        className={cn(className, "grid place-items-center text-[10px] leading-none")}
-        style={{ fontFamily: "'Segoe Fluent Icons', 'Segoe MDL2 Assets'" }}
+        className={cn(className, "grid place-items-center leading-none")}
+        style={{ fontFamily: "'Segoe Fluent Icons', 'Segoe MDL2 Assets'", fontSize: size }}
       >
         {codepoint}
       </span>
@@ -194,9 +197,9 @@ export const Icons = {
   collapseAll: ChevronsDownUp,
 
   /* Window */
-  pin: systemGlyph("\uE718", CaptionPin),
-  pinned: systemGlyph("\uE840", CaptionPinned),
-  captionSearch: systemGlyph("\uE721", CaptionSearch),
+  pin: systemGlyph("\uE718", CaptionPin, 13),
+  pinned: systemGlyph("\uE842", CaptionPinned, 13),
+  captionSearch: systemGlyph("\uE721", CaptionSearch, 13),
   versionPicker: ChevronsUpDown,
 
   /* Content */
