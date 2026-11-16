@@ -90,7 +90,9 @@ fn flush_tasks(run: &mut Vec<&Block>, out: &mut String) {
         };
         out.push_str(&format!(
             "| {} | {} |\n",
-            cell_text(&inlines(label)),
+            // SideFX writes most labels as "Create a Session:"; its own
+            // table drops the colon.
+            cell_text(inlines(label).trim_end().trim_end_matches(':')),
             cell_text(&cell_html(children, false))
         ));
     }
@@ -664,8 +666,9 @@ fn cell_html(blocks: &[Block], raw: bool) -> String {
                     .collect();
                 out.push_str(&format!("<{tag}>{rows}</{tag}>"));
             }
-            Block::Code { text, .. } => {
-                out.push_str(&format!("<pre><code>{}</code></pre>", escape(text)));
+            Block::Code { language, text } => {
+                let class = language.as_ref().map(|language| format!(" class=\"language-{}\"", escape(language))).unwrap_or_default();
+                out.push_str(&format!("<pre><code{class}>{}</code></pre>", escape(text)));
             }
             Block::Table { rows } => {
                 let rows: String = rows
@@ -788,10 +791,32 @@ fn raw_inlines(text: &[Inline]) -> String {
 /// Anything going into a pipe-table cell. A cell is one line, and a bar in it
 /// ends the cell.
 fn cell_text(body: &str) -> String {
-    // A cell is one line, so the hard break under a definition term
-    // becomes the `<br>` it stands for before the lines are joined.
+    // A cell is one line. Code keeps its lines and its indent: each line
+    // break in a `<pre>` becomes `&#10;`, which HTML reads as the break.
+    let mut out = String::new();
+    let mut rest = body;
+    while let Some(start) = rest.find("<pre>") {
+        out.push_str(&prose_cell(&rest[..start]));
+        let end = rest[start..].find("</pre>").map_or(rest.len(), |end| start + end + "</pre>".len());
+        if !out.is_empty() {
+            out.push(' ');
+        }
+        out.push_str(&rest[start..end].replace('|', r"\|").replace('\n', "&#10;"));
+        rest = &rest[end..];
+    }
+    let tail = prose_cell(rest);
+    if !out.is_empty() && !tail.is_empty() {
+        out.push(' ');
+    }
+    out.push_str(&tail);
+    out
+}
+
+fn prose_cell(body: &str) -> String {
+    // The hard break under a definition term becomes the `<br>` it stands
+    // for before the lines are joined.
     body.replace("\\\n", "<br>")
-        .replace('|', "\\|")
+        .replace('|', r"\|")
         .split_whitespace()
         .collect::<Vec<_>>()
         .join(" ")

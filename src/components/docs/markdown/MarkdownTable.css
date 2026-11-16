@@ -30,8 +30,22 @@
 .markdown-table-headerless thead {
   display: none;
 }
-.markdown-table td code {
+/* Inline code stays on one line. A code block keeps its own lines. */
+.markdown-table td :not(pre) > code {
   white-space: nowrap;
+}
+/* A code block in a cell scrolls inside the cell. A fixed layout keeps its
+   long lines from pushing the table past the page. */
+.markdown-table:has(td pre) {
+  table-layout: fixed;
+  width: 100%;
+}
+.markdown-table td pre {
+  overflow-x: auto;
+}
+/* In a cell, a code panel does not bleed into the cell's padding. */
+.markdown-table td .not-prose {
+  margin-inline: 0;
 }
 .markdown-table-declarations {
   table-layout: fixed;
