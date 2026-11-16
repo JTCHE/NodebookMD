@@ -396,8 +396,7 @@ const SearchOverlay = forwardRef<SearchOverlayRef, object>(function SearchOverla
             withSubHits={!empty}
             selected={selected - skip}
             onSelect={(index) => setPicked(index + skip)}
-            onActivate={(row, rank, event) => openRow(row, rank, event ? tabFor(event) : null)}
-            rowRounded={false}
+            onActivate={(row, rank, event) => openRow(row, rank, event ? tabFor(event) : null)}
             header={
               empty && recent.length > 0 ? (
                 <li className="px-4 pt-2 pb-1 text-xs text-muted-foreground/60 select-none">
