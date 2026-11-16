@@ -948,8 +948,8 @@ pre code.hljs {
   /* The logo takes the accent; Original keeps the trademark orange. */
   --logo: var(--brand);
 }
-/* Monochrome has no colour at all: Houdini's node icons go grey too. */
-:root[data-accent="monochrome"] img[src*="hicon"] {
+/* Monochrome has no colour at all: icons, pictures and clips go grey too. */
+:root[data-accent="monochrome"] :is(img, video) {
   filter: grayscale(1);
 }
 :root[data-accent="original"] {
@@ -964,10 +964,12 @@ pre code.hljs {
   --callout-surface: color-mix(in srgb, var(--tip) 6%, oklch(0.16 var(--tint) var(--accent-hue, 52)));
   --callout-code: color-mix(in srgb, var(--tip) 8%, oklch(0.12 var(--tint) var(--accent-hue, 52)));
 }
-:root[data-accent="monochrome"] .callout-tip {
-  --tip: var(--foreground);
-  --tip-ink: var(--foreground);
+/* Monochrome: every callout in the text colour on a grey ground. The repeated
+   class outranks each kind's own light and dark rules. */
+:root[data-accent="monochrome"] .callout.callout.callout {
   --callout-color: var(--foreground);
+  --callout-surface: var(--neutral-50);
+  --callout-code: var(--neutral-100);
 }
 .callout-warning {
   --callout-color: oklch(0.7 0.15 75);
