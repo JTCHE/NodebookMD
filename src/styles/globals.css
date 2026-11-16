@@ -566,7 +566,7 @@ img.markdown-media {
   top: 1px;
   bottom: 1px;
   left: 1px;
-  width: var(--md);
+  width: calc(var(--md) * 1.5);
   border-radius: calc(var(--radius-lg) - 1px) 0 0 calc(var(--radius-lg) - 1px);
   background: linear-gradient(to left, transparent, var(--code-ground) 55%);
   pointer-events: none;
