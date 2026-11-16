@@ -6,7 +6,7 @@ import { useLocation } from "react-router";
 import { showToast } from "@/components/ui/toast-notification";
 import { pageLink } from "@/lib/link";
 import { cn } from "@/lib/utils";
-import { isCollapsed, sectionKey, sectionOf, setCollapsed } from "@/lib/ui/sections";
+import { isCollapsed, sectionKey, sectionOf, setCollapsed, keepInPlace } from "@/lib/ui/sections";
 import { Icons } from "@/lib/ui/icons";
 import { BAR_BUTTON } from "@/lib/ui/button";
 import "./MarkdownHeading.css";
@@ -35,7 +35,10 @@ function heading(Tag: Tag): NonNullable<Components[Tag]> {
       if (owner && closed) setCollapsed(owner, ownKey, true);
     }, [ownKey]);
     const apply = (owner: HTMLElement, next: boolean) => {
-      if (setCollapsed(owner, ownKey, next)) setClosed(next);
+      // The heading stays where the reader clicked it.
+      keepInPlace(owner, () => {
+        if (setCollapsed(owner, ownKey, next)) setClosed(next);
+      });
     };
     // Clicking the heading collapses the section, the way the chevron does.
     // A drag that ends on the heading selects text; that is not a collapse.
