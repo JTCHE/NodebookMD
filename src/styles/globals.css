@@ -1127,7 +1127,8 @@ pre code.hljs {
   margin: 0;
   padding: var(--ms) var(--md);
   font-size: 0.86rem;
-  line-height: 1.55;
+  /* Tall enough that a value's chip on one line clears the chip below it. */
+  line-height: 1.85;
   color: oklch(0.72 0 0);
   /* Opaque and above the panel's edge fade: the caption does not scroll, so
      it does not fade. */
