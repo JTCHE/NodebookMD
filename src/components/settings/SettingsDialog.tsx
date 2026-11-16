@@ -34,6 +34,7 @@ import {
   setTextSize,
   useMeasure,
   useTextSize,
+  charactersAt,
 } from "@/lib/ui/reading";
 import { THEME_CHOICES, THEME_LABEL, setTheme, useThemeChoice } from "@/lib/ui/theme";
 import { ACCENT_DEFAULT, HUE_DEFAULT, resetAccent, useAccent, useHue } from "@/lib/ui/accent";
@@ -572,7 +573,8 @@ function ReadingSection() {
       <div data-preview-keep className="-mx-ms rounded-lg px-ms">
         <Row
           label="Page width"
-          fact={`About ${measure} characters a line${measure === MEASURE_DEFAULT ? ", the default" : ""}`}
+          // The width holds; the text size sets how many characters fit in it.
+          fact={`About ${charactersAt(measure, size)} characters a line${measure === MEASURE_DEFAULT ? ", the default width" : ""}`}
           onReset={measure !== MEASURE_DEFAULT ? () => setMeasure(MEASURE_DEFAULT) : undefined}
         >
           <input

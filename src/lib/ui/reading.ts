@@ -1,7 +1,8 @@
 /**
- * How a docs page reads: its text size and its measure. The size is a root
- * attribute, `data-text`; the measure is a root variable, `--measure`, in
- * `ch`, set from a count of characters a line, the reader's own unit. `globals.css` does the rest.
+ * How a docs page reads: its text size and its width. The width is set as
+ * characters a line at the default size; the text size then zooms the
+ * glyphs inside that same width, so a larger size fits fewer characters.
+ * Root variables `--text-zoom` and `--measure`; `globals.css` does the rest.
  * Kept in the browser, as the theme is, so the help pane reads it too.
  */
 import { useSyncExternalStore } from "react";
@@ -10,6 +11,10 @@ export type TextSize = "small" | "default" | "large";
 
 export const TEXT_SIZES: TextSize[] = ["small", "default", "large"];
 export const TEXT_SIZE_LABEL: Record<TextSize, string> = { small: "Small", default: "Default", large: "Large" };
+export const TEXT_ZOOM: Record<TextSize, number> = { small: 0.9, default: 1, large: 1.125 };
+
+/** Characters a line at this width and this text size. */
+export const charactersAt = (measure: number, size: TextSize) => Math.round(measure / TEXT_ZOOM[size]);
 
 /** The measure, in characters of prose a line. */
 export const MEASURE_MIN = 66;
@@ -42,7 +47,7 @@ function readMeasure(): number {
 }
 
 function paint() {
-  document.documentElement.dataset.text = read(TEXT_KEY, TEXT_SIZES);
+  document.documentElement.style.setProperty("--text-zoom", String(TEXT_ZOOM[read(TEXT_KEY, TEXT_SIZES)]));
   document.documentElement.style.setProperty("--measure", `${(readMeasure() / CHARACTERS_PER_CH).toFixed(2)}ch`);
   for (const notify of listeners) notify();
 }
