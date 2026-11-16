@@ -17,10 +17,10 @@ import { Hint } from "@/components/ui/Hint";
 import { Modal } from "@/components/ui/Modal";
 import { SidebarRow } from "@/components/shell/sidebar/SidebarRow";
 import { Toggle } from "@/components/ui/Toggle";
-import { Segmented, TRACK } from "@/components/ui/Segmented";
+import { Segmented } from "@/components/ui/Segmented";
 import { showToast } from "@/components/ui/toast-notification";
 import { TELEMETRY } from "@/components/onboarding/Onboarding";
-import { useVaults } from "@/components/obsidian/ObsidianDialog";
+import { VaultSelect } from "@/components/settings/VaultSelect";
 import { APP_NAME, REPO } from "@/lib/brand";
 import { openWeb } from "@/lib/web";
 import { clearLibrary, useLibrary } from "@/lib/store/library";
@@ -46,7 +46,6 @@ import type { Install } from "@/lib/install";
 import {
   OBSIDIAN_PICTURES,
   OBSIDIAN_VAULT,
-  pickFolder,
   picturesChoice,
   rememberedVault,
   type PicturesChoice,
@@ -392,53 +391,6 @@ function McpSection() {
         </Row>
       ))}
     </Section>
-  );
-}
-
-/** The value of the vault list's last entry: it opens a folder picker. */
-const OTHER_FOLDER = "\u0000other";
-
-/** Which vault pictures go to, as a picker of one line: the vaults Obsidian
-    lists, and any other folder. */
-function VaultSelect({ value, onChange }: { value: string | null; onChange: (path: string) => void }) {
-  const all = useVaults(value);
-  return (
-    <div className="relative shrink-0">
-      <select
-        aria-label="Vault"
-        value={value ?? ""}
-        onChange={(event) => {
-          const next = event.target.value;
-          if (next === OTHER_FOLDER) void pickFolder().then((path) => path && onChange(path));
-          else onChange(next);
-        }}
-        className={cn(
-          // A choice, so it wears the picker's track, as wide as its longest
-          // vault. The chevron stands as far in from the right as the text
-          // from the left.
-          TRACK,
-          "max-w-[280px] cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium dark:font-normal text-neutral-950",
-          "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200/60",
-          "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        )}
-      >
-        {value === null && (
-          <option value="" disabled>
-            Choose a vault
-          </option>
-        )}
-        {all.map((vault) => (
-          <option key={vault.path} value={vault.path}>
-            {vault.name}
-          </option>
-        ))}
-        <option value={OTHER_FOLDER}>Other folder…</option>
-      </select>
-      <Icons.versionPicker
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 right-ms size-3.5 -translate-y-1/2 text-neutral-500"
-      />
-    </div>
   );
 }
 
