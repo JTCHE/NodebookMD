@@ -352,7 +352,7 @@ export function DocTooltip({ slug, summaryOnly = false, anchor, ...anchored }: A
   if (meta && !summaryOnly && !signature && !(anchor && slug.startsWith("hom/"))) {
     return (
       <PreviewCard {...anchored}>
-        <PagePreview path={slug} title={meta.title} scale={CARD_SCALE} />
+        <PagePreview path={slug} title={meta.title} />
       </PreviewCard>
     );
   }
@@ -568,13 +568,11 @@ function section(id: string): { title: string; text: string; signature?: boolean
   return title || text ? { title, text: text.trim() } : null;
 }
 
-const CARD_SCALE = 0.75;
-
 /** The tooltip that shows a picture of a page or of a section. */
 function PreviewCard({ children, ...anchored }: Anchored & { children: React.ReactNode }) {
   return (
     <TooltipBox {...anchored} className={cn("w-[22rem] border-0 bg-transparent p-0 shadow-lg", WINDOW)}>
-      <span className="relative block h-44 overflow-hidden rounded-[inherit]">{children}</span>
+      <span className="relative block h-window overflow-hidden rounded-[inherit]">{children}</span>
     </TooltipBox>
   );
 }
@@ -615,7 +613,7 @@ export function SectionTooltip({ id, ...anchored }: Anchored & { id: string }) {
   if (blocks.length > 0)
     return (
       <PreviewCard {...anchored}>
-        <PreviewFrame scale={CARD_SCALE}>
+        <PreviewFrame>
           <SectionPicture blocks={blocks} />
         </PreviewFrame>
       </PreviewCard>

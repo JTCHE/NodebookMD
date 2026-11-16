@@ -12,7 +12,7 @@ import { pageKind } from "@/lib/ranking";
 
 /** The page is drawn at this fraction of its size, the same in every window
     width, so a wider card shows more of the page and never bigger type. */
-const SCALE = 0.42;
+const SCALE = 0.75;
 /** Enough blocks to fill the window; the rest is never seen. */
 const BLOCKS = 8;
 
@@ -24,10 +24,11 @@ function holdsCode(node: { type: string; tagName?: string; properties?: { classN
   return (node.children ?? []).some((child) => holdsCode(child as typeof node));
 }
 
-/** A picture of page content: laid out at a page width, drawn at `scale`,
+/** A picture of page content: laid out at a page width, drawn at one scale,
     faded at its foot. The home cards and the link tooltips both draw in it.
-    `scale` is larger in a tooltip: a small box is read, not glanced at. */
-export function PreviewFrame({ scale = SCALE, children }: { scale?: number; children: React.ReactNode }) {
+    One scale for both, so a page reads the same in each. */
+export function PreviewFrame({ children }: { children: React.ReactNode }) {
+  const scale = SCALE;
   // The page is laid out as wide as the window, divided by the scale. A
   // percentage width resolves against the zoomed box and overflows it.
   const box = useRef<HTMLDivElement>(null);
@@ -38,7 +39,7 @@ export function PreviewFrame({ scale = SCALE, children }: { scale?: number; chil
     const observer = new ResizeObserver(() => setWidth(element.clientWidth / scale));
     observer.observe(element);
     return () => observer.disconnect();
-  }, [scale]);
+  }, []);
 
   // The fade is set here, not inherited: the list around the cards turns its own fade off at its ends.
   return (
@@ -53,7 +54,7 @@ export function PreviewFrame({ scale = SCALE, children }: { scale?: number; chil
   );
 }
 
-export function PagePreview({ path, title, scale }: { path: string; title: string; scale?: number }) {
+export function PagePreview({ path, title }: { path: string; title: string }) {
   const [page, setPage] = useState<PageView | undefined>(() => known(path));
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export function PagePreview({ path, title, scale }: { path: string; title: strin
   const blocks = page?.tree?.children.filter((block) => !holdsCode(block)).slice(0, BLOCKS) ?? [];
   const tree = page?.tree && { ...page.tree, children: blocks };
   return (
-    <PreviewFrame scale={scale}>
+    <PreviewFrame>
         {/* The page's own breadcrumb line, so the window reads as the top of a page. */}
         <p className="m-0 mb-4 text-xs text-muted-foreground">{path.split("/").slice(0, -1).join("  ›  ")}</p>
         <div className="not-prose">
