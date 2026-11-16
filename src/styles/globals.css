@@ -599,11 +599,11 @@ pre code[class] {
    numbers pale lime, bindings pink. None is the brand's orange. */
 .hljs-keyword,
 .vex-token-output {
-  color: oklch(0.74 0.14 325);
+  color: oklch(0.74 0.14 300);
   font-weight: 500;
 }
 .vex-argument-ampersand {
-  color: oklch(0.74 0.14 325);
+  color: oklch(0.74 0.14 300);
 }
 .hljs-type,
 .hljs-built_in,
@@ -611,14 +611,14 @@ pre code[class] {
 .vex-argument-type,
 .vex-return-arrow,
 .vex-return-type {
-  color: oklch(0.72 0.11 265);
+  color: oklch(0.72 0.12 280);
 }
 .hljs-number,
 .hljs-literal {
   color: oklch(0.83 0.08 60);
 }
 .hljs-binding {
-  color: oklch(0.78 0.12 350);
+  color: oklch(0.78 0.12 20);
 }
 .hljs-string,
 .hljs-attr,
@@ -635,7 +635,7 @@ pre code[class] {
   color: oklch(0.87 0.1 95);
 }
 .hljs-title.class_ {
-  color: oklch(0.8 0.12 165);
+  color: oklch(0.8 0.09 190);
 }
 .hljs-variable,
 .hljs-property {
