@@ -731,6 +731,25 @@ kbd {
   }
 }
 
+/* A panel that grows out of the control that opened it. The element sets
+   its transform-origin on that control. */
+@keyframes grow-in {
+  from {
+    opacity: 0;
+    scale: 0.3;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@utility grow-in {
+  animation: grow-in 180ms cubic-bezier(0.2, 0, 0, 1);
+  :root[data-motion="reduce"] & {
+    animation: none;
+  }
+}
+
 /* How a tooltip comes in: a short fade and a 2px rise, so it arrives and does not blink. */
 @keyframes tip-in {
   from {

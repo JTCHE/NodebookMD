@@ -71,7 +71,15 @@ export function AccentPicker({ value, hue }: { value: Accent; hue: number }) {
         />
       ))}
       {open && value === "custom" && (
-        <div className={cn(MENU_SURFACE, "absolute top-full right-0 z-30 mt-sm flex items-center gap-sm px-ms py-sm")}>
+        // It grows out of the custom swatch. While the knob is held, Settings
+        // steps aside and only this panel stays, as for the page width.
+        <div
+          data-preview-keep
+          className={cn(
+            MENU_SURFACE.replace("pop-in", ""),
+            "grow-in absolute top-full right-0 z-30 mt-sm flex origin-[calc(100%-13.5px)_-14px] items-center gap-sm px-ms py-sm",
+          )}
+        >
           <span
             aria-hidden
             className="size-4 shrink-0 rounded-full ring-1 ring-foreground/10 ring-inset"
@@ -87,6 +95,9 @@ export function AccentPicker({ value, hue }: { value: Accent; hue: number }) {
             max={360}
             value={hue}
             onChange={(event) => setHue(Number(event.target.value))}
+            onPointerDown={() => (document.documentElement.dataset.previewing = "")}
+            onPointerUp={() => delete document.documentElement.dataset.previewing}
+            onLostPointerCapture={() => delete document.documentElement.dataset.previewing}
           />
         </div>
       )}
