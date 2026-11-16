@@ -954,12 +954,15 @@ pre code.hljs {
   filter: grayscale(1);
   transition: filter 300ms var(--ease-out-quint);
 }
-/* Grey takes away the hue that set a dark icon apart from a dark page, so
-   in dark mode the icons lift their blacks: black reads as dark grey, white
-   stays white. */
-:root[data-theme="dark"][data-accent="monochrome"] img:is([src*="hicon"], [src*="/icon/"]) {
-  /* contrast then brightness: x becomes 0.65x + 0.35, so white stays white. */
-  filter: grayscale(1) contrast(0.48) brightness(1.35);
+/* An icon of the page's own tone flips, and keeps its hue: a black icon on
+   the dark page, a white icon on the light page. `iconTone.ts` marks them. */
+:root[data-theme="dark"] img[data-tone="dark"],
+:root:not([data-theme="dark"]) img[data-tone="light"] {
+  filter: invert(1) hue-rotate(180deg);
+}
+:root[data-accent="monochrome"][data-theme="dark"] img[data-tone="dark"],
+:root[data-accent="monochrome"]:not([data-theme="dark"]) img[data-tone="light"] {
+  filter: grayscale(1) invert(1);
 }
 :root[data-accent="monochrome"] :is([role="dialog"] img, .markdown-video:not([data-paused]) video) {
   filter: none;
