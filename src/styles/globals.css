@@ -44,11 +44,11 @@ html {
   }
 }
 
-/* Every scroll bar: a 6px rounded thumb with no track and no arrows. Drawn
+/* Every scroll bar: a 4px rounded thumb with no track and no arrows. Drawn
    with the webkit parts, not scrollbar-width: "thin" is still 11px wide. */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track,
 ::-webkit-scrollbar-corner {
@@ -58,7 +58,7 @@ html {
   display: none;
 }
 ::-webkit-scrollbar-thumb {
-  border-radius: 3px;
+  border-radius: 2px;
   background: var(--neutral-300);
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -380,10 +380,10 @@ svg[stroke="currentColor"] * {
     rgb(0 0 0 / 0.55) calc(100% - var(--depth) * 0.5),
     rgb(0 0 0 / 0.25) calc(100% - var(--depth) * 0.25),
     rgb(0 0 0 / calc(1 - var(--fade-below, 1))) 100%
-  );
+  ), linear-gradient(black, black);
 }
 .fade-in {
-  mask-image: linear-gradient(to top, black calc(100% - 72px), rgb(0 0 0 / 0.85) calc(100% - 54px), rgb(0 0 0 / 0.55) calc(100% - 36px), rgb(0 0 0 / 0.25) calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(to top, black calc(100% - 72px), rgb(0 0 0 / 0.85) calc(100% - 54px), rgb(0 0 0 / 0.55) calc(100% - 36px), rgb(0 0 0 / 0.25) calc(100% - 18px), transparent 100%), linear-gradient(black, black);
 }
 .fade-both {
   --top: var(--fade-top, 0px);
@@ -402,7 +402,21 @@ svg[stroke="currentColor"] * {
     rgb(0 0 0 / 0.45) calc(100% - 16px),
     rgb(0 0 0 / 0.15) calc(100% - 8px),
     transparent 100%
-  );
+  ), linear-gradient(black, black);
+}
+
+/* A mask also hides the scroll bar. A second, solid layer keeps the bar's
+   strip whole, so a fade never eats the thumb. */
+.fade-out,
+.fade-in,
+.fade-both {
+  mask-size:
+    100% 100%,
+    4px 100%;
+  mask-position:
+    0 0,
+    100% 0;
+  mask-repeat: no-repeat;
 }
 
 /* auto 16 / 9 holds a box until the file gives its own size. */

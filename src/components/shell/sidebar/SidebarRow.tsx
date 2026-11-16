@@ -156,8 +156,8 @@ export function SidebarRow({
           icon carries its own aspect ratio and an app glyph does not, and
           without the box the two draw rows of different heights. */}
       {(mark !== undefined || icon !== undefined) && (
-        // An icon is heavy at the top; 1px up centres it on the label.
-        <span className="grid size-icon shrink-0 -translate-y-px place-items-center" aria-hidden="true">
+        // An icon is heavy at the top; half a pixel up centres it on the label.
+        <span className="grid size-icon shrink-0 -translate-y-[0.5px] place-items-center" aria-hidden="true">
           {mark === undefined && icon !== undefined ? (
             icon ? (
               <DocIconClient
