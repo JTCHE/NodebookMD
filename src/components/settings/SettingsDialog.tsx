@@ -195,7 +195,7 @@ function Empty({ children }: { children: ReactNode }) {
 /** The one button that acts: raised off the ground, as a choice's track is
     sunk into it. Geist sits high in its line: 1px at the top centres it. */
 const BUTTON =
-  "h-row min-w-[80px] shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-px text-center text-label font-medium text-neutral-900 shadow-chip " +
+  "h-row min-w-[80px] shrink-0 cursor-interactive rounded-lg border border-hairline bg-raised px-ms pt-px text-center text-label font-medium dark:font-normal text-neutral-900 shadow-chip " +
   "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-50 active:bg-neutral-100 " +
   "disabled:cursor-wait disabled:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
@@ -235,19 +235,19 @@ function HelpSection() {
     <Section title="Houdini help">
       {/* Houdini writes its preferences when it closes, so a change made while it is open is lost. Said once, over the list. */}
       {houdiniOpen && series && series.length > 0 && (
-        <p className="mt-xs text-label text-muted-foreground">Close Houdini to change these.</p>
+        <p className="mt-xs text-label text-muted-foreground">F1 in these opens {APP_NAME}. Close Houdini to change them.</p>
       )}
       {series?.length === 0 && <Empty>No installed Houdini found on this machine.</Empty>}
       {series?.map((name) => {
         const release = releases?.find((one) => one.release === name);
         return (
-          <Row key={name} label={`F1 in Houdini ${name} opens ${APP_NAME}`} fact={helpTarget(release)}>
+          <Row key={name} label={`Houdini ${name}`} fact={helpTarget(release)}>
             <Toggle
               checked={!!release?.external && !!release.ours}
               disabled={!release || houdiniOpen}
               title={helpTarget(release)}
               onChange={(next) => void flip(name, next)}
-              label={`F1 in Houdini ${name} opens ${APP_NAME}`}
+              label={`Houdini ${name}`}
             />
           </Row>
         );
@@ -357,7 +357,7 @@ function VaultSelect({ value, onChange }: { value: string | null; onChange: (pat
           // vault. The chevron stands as far in from the right as the text
           // from the left.
           TRACK,
-          "max-w-[280px] cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium text-neutral-950",
+          "max-w-[280px] cursor-interactive appearance-none truncate pt-px pr-[calc(var(--spacing-ms)+14px+var(--spacing-sm))] pl-ms text-label font-medium dark:font-normal text-neutral-950",
           "transition-colors duration-(--duration-fast) motion-reduce:transition-none pointer-hover:bg-neutral-200/60",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         )}
