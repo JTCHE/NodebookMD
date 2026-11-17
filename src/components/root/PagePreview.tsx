@@ -57,6 +57,9 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
   }, [path, page]);
 
   const tree = page?.tree;
+  // A card drawn from storage is there at once; one that waited on a read
+  // fades its page in, so it does not pop.
+  const [waited] = useState(() => !page);
   return (
     <PreviewFrame>
         {/* The page's own breadcrumb line, so the window reads as the top of a page. */}
@@ -64,8 +67,12 @@ export function PagePreview({ path, title }: { path: string; title: string }) {
         <div className="not-prose">
           <PageTitle name={page?.name ?? title} nodeType={pageKind(path, page?.nodeType)} icon={page?.icon} />
         </div>
-        {page?.summary && <p className="m-0 mt-3 text-sm text-muted-foreground">{page.summary}</p>}
-        {tree && <Body tree={tree} components={markdownComponents} whole />}
+        {page && (
+          <div className={waited ? "transition-[opacity,translate] duration-300 ease-out starting:translate-y-1 starting:opacity-0 motion-reduce:transition-none" : undefined}>
+            {page.summary && <p className="m-0 mt-3 text-sm text-muted-foreground">{page.summary}</p>}
+            {tree && <Body tree={tree} components={markdownComponents} whole />}
+          </div>
+        )}
     </PreviewFrame>
   );
 }

@@ -50,7 +50,8 @@ function heading(Tag: Tag): NonNullable<Components[Tag]> {
     const onToggleClick = (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
       const owner = event.currentTarget.parentElement;
-      if (owner) apply(owner, !isCollapsed(ownKey));
+      // The chevron sits where a selection of the title starts: the same rules.
+      if (owner) toggleOnClick(event.nativeEvent, () => apply(owner, !isCollapsed(ownKey)));
     };
     const toggleAll = (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
@@ -82,6 +83,9 @@ function heading(Tag: Tag): NonNullable<Components[Tag]> {
           <button
             type="button"
             aria-expanded={!closed}
+            // On the release, not the press: a press here can start a
+            // selection of the title, which must not collapse it.
+            data-press="off"
             aria-label={closed ? "Expand this section" : "Collapse this section"}
             onClick={onToggleClick}
             className="section-toggle absolute top-1/2 right-full size-5 -translate-y-1/2 inline-flex cursor-interactive items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 after:absolute after:-inset-2 after:content-['']"

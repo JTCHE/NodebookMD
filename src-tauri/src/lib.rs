@@ -198,6 +198,7 @@ fn page(
     chosen: State<Arc<install::Chosen>>,
     cache: State<Arc<install::Cache>>,
     path: String,
+    quiet: Option<bool>,
 ) -> Result<PageView, PageError> {
     let started = std::time::Instant::now();
     let db = state.0.lock().map_err(|e| PageError { missing: false, message: e.to_string() })?;
@@ -207,7 +208,10 @@ fn page(
     drop(db);
     let mut view = read_page(&install, &path)?;
     view.node_versions = node_versions;
-    telemetry::page_opened(&app, started.elapsed().as_secs_f64() * 1000.0);
+    // A home card or a link preview reads a page the reader did not open.
+    if quiet != Some(true) {
+        telemetry::page_opened(&app, started.elapsed().as_secs_f64() * 1000.0);
+    }
     Ok(view)
 }
 
