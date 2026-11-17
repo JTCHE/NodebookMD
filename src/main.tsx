@@ -13,6 +13,7 @@ import { startMotion } from "./lib/ui/motion";
 import { startReading } from "./lib/ui/reading";
 import { startAccent } from "./lib/ui/accent";
 import { startIconTone } from "./lib/ui/iconTone";
+import { startSummaryClicks } from "./lib/ui/toggleClick";
 import { startPress } from "./lib/ui/press";
 import { startBlurCheck } from "./lib/ui/blur";
 import { startIconStroke } from "./lib/ui/icon-stroke";
@@ -37,6 +38,7 @@ startMotion();
 startReading();
 startAccent();
 startIconTone();
+startSummaryClicks();
 startBlurCheck();
 startIconStroke();
 
