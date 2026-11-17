@@ -1669,19 +1669,49 @@ span.doc-icon.inline-icon-large {
   --tab-fill: var(--background);
 }
 /* A hovered tab: a tint at the top that fades into the page at its base,
-   on feet of page colour, so its foot truly becomes the page and its top
-   still tells it from the active tab. */
-.tab-feet[aria-selected="false"] {
-  --tab-tint: color-mix(in oklab, var(--background) 40%, var(--chrome));
+   on feet of the base colour, so its foot becomes the page. The two stops
+   are registered colours, so the fill grows in instead of snapping. The tint
+   sits between strip and page in both themes: a hover never outranks the
+   open tab. */
+@property --tab-top {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
 }
-:root[data-theme="dark"] .tab-feet[aria-selected="false"] {
-  /* Dark strip and page are about 2% apart: the tint lifts off both. */
-  --tab-tint: color-mix(in oklab, var(--foreground) 5%, var(--chrome));
+@property --tab-base {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+.tab-feet[aria-selected="false"] {
+  --tab-top: transparent;
+  --tab-base: transparent;
+  --tab-fill: var(--tab-base);
+  background: linear-gradient(var(--tab-top), var(--tab-base));
+  transition:
+    --tab-top var(--duration-fast) var(--ease-out-quint),
+    --tab-base var(--duration-fast) var(--ease-out-quint),
+    border-radius var(--duration-fast) var(--ease-out-quint),
+    color var(--duration-fast) var(--ease-out-quint);
 }
 @media (hover: hover) {
   .tab-feet[aria-selected="false"]:hover {
-    background: linear-gradient(var(--tab-tint), var(--background));
+    --tab-top: color-mix(in oklab, var(--background) 60%, var(--chrome));
+    --tab-base: var(--background);
   }
+  /* Where a hovered tab meets the open one, the facing top corners shrink
+     to a crease, so the two read as one shape. */
+  .tab-feet[aria-selected="false"]:hover:has(+ [aria-selected="true"]),
+  .tab-feet[aria-selected="true"]:has(+ .tab-feet:hover) {
+    border-top-right-radius: var(--radius-sm);
+  }
+  .tab-feet[aria-selected="true"] + .tab-feet:hover,
+  .tab-feet:hover + .tab-feet[aria-selected="true"] {
+    border-top-left-radius: var(--radius-sm);
+  }
+}
+.tab-feet[aria-selected="true"] {
+  transition: border-radius var(--duration-fast) var(--ease-out-quint), color var(--duration-fast) var(--ease-out-quint);
 }
 .tab-feet::before,
 .tab-feet::after {
@@ -1742,6 +1772,7 @@ span.doc-icon.inline-icon-large {
 :root[data-motion="reduce"] .page-sheet {
   transition: none;
 }
+:root[data-motion="reduce"] .tab-feet,
 :root[data-motion="reduce"] .tab-feet::before,
 :root[data-motion="reduce"] .tab-feet::after {
   transition: none;
