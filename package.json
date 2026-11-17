@@ -28,7 +28,6 @@
     "@tauri-apps/plugin-dialog": "^2.7.3",
     "@tauri-apps/plugin-opener": "^2.5.0",
     "clsx": "^2.1.1",
-    "github-slugger": "^2.0.0",
     "hast-util-to-jsx-runtime": "^2.3.6",
     "highlight.js": "^11.12.0",
     "html-url-attributes": "^3.0.1",
