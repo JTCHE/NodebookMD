@@ -1651,9 +1651,10 @@ span.doc-icon.inline-icon-large {
   }
 }
 
-/* The active tab's concave feet. A hovered neighbour has a fill of its own
-   with round top corners; the foot on its side shrinks away, so the page
-   colour does not cut a notch into that fill. */
+/* Every tab stands on concave feet as large as its top corners, so its fill
+   flows into the bar below it. The active tab's feet are page colour; a
+   hovered tab grows feet in its hover fill. Where a hovered tab meets the
+   active one, the two facing feet shrink away and the shapes run together. */
 @property --foot-left {
   syntax: "<length>";
   inherits: false;
@@ -1663,6 +1664,24 @@ span.doc-icon.inline-icon-large {
   syntax: "<length>";
   inherits: false;
   initial-value: 0px;
+}
+.tab-feet {
+  --tab-fill: var(--background);
+}
+/* A hovered tab: a tint at the top that fades into the page at its base,
+   on feet of page colour, so its foot truly becomes the page and its top
+   still tells it from the active tab. */
+.tab-feet[aria-selected="false"] {
+  --tab-tint: color-mix(in oklab, var(--background) 40%, var(--chrome));
+}
+:root[data-theme="dark"] .tab-feet[aria-selected="false"] {
+  /* Dark strip and page are about 2% apart: the tint lifts off both. */
+  --tab-tint: color-mix(in oklab, var(--foreground) 5%, var(--chrome));
+}
+@media (hover: hover) {
+  .tab-feet[aria-selected="false"]:hover {
+    background: linear-gradient(var(--tab-tint), var(--background));
+  }
 }
 .tab-feet::before,
 .tab-feet::after {
@@ -1675,26 +1694,53 @@ span.doc-icon.inline-icon-large {
     --foot-right var(--duration-fast) var(--ease-out-quint);
 }
 .tab-feet::before {
-  --foot-left: var(--radius-lg);
   right: 100%;
   width: var(--foot-left);
   height: var(--foot-left);
-  background: radial-gradient(circle at 0 0, transparent calc(var(--foot-left) - 0.5px), var(--background) var(--foot-left));
+  background: radial-gradient(circle at 0 0, transparent calc(var(--foot-left) - 0.5px), var(--tab-fill) var(--foot-left));
 }
 .tab-feet::after {
-  --foot-right: var(--radius-lg);
   left: 100%;
   width: var(--foot-right);
   height: var(--foot-right);
-  background: radial-gradient(circle at 100% 0, transparent calc(var(--foot-right) - 0.5px), var(--background) var(--foot-right));
+  background: radial-gradient(circle at 100% 0, transparent calc(var(--foot-right) - 0.5px), var(--tab-fill) var(--foot-right));
+}
+[role="tab"][aria-selected="true"].tab-feet::before {
+  --foot-left: var(--radius-lg);
+}
+[role="tab"][aria-selected="true"].tab-feet::after {
+  --foot-right: var(--radius-lg);
 }
 @media (hover: hover) {
-  [role="tab"]:hover + .tab-feet::before {
+  [role="tab"][aria-selected="false"].tab-feet:hover::before {
+    --foot-left: var(--radius-lg);
+  }
+  [role="tab"][aria-selected="false"].tab-feet:hover::after {
+    --foot-right: var(--radius-lg);
+  }
+  [role="tab"]:hover + .tab-feet::before,
+  [role="tab"][aria-selected="true"] + .tab-feet:hover::before {
     --foot-left: 0px;
   }
-  .tab-feet:has(+ [role="tab"]:hover)::after {
+  .tab-feet:has(+ [role="tab"]:hover)::after,
+  .tab-feet:hover:has(+ [role="tab"][aria-selected="true"])::after {
     --foot-right: 0px;
   }
+}
+/* The first tab stands on the page's top-left corner. The page corner goes
+   square under it when it is on or hovered, so the tab's left edge runs
+   straight down into the page; it has no left foot. */
+[role="tab"][aria-selected].tab-feet:first-child::before {
+  --foot-left: 0px;
+}
+.page-sheet {
+  transition: border-top-left-radius var(--duration-fast) var(--ease-out-quint);
+}
+:root:has([role="tab"].tab-feet:first-child:is([aria-selected="true"], :hover)) .page-sheet {
+  border-top-left-radius: 0;
+}
+:root[data-motion="reduce"] .page-sheet {
+  transition: none;
 }
 :root[data-motion="reduce"] .tab-feet::before,
 :root[data-motion="reduce"] .tab-feet::after {

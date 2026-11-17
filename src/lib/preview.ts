@@ -73,12 +73,32 @@ export function storedPreview(path: string): Preview | undefined {
   return page?.tree ? { ...page, tree: head(page.tree, page.summary) } : undefined;
 }
 
+/** Reads at once. The cards ask top first, so the first row draws first
+    instead of every card waiting on the whole list. */
+const AT_ONCE = 3;
+let running = 0;
+const waiting: Array<() => void> = [];
+
+function slot<T>(work: () => Promise<T>): Promise<T> {
+  return new Promise<void>((start) => {
+    if (running < AT_ONCE) start();
+    else waiting.push(start);
+  }).then(() => {
+    running++;
+    return work().finally(() => {
+      running--;
+      waiting.shift()?.();
+    });
+  });
+}
+
 export function preview(path: string): Promise<Preview> {
   const ready = storedPreview(path);
   if (ready) return Promise.resolve(ready);
   let held = reading.get(path);
   if (!held) {
-    held = invoke<PageView>("page", { path }).then(async (view) => {
+    // Quiet: a card is not a page the reader opened, for the telemetry.
+    held = slot(() => invoke<PageView>("page", { path, quiet: true })).then(async (view) => {
       const cut = view.markdown.lastIndexOf("\n\n", HEAD);
       const markdown = view.markdown.length > HEAD && cut > 0 ? view.markdown.slice(0, cut) : view.markdown;
       const tree = head(await parse(view.path, markdown), view.summary);

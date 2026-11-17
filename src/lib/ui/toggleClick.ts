@@ -1,29 +1,39 @@
 /**
- * A click on a collapsible title toggles it only when the reader meant a
- * click: a drag that selects text, or a double or triple click that selects
- * a word or a line, leaves it as it is. The toggle waits for the double-click
- * window, so the second click can cancel it.
+ * A click on a collapsible title toggles it at once. A drag, or a press
+ * held long, starts a selection and does not toggle it. The second click
+ * of a double click undoes the first, so a double click selects a word and leaves the row as it was: the
+ * motion reverses mid-way instead of the click waiting.
  */
-const DOUBLE_CLICK_WINDOW = 220;
 /** A press that travels further than this is a drag. */
 const DRAG_DISTANCE = 4;
+/** A press held longer than this is the start of a selection, not a click. */
+const HOLD = 350;
 
-let pending = 0;
 let pressX = 0;
 let pressY = 0;
+let pressTime = 0;
+let lastToggle: (() => void) | null = null;
 
 document.addEventListener("pointerdown", (event) => {
   pressX = event.clientX;
   pressY = event.clientY;
+  pressTime = event.timeStamp;
 }, true);
 
 export function toggleOnClick(event: MouseEvent, toggle: () => void) {
-  window.clearTimeout(pending);
+  if (event.detail === 2 && lastToggle) {
+    lastToggle();
+    lastToggle = null;
+    return;
+  }
+  lastToggle = null;
   // A key press is never a selection.
   if (event.detail === 0) return toggle();
   if (event.detail > 1 || event.shiftKey) return;
+  if (event.detail === 1 && event.timeStamp - pressTime > HOLD) return;
   if (Math.hypot(event.clientX - pressX, event.clientY - pressY) > DRAG_DISTANCE) return;
-  pending = window.setTimeout(toggle, DOUBLE_CLICK_WINDOW);
+  toggle();
+  lastToggle = toggle;
 }
 
 /** Method rows are native `details`: take their summary clicks over. */

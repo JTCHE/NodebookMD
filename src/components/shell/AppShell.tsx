@@ -205,7 +205,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div
           className={cn(
             "relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background",
-            docked && "rounded-tl-lg",
+            // `page-sheet`: its corner goes square under the first tab when that tab
+            // is on or under the pointer, so the tab runs into it (globals.css).
+            docked && "page-sheet rounded-tl-lg",
             "print:block print:overflow-visible print:border-0",
           )}
         >
