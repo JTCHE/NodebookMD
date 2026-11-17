@@ -80,15 +80,16 @@ let running = 0;
 const waiting: Array<() => void> = [];
 
 function slot<T>(work: () => Promise<T>): Promise<T> {
-  return new Promise<void>((start) => {
-    if (running < AT_ONCE) start();
-    else waiting.push(start);
-  }).then(() => {
-    running++;
-    return work().finally(() => {
-      running--;
-      waiting.shift()?.();
-    });
+  return new Promise<T>((done, fail) => {
+    const run = () => {
+      running++;
+      work().then(done, fail).finally(() => {
+        running--;
+        waiting.shift()?.();
+      });
+    };
+    if (running < AT_ONCE) run();
+    else waiting.push(run);
   });
 }
 
