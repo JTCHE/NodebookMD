@@ -7,7 +7,7 @@
  * Highlight API: no element goes into the page, so React's tree is not touched.
  */
 
-import { revealDetails } from "./disclosure";
+import { revealDetails } from "./sections";
 
 const ALL = "find";
 const CURRENT = "find-current";
