@@ -227,6 +227,8 @@ a {
   --duration-base: 200ms;
   --duration-slow: 420ms;
   --easing-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  /* A soft spring: settles with a small overshoot, so a shape change reads as a morph. */
+  --easing-spring: linear(0, 0.157 4.8%, 0.459 10.4%, 0.741 17.1%, 0.92 24.7%, 1.01 33.6%, 1.04 42.4%, 1.03 52%, 1.005 66%, 1);
 
   --neutral-0: oklch(1 var(--tint) var(--accent-hue, 52));
   --neutral-50: oklch(0.985 var(--tint) var(--accent-hue, 52));
@@ -1691,13 +1693,21 @@ span.doc-icon.inline-icon-large {
   transition:
     --tab-top var(--duration-base) var(--ease-out-quint),
     --tab-base var(--duration-base) var(--ease-out-quint),
-    border-radius var(--duration-base) var(--ease-out-quint),
+    border-radius var(--duration-slow) var(--easing-spring),
     color var(--duration-base) var(--ease-out-quint);
 }
 @media (hover: hover) {
   .tab-feet[aria-selected="false"]:hover {
     --tab-top: color-mix(in oklab, var(--background) 60%, var(--chrome));
     --tab-base: var(--background);
+  }
+  /* Toward the open tab, the tint fades to page colour over two radii, so
+     no seam runs down the join. */
+  .tab-feet[aria-selected="false"]:hover:has(+ [aria-selected="true"]) {
+    background: linear-gradient(to right, transparent calc(100% - 2 * var(--radius-lg)), var(--tab-base)), linear-gradient(var(--tab-top), var(--tab-base));
+  }
+  [aria-selected="true"] + .tab-feet[aria-selected="false"]:hover {
+    background: linear-gradient(to left, transparent calc(100% - 2 * var(--radius-lg)), var(--tab-base)), linear-gradient(var(--tab-top), var(--tab-base));
   }
   /* Where a hovered tab meets the open one, the facing top corners close
      flat, so the two read as one shape. */
@@ -1711,7 +1721,7 @@ span.doc-icon.inline-icon-large {
   }
 }
 .tab-feet[aria-selected="true"] {
-  transition: border-radius var(--duration-base) var(--ease-out-quint), color var(--duration-base) var(--ease-out-quint);
+  transition: border-radius var(--duration-slow) var(--easing-spring), color var(--duration-base) var(--ease-out-quint);
 }
 .tab-feet::before,
 .tab-feet::after {
@@ -1720,8 +1730,8 @@ span.doc-icon.inline-icon-large {
   bottom: 0;
   pointer-events: none;
   transition:
-    --foot-left var(--duration-base) var(--ease-out-quint),
-    --foot-right var(--duration-base) var(--ease-out-quint);
+    --foot-left var(--duration-slow) var(--easing-spring),
+    --foot-right var(--duration-slow) var(--easing-spring);
 }
 .tab-feet::before {
   right: 100%;
@@ -1764,7 +1774,7 @@ span.doc-icon.inline-icon-large {
   --foot-left: 0px;
 }
 .page-sheet {
-  transition: border-top-left-radius var(--duration-base) var(--ease-out-quint);
+  transition: border-top-left-radius var(--duration-slow) var(--easing-spring);
 }
 :root:has([role="tab"].tab-feet:first-child:is([aria-selected="true"], :hover)) .page-sheet {
   border-top-left-radius: 0;
