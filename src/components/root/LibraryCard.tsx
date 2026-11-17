@@ -11,8 +11,8 @@ import { warm } from "@/lib/pages";
 import { PagePreview } from "@/components/root/PagePreview";
 
 const CONTROL =
-  // Concentric: the card is 14px, the pill 6px in (8px), the button 2px further in (6px).
-  "grid size-[22px] cursor-interactive place-items-center rounded-[6px] text-neutral-500 " +
+  // Concentric squircles: the card is 14px, the pill 6px in (8px), the button 2px further in (6px).
+  "grid size-[22px] cursor-interactive place-items-center rounded-[6px] [corner-shape:squircle] text-neutral-500 " +
   "transition-[opacity,background-color,color] duration-(--duration-fast) motion-reduce:transition-none " +
   "pointer-hover:bg-foreground/[0.06] pointer-hover:text-neutral-900 active:bg-foreground/[0.1] " +
   "focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 focus-visible:outline-none";
@@ -43,7 +43,7 @@ export function LibraryCard({ entry, kept, onForget }: { entry: LibraryEntry; ke
         <PagePreview path={entry.path} title={entry.title} />
       </Link>
 
-      <span className="absolute top-[6px] right-[6px] flex items-center gap-[2px] rounded-[8px] bg-background p-[2px] shadow-chip opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 has-[:focus-visible]:opacity-100 motion-reduce:transition-none dark:bg-neutral-200">
+      <span className="absolute top-[6px] right-[6px] flex items-center gap-[2px] rounded-[8px] [corner-shape:squircle] bg-background p-[2px] shadow-chip opacity-0 transition-opacity duration-(--duration-fast) group-hover:opacity-100 has-[:focus-visible]:opacity-100 motion-reduce:transition-none dark:bg-neutral-200">
         <Hint label={kept ? "Remove the bookmark" : "Bookmark"}>
           <button
             type="button"

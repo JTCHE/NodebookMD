@@ -327,7 +327,7 @@ export function DocTooltip({ slug, anchor, ...anchored }: Anchored & { slug: str
       return;
     }
     let alive = true;
-    invoke<PageView>("page", { path: slug })
+    invoke<PageView>("page", { path: slug, quiet: true })
       .then((page) => {
         const found = methodSignature(page.markdown, anchor);
         signatureCache.set(cacheKey, found);

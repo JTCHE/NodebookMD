@@ -198,8 +198,9 @@ export function TabStrip() {
       style={{ flexBasis: tabs.length * (TAB_WIDTH + 2) + NEW_TAB_ROOM }}
       className={cn(
         // Relative: each tab's `offsetLeft` is then its place in the strip.
-        // The first chip starts on the sheet's left edge.
-        "relative -mb-px flex h-[calc(100%+1px)] min-w-0 items-end gap-2xs overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
+        // The first chip starts on the sheet's left edge. No gap: a hovered tab
+        // and the active one touch, so their shapes join into one.
+        "relative -mb-px flex h-[calc(100%+1px)] min-w-0 items-end overflow-x-auto overflow-y-hidden [scrollbar-width:none]",
         "transition-opacity duration-(--duration-fast) starting:opacity-0 motion-reduce:transition-none",
       )}
     >
@@ -354,18 +355,17 @@ function TabChip({
         "group/tab @container relative h-[32px] min-w-[36px] shrink basis-(--tab) cursor-interactive",
         "touch-none select-none rounded-t-lg",
         "transition-colors duration-(--duration-fast) motion-reduce:transition-none",
+        // Concave feet, as large as the top corners: the tab flows into the
+        // bar instead of standing on it. `globals.css` draws them in the
+        // tab's fill (`--tab-fill`) and morphs the pair where two tabs meet.
+        "tab-feet",
         // The tab on screen is the chip the panel gives the page on screen:
         // one look for "this one" across the window. The rest are words on
         // the bar until the pointer finds them.
         active
-          ? cn(
-            "z-10 bg-background text-neutral-950",
-            // Concave feet, as large as the tab's own top corners: the tab
-            // flows into the page instead of standing on it. `globals.css`
-            // draws them, and morphs the one next to a hovered tab.
-            "tab-feet",
-          )
-          : "text-neutral-500 pointer-hover:bg-neutral-200/70 pointer-hover:text-neutral-900 dark:pointer-hover:bg-foreground/[0.035]",
+          ? "z-10 bg-(--tab-fill) text-neutral-950"
+          // One step below the active label, so a hover never reads as open.
+          : "text-neutral-500 pointer-hover:text-neutral-700",
       )}
     >
       {/* Narrow, a tab shows one thing, centred: its icon, and on the active
