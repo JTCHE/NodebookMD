@@ -1134,6 +1134,7 @@ pre code.hljs {
   height: 100%;
   /* 1.5px at 14px, the weight of the text beside it. */
   stroke-width: 2.5;
+  shape-rendering: geometricPrecision;
 }
 /* The open row's hover fill fades down into its body, so it does not end
    on a hard edge above the text it opened. A gradient cannot transition,
@@ -1180,11 +1181,18 @@ pre code.hljs {
   transition:
     block-size 240ms cubic-bezier(0.25, 1, 0.5, 1),
     --clip-fade 240ms cubic-bezier(0.25, 1, 0.5, 1),
-    opacity 200ms ease-out,
+    /* Closing, the body is gone before the last line of height. */
+    opacity 140ms ease-out,
     translate 240ms cubic-bezier(0.25, 1, 0.5, 1),
     content-visibility 240ms allow-discrete;
 }
 .hom-method[open]::details-content {
+  transition:
+    block-size 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    --clip-fade 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    translate 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    content-visibility 240ms allow-discrete;
   block-size: auto;
   opacity: 1;
   translate: 0 0;
@@ -1213,7 +1221,7 @@ pre code.hljs {
     --clip-fade 240ms cubic-bezier(0.25, 1, 0.5, 1),
     /* The end fade is for the one closed line: it comes back only once the
        caption is down to that line. */
-    --edge-fade 120ms ease-out 180ms;
+    --edge-fade 120ms ease-out 120ms;
 }
 .hom-method[open] .hom-method-caption {
   height: auto;
@@ -1225,6 +1233,8 @@ pre code.hljs {
     --edge-fade 0ms;
 }
 .hom-method-chevron {
+  /* One composited layer: the stroke does not alias in mid turn. */
+  will-change: transform;
   transition: transform 240ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 :root[data-motion="reduce"] .hom-method::details-content,
