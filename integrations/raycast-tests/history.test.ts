@@ -20,7 +20,7 @@ const originalLoad = (Module as unknown as { _load: (...args: unknown[]) => unkn
 };
 
 test("pages come back newest first, once each, and can be removed or cleared", async () => {
-  const { clearHistory, forgetPage, recentPages, rememberPage } = await import("../src/history");
+  const { clearHistory, forgetPage, recentPages, rememberPage } = await import("../raycast/src/history");
   await rememberPage({ path: "nodes/sop/box", title: "Box" });
   await rememberPage({ path: "nodes/sop/scatter", title: "Scatter" });
   await rememberPage({ path: "nodes/sop/box", title: "Box" });

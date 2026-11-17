@@ -1,10 +1,10 @@
 // The ranking on a few page names, so it is checked without the app.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { combine } from "../src/combine";
-import { match, pageKind } from "../src/ranking";
-import { inScope, parseScope } from "../src/scopes";
-import type { Hit } from "../src/types";
+import { combine } from "../raycast/src/combine";
+import { match, pageKind } from "../raycast/src/ranking";
+import { inScope, parseScope } from "../raycast/src/scopes";
+import type { Hit } from "../raycast/src/types";
 
 const titles: Hit[] = [
   { path: "nodes/sop/copytopoints", title: "Copy to Points 2.0" },

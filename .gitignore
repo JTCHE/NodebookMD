@@ -13,9 +13,10 @@
 # testing & debugging
 /coverage
 *test*
-# The extension ships its tests to the Raycast store, so they stay tracked.
-!integrations/raycast/tests
-!integrations/raycast/tests/*
+# The Raycast extension tests stay tracked. They sit beside the extension: the store takes only the extension.
+!integrations/raycast-tests
+!integrations/raycast-tests/*
+integrations/raycast-tests/node_modules
 *tmp*
 *temp*
 

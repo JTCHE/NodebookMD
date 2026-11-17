@@ -1,9 +1,9 @@
 // Runs the ranking on the title list of a running NodebookMD, the same list the extension gets.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { combine, rankBodies } from "../src/combine";
-import { inScope, parseScope } from "../src/scopes";
-import type { Hit } from "../src/types";
+import { combine, rankBodies } from "../raycast/src/combine";
+import { inScope, parseScope } from "../raycast/src/scopes";
+import type { Hit } from "../raycast/src/types";
 
 const BASE_URL = process.env.NODEBOOK_URL ?? "http://127.0.0.1:48800";
 

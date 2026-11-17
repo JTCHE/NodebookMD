@@ -1,0 +1,12 @@
+{
+  "name": "nodebookmd-raycast-tests",
+  "private": true,
+  "description": "Tests for the Raycast extension. They stay out of the extension folder, which goes to the Raycast store as is.",
+  "scripts": {
+    "test": "tsx --test *.test.ts",
+    "sync": "node -e \"require('fs').copyFileSync('../../src/lib/ranking.ts', '../raycast/src/ranking.ts')\""
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}
