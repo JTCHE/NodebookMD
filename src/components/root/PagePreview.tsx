@@ -32,8 +32,9 @@ export function PreviewFrame({ children }: { children: React.ReactNode }) {
   }, []);
 
   // The fade is set here, not inherited: the list around the cards turns its own fade off at its ends.
+  // It ends 6px above the frame, so no half letter sits on the frame edge.
   return (
-    <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-0 overflow-clip select-none [--fade-above:0] [--fade-below:1] [--fade-size:32px]">
+    <div ref={box} inert aria-hidden="true" className="fade-out pointer-events-none absolute inset-x-0 top-0 bottom-1.5 overflow-clip select-none [--fade-above:0] [--fade-below:1] [--fade-size:44px]">
       <article
         className="prose prose-neutral dark:prose-invert max-w-none px-[calc(var(--spacing-ms)/var(--scale))] pt-[calc(var(--spacing-ms)/var(--scale))] lg:px-[calc(var(--spacing-md)/var(--scale))] lg:pt-[calc(var(--spacing-md)/var(--scale))]"
         style={{ width: width || undefined, zoom: scale, "--scale": scale } as React.CSSProperties}
