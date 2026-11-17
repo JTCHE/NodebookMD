@@ -1132,6 +1132,9 @@ pre code.hljs {
   display: block;
   width: 100%;
   height: 100%;
+  /* 1.5px at 14px, the weight of the text beside it. */
+  stroke-width: 2.5;
+  shape-rendering: geometricPrecision;
 }
 /* The open row's hover fill fades down into its body, so it does not end
    on a hard edge above the text it opened. A gradient cannot transition,
@@ -1176,13 +1179,20 @@ pre code.hljs {
   --clip-fade: 24px;
   mask-image: linear-gradient(black calc(100% - var(--clip-fade)), transparent);
   transition:
-    block-size 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    --clip-fade 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    opacity 200ms ease-out,
-    translate 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    content-visibility 260ms allow-discrete;
+    block-size 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    --clip-fade 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    /* Closing, the body is gone before the last line of height. */
+    opacity 140ms ease-out,
+    translate 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    content-visibility 240ms allow-discrete;
 }
 .hom-method[open]::details-content {
+  transition:
+    block-size 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    --clip-fade 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    translate 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    content-visibility 240ms allow-discrete;
   block-size: auto;
   opacity: 1;
   translate: 0 0;
@@ -1207,23 +1217,25 @@ pre code.hljs {
     linear-gradient(to left, transparent, black var(--edge-fade));
   mask-composite: intersect;
   transition:
-    height 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    --clip-fade 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    height 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    --clip-fade 240ms cubic-bezier(0.25, 1, 0.5, 1),
     /* The end fade is for the one closed line: it comes back only once the
        caption is down to that line. */
-    --edge-fade 120ms ease-out 200ms;
+    --edge-fade 120ms ease-out 120ms;
 }
 .hom-method[open] .hom-method-caption {
   height: auto;
   --clip-fade: 0px;
   --edge-fade: 0px;
   transition:
-    height 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    --clip-fade 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    --edge-fade 100ms ease-out;
+    height 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    --clip-fade 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    --edge-fade 0ms;
 }
 .hom-method-chevron {
-  transition: transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* One composited layer: the stroke does not alias in mid turn. */
+  will-change: transform;
+  transition: transform 240ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 :root[data-motion="reduce"] .hom-method::details-content,
 :root[data-motion="reduce"] .hom-method > summary::before,

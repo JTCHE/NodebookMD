@@ -16,7 +16,7 @@ export type Preview = Pick<PageView, "path" | "name" | "nodeType" | "icon" | "su
 const BLOCKS = 8;
 /** Characters of markdown that hold more blocks than a window shows. */
 const HEAD = 4000;
-const STORAGE_KEY = "nodebookmd.previews";
+const STORAGE_KEY = "nodebookmd.previews.2";
 /** Cards on disk: more than the home list shows. */
 const STORED_LIMIT = 60;
 
@@ -31,8 +31,16 @@ function holdsCode(node: Block): boolean {
   return (node.children ?? []).some((child) => holdsCode(child as Block));
 }
 
-function head(tree: Root): Root {
-  return { type: "root", children: tree.children.filter((block) => !holdsCode(block as Block)).slice(0, BLOCKS) as RootContent[] };
+function text(node: unknown): string {
+  const element = node as { value?: string; children?: unknown[] };
+  return element.value ?? (element.children ?? []).map(text).join("");
+}
+
+/** The card prints the summary, so a paragraph that repeats it goes. */
+function head(tree: Root, summary?: string): Root {
+  const said = summary?.replace(/\s+/g, " ").trim().slice(0, 40);
+  const repeats = (block: RootContent) => !!said && (block as Block).tagName === "p" && text(block).replace(/\s+/g, " ").trim().startsWith(said);
+  return { type: "root", children: tree.children.filter((block) => !holdsCode(block as Block) && !repeats(block)).slice(0, BLOCKS) };
 }
 
 function load(): Record<string, Preview> {
@@ -62,7 +70,7 @@ function keep(preview: Preview) {
 export function storedPreview(path: string): Preview | undefined {
   if (stored[path]) return stored[path];
   const page = known(path);
-  return page?.tree ? { ...page, tree: head(page.tree) } : undefined;
+  return page?.tree ? { ...page, tree: head(page.tree, page.summary) } : undefined;
 }
 
 export function preview(path: string): Promise<Preview> {
@@ -73,7 +81,7 @@ export function preview(path: string): Promise<Preview> {
     held = invoke<PageView>("page", { path }).then(async (view) => {
       const cut = view.markdown.lastIndexOf("\n\n", HEAD);
       const markdown = view.markdown.length > HEAD && cut > 0 ? view.markdown.slice(0, cut) : view.markdown;
-      const tree = head(await parse(view.path, markdown));
+      const tree = head(await parse(view.path, markdown), view.summary);
       const result: Preview = { path, name: view.name, nodeType: view.nodeType, icon: view.icon, summary: view.summary, tree };
       keep(result);
       return result;
