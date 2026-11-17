@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { isCollapsed, sectionKey, sectionOf, setCollapsed, keepInPlace } from "@/lib/ui/sections";
 import { Icons } from "@/lib/ui/icons";
 import { BAR_BUTTON } from "@/lib/ui/button";
+import { toggleOnClick } from "@/lib/ui/toggleClick";
 import "./MarkdownHeading.css";
 
 type Tag = "h2" | "h3" | "h4";
@@ -41,10 +42,10 @@ function heading(Tag: Tag): NonNullable<Components[Tag]> {
       });
     };
     // Clicking the heading collapses the section, the way the chevron does.
-    // A drag that ends on the heading selects text; that is not a collapse.
+    // A drag or a double click selects text; that is not a collapse.
     const onHeadingClick = (event: MouseEvent<HTMLElement>) => {
-      if (window.getSelection()?.toString()) return;
-      apply(event.currentTarget, !isCollapsed(ownKey));
+      const owner = event.currentTarget;
+      toggleOnClick(event.nativeEvent, () => apply(owner, !isCollapsed(ownKey)));
     };
     const onToggleClick = (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
