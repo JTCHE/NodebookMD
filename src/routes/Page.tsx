@@ -378,7 +378,7 @@ export default function Page() {
   // centre for no list at all. One heading draws one row: a class that
   // documents its own methods holds one heading where a class that inherits
   // them holds two, and the family's pages must keep one column.
-  const headings = useMemo(() => (page ? extractHeadings(page.markdown) : []), [page]);
+  const headings = useMemo(() => (page?.tree ? extractHeadings(page.tree) : []), [page]);
   const hasToc = headings.length > 0;
   const name = useMemo(() => (page ? nameOf(page, path) : ""), [page, path]);
 
