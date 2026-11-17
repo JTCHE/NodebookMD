@@ -1,6 +1,5 @@
 /* Scan only the app's own files: a scan of the repository root blocked the dev server. */
 @import "tailwindcss" source(none);
-@import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
 /* The fonts ship in the binary: a desktop window has no promise of a network. */

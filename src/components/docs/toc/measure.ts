@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Heading } from "@/lib/markdown/headings";
-import { revealDetails } from "@/lib/ui/disclosure";
+import { revealDetails } from "@/lib/ui/sections";
 
 /**
  * The element that actually scrolls. AppShell pins the window at h-dvh with

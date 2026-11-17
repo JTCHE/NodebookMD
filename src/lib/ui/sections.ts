@@ -104,3 +104,11 @@ function hold(scroller: HTMLElement, natural: number, room: number) {
   spare.set(scroller, room);
   body.style.minHeight = room ? `${natural + room}px` : "";
 }
+
+/** Opens every details and collapsed section the element sits in. */
+export function revealDetails(element: Element | null) {
+  for (let detail = element?.closest("details"); detail; detail = detail.parentElement?.closest("details")) {
+    detail.open = true;
+  }
+  revealSections(element);
+}

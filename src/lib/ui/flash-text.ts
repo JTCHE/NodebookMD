@@ -8,7 +8,7 @@
  * named, wins over an earlier one.
  */
 import { excerptText } from "@/lib/search";
-import { revealDetails } from "./disclosure";
+import { revealDetails } from "./sections";
 
 // No `_`: the excerpt keeps Markdown's `_emphasis_`, and the page does not.
 const WORD = /[\p{L}\p{N}]+/gu;
