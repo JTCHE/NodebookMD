@@ -99,10 +99,20 @@ export function rememberSearch(hit: Hit) {
  *  instant: no round trip while the reader types.
  *  See spec: Local — SQLite FTS5 Index. */
 let all: Promise<Hit[]> | null = null;
+let loaded: Hit[] | null = null;
 
 export function titles(): Promise<Hit[]> {
-  all ??= invoke<Hit[]>("titles").catch(() => []);
+  all ??= invoke<Hit[]>("titles")
+    .catch(() => [])
+    .then((list) => (loaded = list));
   return all;
+}
+
+/** The title list, if it is already in memory. A field answers a key with it
+    in the same frame: a wait of even one promise lets a frame paint with no
+    list, and the results flicker as the reader types. */
+export function loadedTitles(): Hit[] | null {
+  return loaded;
 }
 
 /** The title of one page, if the list is already in memory. The list is read

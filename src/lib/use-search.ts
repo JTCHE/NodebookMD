@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { match } from "@/lib/ranking";
-import { bodies, titles, type Hit } from "@/lib/search";
+import { bodies, loadedTitles, titles, type Hit } from "@/lib/search";
 import { parseScope, scopeTest, type Scope } from "@/lib/scope";
 import { recents } from "@/lib/store/library";
 
@@ -131,5 +131,19 @@ export function useSearch(query: string): Found {
     };
   }, [query]);
 
-  return found.query === query.trim() ? found : NONE;
+  // Until the effect answers the new query, the title pick answers it in this
+  // render, from the list in memory: a frame with no list would flicker.
+  const answer = query.trim();
+  const quick = useMemo(() => (found.query === answer ? null : pickNow(answer)), [found.query, answer]);
+  return found.query === answer ? found : (quick ?? NONE);
+}
+
+/** The title pick for `answer`, when the title list is already in memory and
+    the pick alone can answer: not for words in double quotes. */
+function pickNow(answer: string): Found | null {
+  const all = loadedTitles();
+  const { scope, rest } = parseScope(answer);
+  const wanted = rest.trim();
+  if (!all || !wanted || wanted.includes('"')) return null;
+  return { query: answer, hits: match(scope ? scoped(all, scope) : all, wanted), settled: false };
 }
