@@ -184,11 +184,13 @@ function Row({ label, fact, onReset, children }: { label: string; fact?: ReactNo
   return (
     <div
       className={cn(
-        "box-content flex h-[52px] shrink-0 items-center gap-md border-b border-hairline last:border-b-0",
+        // The controls drop under the label when both do not fit on one line,
+        // so a narrow window never cuts the label to a sliver.
+        "box-content flex min-h-[36px] shrink-0 flex-wrap items-center gap-x-md gap-y-xs border-b border-hairline py-sm last:border-b-0",
         fact && "first:mt-[calc((var(--text-meta)*var(--text-meta--line-height)+1px)/2)]",
       )}
     >
-      <span className="flex min-w-0 flex-1 flex-col gap-px">
+      <span className="flex max-w-full shrink-0 grow basis-auto flex-col gap-px">
         <span className="truncate text-title text-neutral-950">{label}</span>
         {fact && <span className="truncate text-meta text-neutral-500">{fact}</span>}
       </span>

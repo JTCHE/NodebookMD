@@ -51,7 +51,7 @@ export function AccentPicker({ value, hue }: { value: Accent; hue: number }) {
   };
 
   return (
-    <div ref={root} role="radiogroup" aria-label="Accent" className="relative flex items-center gap-sm pr-[3.5px]">
+    <div ref={root} role="radiogroup" aria-label="Accent" className="relative flex items-center gap-sm pr-[3.5px] max-sm:flex-wrap max-sm:gap-[6px]">
       {ACCENTS.map((accent) => (
         <button
           key={accent}
