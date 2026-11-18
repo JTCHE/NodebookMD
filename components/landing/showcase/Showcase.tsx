@@ -11,6 +11,17 @@ import { TABS } from "@/components/landing/showcase/tabs";
 import { useTour } from "@/components/landing/showcase/useTour";
 import { cn } from "@/lib/utils";
 
+/** On a phone the middle of the window is the arrows. The empty part of the
+    bar is the tab strip, empty there, so the time goes in the middle of it.
+    In the slide's units, or null before the app has drawn its bar. */
+function barGap(frame: HTMLIFrameElement | null, app: { x: number; w: number; window: number }) {
+  const document = frame?.contentDocument;
+  const forward = document?.querySelector('[aria-label="Forward"]')?.getBoundingClientRect();
+  const search = document?.querySelector('[aria-label="Search"]')?.getBoundingClientRect();
+  if (!forward?.width || !search?.width) return null;
+  return app.x + ((forward.right + search.left) / 2) * (app.w / app.window);
+}
+
 /** The window's shadow in the Figma mockup, on its 1440px window. It scales
     with the frame, so a smaller frame keeps the same look. */
 const MOCKUP_WIDTH = 1440;
@@ -192,7 +203,7 @@ export function Showcase() {
                   "pointer-events-none absolute z-10 -translate-y-1/2",
                   app.end ? "-translate-x-full" : "-translate-x-1/2",
                 )}
-                style={{ left: (app.end ? app.x + app.w - 8 : app.x + app.w / 2) * scale, top: app.bar * scale }}
+                style={{ left: (app.end ? app.x + app.w - 8 : (base.phone && barGap(frame.current, app)) || app.x + app.w / 2) * scale, top: app.bar * scale }}
               >
                 <Opened
                   key={tour.opened.at}

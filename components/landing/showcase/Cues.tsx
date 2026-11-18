@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 /** The time the last page took, from the press to its paint, in the empty
     middle of the bar above the page. It stays until the next page. On a phone
-    the bar has room for the time only. */
+    the bar has room for the time only, with no dot. */
 export function Opened({ title, ms, size }: { title: string | null; ms: number; size: number }) {
   // Sized with the bar it sits in, so it reads as part of the window.
   return (
@@ -14,9 +14,9 @@ export function Opened({ title, ms, size }: { title: string | null; ms: number; 
       className="flex animate-in items-center gap-[0.45em] rounded-full border border-hairline bg-background px-[0.75em] py-[0.15em] leading-snug whitespace-nowrap text-muted-foreground shadow-sm duration-200 fade-in zoom-in-95"
       style={{ fontSize: size }}
     >
-      <span className="size-[0.45em] rounded-full bg-brand" />
       {title && (
         <>
+          <span className="size-[0.45em] rounded-full bg-brand" />
           <span className="text-foreground">{title}</span> opened in
         </>
       )}
