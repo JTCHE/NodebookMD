@@ -288,13 +288,13 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
 
             {/* The main action stays where it is while paused, hovered or not. */}
       {paused && !loading && !pulse && (
-        <button type="button" className={`video-center video-rest ${ended ? "" : "video-hole"}`} aria-label={ended ? "Replay" : "Play"} onClick={togglePlayWithPulse}>
-          {ended ? <ReplayIcon /> : <PlayIcon className="translate-x-[calc(7%-1px)]" />}
+        <button type="button" className="video-center video-rest" aria-label={ended ? "Replay" : "Play"} onClick={togglePlayWithPulse}>
+          {ended ? <ReplayIcon /> : <PlayIcon className="translate-x-[7%]" />}
         </button>
       )}
       {pulse && (
-        <span key={pulse.count} className={`video-center video-pulse ${pulse.playing ? "video-hole" : ""}`} aria-hidden="true">
-          {pulse.playing ? <PlayIcon className="translate-x-[calc(7%-1px)]" /> : <PauseIcon />}
+        <span key={pulse.count} className="video-center video-pulse" aria-hidden="true">
+          {pulse.playing ? <PlayIcon className="translate-x-[7%]" /> : <PauseIcon />}
         </span>
       )}
 
