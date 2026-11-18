@@ -46,7 +46,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
   }
 
   return (
-    <Hint side="below" off={open} label={onLatest ? "The latest version of this node" : `The latest is ${latest.label}.`}>
+    <Hint side="below" off={open} label={onLatest ? "Latest version" : `Latest is ${latest.label}`}>
     <div ref={container} onKeyDown={onMenuKey} className="relative -ml-2 mr-xs inline-flex print:hidden">
       <button
         ref={trigger}
@@ -65,7 +65,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
       >
         {named(current.label)}
         <ChevronDown
-          className={cn("size-3 transition-transform duration-150 motion-reduce:transition-none", open && "rotate-180")}
+          className={cn("-mr-0.5 size-3 transition-transform duration-150 motion-reduce:transition-none", open && "rotate-180")}
           aria-hidden="true"
         />
       </button>
