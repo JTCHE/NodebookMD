@@ -39,8 +39,7 @@ Three levels, cheapest first.
 
 ## macOS
 
-Test on the MacBook over SSH (`ssh -o BatchMode=yes mac`). **Never use a
-GitHub macOS runner**: each minute costs money. The checks in `harness/mac/`
+Test on the MacBook over SSH (`ssh -o BatchMode=yes mac`). Do not test on a GitHub macOS runner: the release build is the only macOS job in CI. The checks in `harness/mac/`
 drive the real window with System Events and compare screenshots; run them on
 the MacBook.
 

@@ -12,13 +12,10 @@ One workflow, `.github/workflows/release.yml`, on a `v*` tag.
    key, writes `latest.json` and opens a **draft** release.
 3. The Linux job builds beside it. `publish` adds the AppImage to the draft
    and its entry to `latest.json`.
-4. macOS is built on the Mac, not in CI: the GitHub macOS runner costs
-   money. On the Mac, `bun run tauri build --bundles app`, pack the `.app`
-   as `<productName>_<version>_aarch64.app.tar.gz` (`tar -czf`, the `.app`
-   at its root) and the disk image with `src-tauri/dmg/build.sh`. Upload
-   both to the draft, then run `gh workflow run macos-sign.yml -f
-   tag=v<version>`: it signs the tarball and adds `darwin-aarch64` to
-   `latest.json`.
+4. The macOS job builds the app on `macos-latest` (free on a public repo),
+   packs `<productName>_<version>_aarch64.app.tar.gz` and the disk image, and
+   signs the tarball. `publish` adds both to the draft, and adds
+   `darwin-aarch64` and `linux-x86_64` to `latest.json`.
 5. The draft now holds the files in the table below.
 6. You paste the release notes into the draft and publish it. Then set the
    note's `Status` to `Closed` and fill its `Date`.
