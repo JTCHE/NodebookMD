@@ -100,28 +100,35 @@ export function SettingsDialog() {
       // gives back the 10px between its edge and its cross, so the cross ends
       // on the content's right edge. It stands where the title's line stands,
       // so the cross is centred on the title's capitals.
-      closeAt="top-[calc(var(--spacing-lg)-6px)] right-[calc(var(--spacing-lg)-10px)]"
+      // In a narrow window the sections run in one row over the tab, and the
+      // close button ends that row, centred on it.
+      closeAt="top-[calc(var(--spacing-lg)-6px)] right-[calc(var(--spacing-lg)-10px)] max-sm:top-[calc(var(--spacing-sm)+1px)] max-sm:right-sm"
       // One height on every tab, so the dialog never jumps, and room for the
       // six agents Houdini MCP supports, the longest list with a known end
       // (see `Section`). Houdini help has no such end, so a longer
       // list scrolls. It stands tall enough to cover the page's heading.
-      className="h-[min(520px,100%)] w-full max-w-[760px] flex-row rounded-[calc(var(--radius-md)+var(--spacing-sm))]"
+      className="h-[min(520px,100%)] w-full max-w-[760px] flex-row rounded-[calc(var(--radius-md)+var(--spacing-sm))] max-sm:flex-col"
     >
       {/* The sections are places, as the sidebar's rows are, on the panel's
           own ground, the sidebar's. The inset is one value on every side,
           and the window corner is the row corner plus that inset (see the
           dialog's class), so the two curves are concentric. */}
-      <nav className="flex w-[200px] shrink-0 flex-col gap-2xs border-r border-hairline bg-chrome p-sm">
-        {SECTIONS.map((one) => (
-          <SidebarRow
-            key={one.key}
-            label={one.label}
-            bare
-            selected={shown === one.key}
-            mark={<one.icon className={cn("size-icon", shown === one.key ? "text-neutral-900" : "text-neutral-500")} />}
-            onClick={() => setShown(one.key)}
-          />
-        ))}
+      {/* Narrow, the row scrolls and fades out before the close button, so
+          no label runs under the cross. */}
+      <nav className="flex w-[200px] shrink-0 flex-col border-r border-hairline bg-chrome max-sm:w-full max-sm:border-r-0 max-sm:border-b">
+        <div className="flex flex-col gap-2xs p-sm max-sm:mr-[calc(var(--spacing-sm)+28px)] max-sm:flex-row max-sm:overflow-x-auto max-sm:pr-md max-sm:[scrollbar-width:none] max-sm:[mask-image:linear-gradient(to_left,transparent,black_var(--spacing-md))]">
+          {SECTIONS.map((one) => (
+            <SidebarRow
+              key={one.key}
+              label={one.label}
+              bare
+              selected={shown === one.key}
+              className="max-sm:w-auto"
+              mark={<one.icon className={cn("size-icon", shown === one.key ? "text-neutral-900" : "text-neutral-500")} />}
+              onClick={() => setShown(one.key)}
+            />
+          ))}
+        </div>
       </nav>
       <div className="flex min-w-0 flex-1 flex-col">
         {shown === "general" ? (
@@ -158,7 +165,7 @@ export function SettingsDialog() {
 function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <header className="mt-[calc(var(--spacing-lg)-6px)] mr-[calc(var(--spacing-lg)+18px+var(--spacing-md)+var(--spacing-sm))] mb-xs ml-lg flex h-7 shrink-0 items-baseline justify-between gap-md">
+      <header className="mt-[calc(var(--spacing-lg)-6px)] mr-[calc(var(--spacing-lg)+18px+var(--spacing-md)+var(--spacing-sm))] max-sm:mr-lg mb-xs ml-lg flex h-7 shrink-0 items-baseline justify-between gap-md">
         <h2 className="truncate text-[20px] leading-7 font-semibold tracking-[-0.02em] text-neutral-950">{title}</h2>
         {action}
       </header>
