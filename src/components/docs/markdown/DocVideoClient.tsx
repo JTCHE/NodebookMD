@@ -286,16 +286,14 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
 
       {loading && <span className="pointer-events-none absolute inset-0 m-auto size-10 animate-spin rounded-full border-3 border-(--video-track) border-t-(--video-control) motion-reduce:animate-none" aria-hidden="true" />}
 
-      {/* The triangle's centroid sits 10% right of its box centre; a full
-          shift reads too far right, 4% too far left; 7% is about 1.7px. */}
-      {/* The main action stays where it is while paused, hovered or not. */}
+            {/* The main action stays where it is while paused, hovered or not. */}
       {paused && !loading && !pulse && (
-        <button type="button" className="video-center video-rest" aria-label={ended ? "Replay" : "Play"} onClick={togglePlayWithPulse}>
+        <button type="button" className={`video-center video-rest ${ended ? "" : "video-hole"}`} aria-label={ended ? "Replay" : "Play"} onClick={togglePlayWithPulse}>
           {ended ? <ReplayIcon /> : <PlayIcon className="translate-x-[calc(7%-1px)]" />}
         </button>
       )}
       {pulse && (
-        <span key={pulse.count} className="video-center video-pulse" aria-hidden="true">
+        <span key={pulse.count} className={`video-center video-pulse ${pulse.playing ? "video-hole" : ""}`} aria-hidden="true">
           {pulse.playing ? <PlayIcon className="translate-x-[calc(7%-1px)]" /> : <PauseIcon />}
         </span>
       )}
