@@ -100,6 +100,9 @@ export function read(path: string): Promise<PageView> {
     )
     .then((view) => {
       remember(path, view);
+      // A folder address reads the folder's index page, and the view names
+      // that page. The page view moves to that name, and finds it here.
+      if (view.path !== path) remember(view.path, view);
       return view;
     })
     .finally(() => {

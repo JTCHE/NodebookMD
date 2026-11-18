@@ -95,6 +95,37 @@ pub fn exists_layered(roots: &[PathBuf], path: &str) -> bool {
     })
 }
 
+/// The page an address names, as `page_layered` reads it: `nodes/sop` and
+/// `nodes` name a folder, and the page there is its `index`. Every other
+/// part of the app knows a folder page by that name only: the tab, the sidebar
+/// and the recent pages found nothing under `nodes/sop`.
+pub fn page_path_layered(roots: &[PathBuf], path: &str) -> String {
+    let path = path.trim_matches('/');
+    if path.is_empty() {
+        return String::new();
+    }
+    let Some((section, rest)) = path.split_once('/') else {
+        return format!("{path}/index");
+    };
+    if rest.contains("..") {
+        return path.to_string();
+    }
+    let page = format!("{rest}.txt");
+    let index = format!("{rest}/index.txt");
+    for help in roots {
+        let zip = help.join(format!("{section}.zip"));
+        let folder = help.join(section);
+        let has = |name: &str| holds(&zip, name) || folder.join(name).is_file();
+        if has(&page) {
+            return path.to_string();
+        }
+        if has(&index) {
+            return format!("{path}/index");
+        }
+    }
+    path.to_string()
+}
+
 fn holds(zip: &Path, name: &str) -> bool {
     with_archive(zip, |archive| archive.index_for_name(name).is_some()).unwrap_or(false)
 }

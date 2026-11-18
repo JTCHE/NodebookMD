@@ -1,6 +1,6 @@
 import { Component, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import { LucideArrowUpRight } from "lucide-react";
-import { useLocation, useNavigationType } from "react-router";
+import { useLocation, useNavigate, useNavigationType } from "react-router";
 import type { Components } from "react-markdown";
 import { cn } from "@/lib/utils";
 import { Breadcrumbs } from "@/components/docs/Breadcrumbs";
@@ -105,6 +105,7 @@ function startGlide(box: HTMLElement, direction: 1 | -1): () => void {
 export default function Page() {
   const location = useLocation();
   const navigationType = useNavigationType();
+  const navigate = useNavigate();
   const path = location.pathname.replace(/^\/+/, "");
   const fromPath = usePageOrigin(path);
   // A page already read draws on the first render, not one render later.
@@ -125,8 +126,17 @@ export default function Page() {
   // and up to 75ms — which reads as a flash rather than as a page opening.
   // The old text standing for one more frame is the lesser of the two.
   useEffect(() => {
+    // `nodes/sop` names a folder, and the page read is `nodes/sop/index`.
+    // The address takes that name, so the tab, the sidebar, the recent pages
+    // and the crumbs all find the page.
+    const settle = (view: PageView) => {
+      if (view.path === path) return false;
+      navigate(`/${view.path}${location.search}${location.hash}`, { replace: true });
+      return true;
+    };
     const held = known(path);
     if (held) {
+      if (settle(held)) return;
       setPage(held);
       setError(null);
       return;
@@ -135,6 +145,7 @@ export default function Page() {
     read(path)
       .then((view) => {
         if (!live) return;
+        if (settle(view)) return;
         setPage(view);
         setError(null);
       })
