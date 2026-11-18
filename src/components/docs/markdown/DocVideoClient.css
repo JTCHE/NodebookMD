@@ -140,7 +140,8 @@
   pointer-events: auto;
   cursor: var(--cursor-interactive);
 }
-.video-rest:hover {
+/* The whole clip is the hover target: the button answers wherever the pointer is on it. */
+.markdown-video:hover .video-rest {
   scale: 1.04;
   background-color: rgb(0 0 0 / 60%);
 }
@@ -328,16 +329,3 @@
   display: none;
 }
 
-/* Play is a hole in the button, not a glyph on it: the clip shows through
-   the triangle, and the blurred disc stays around it. The triangle sits 7%
-   of its box right of centre, where its centroid reads as centred. */
-.video-hole {
-  --hole: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5.5 4.6L18.8 12L5.5 19.4Z' stroke='black' stroke-width='2' stroke-linejoin='round'/></svg>");
-  mask:
-    var(--hole) calc(50% + 0.07 * 1.5rem) 50% / 1.5rem 1.5rem no-repeat,
-    linear-gradient(black, black);
-  mask-composite: exclude;
-}
-.video-hole svg {
-  visibility: hidden;
-}

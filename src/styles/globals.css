@@ -1713,16 +1713,17 @@ span.doc-icon.inline-icon-large {
 }
 @media (hover: hover) {
   .tab-feet[aria-selected="false"]:hover {
-    --tab-top: color-mix(in oklab, var(--background) 60%, var(--chrome));
-    --tab-base: var(--background);
+    /* One flat tint, below the open tab, so hover never reads as open. */
+    --tab-top: color-mix(in oklab, var(--background) 40%, var(--chrome));
+    --tab-base: var(--tab-top);
   }
   /* Toward the open tab, the tint fades to page colour over two radii, so
      no seam runs down the join. */
   .tab-feet[aria-selected="false"]:hover:has(+ [aria-selected="true"]) {
-    background: linear-gradient(to right, transparent calc(100% - 2 * var(--radius-lg)), var(--tab-base)), linear-gradient(var(--tab-top), var(--tab-base));
+    background: linear-gradient(to right, transparent calc(100% - 2 * var(--radius-lg)), var(--background)), linear-gradient(var(--tab-top), var(--tab-base));
   }
   [aria-selected="true"] + .tab-feet[aria-selected="false"]:hover {
-    background: linear-gradient(to left, transparent calc(100% - 2 * var(--radius-lg)), var(--tab-base)), linear-gradient(var(--tab-top), var(--tab-base));
+    background: linear-gradient(to left, transparent calc(100% - 2 * var(--radius-lg)), var(--background)), linear-gradient(var(--tab-top), var(--tab-base));
   }
   /* Where a hovered tab meets the open one, the facing top corners close
      flat, so the two read as one shape. */
