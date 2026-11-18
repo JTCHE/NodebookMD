@@ -251,6 +251,8 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
         playsInline
         className="absolute inset-0 size-full cursor-interactive"
         onClick={togglePlayWithPulse}
+        // As in every video player: a double click is full screen.
+        onDoubleClick={toggleFullscreen}
         onLoadedMetadata={(event) => {
           const video = event.currentTarget;
           if (video.videoWidth && video.videoHeight) setRatio(`${video.videoWidth} / ${video.videoHeight}`);
@@ -290,7 +292,7 @@ export default function DocVideoClient({ src, title }: DocVideoClientProps) {
 
             {/* The main action stays where it is while paused, hovered or not. */}
       {paused && !loading && !pulse && (
-        <button type="button" className="video-center video-rest" aria-label={ended ? "Replay" : "Play"} onClick={togglePlayWithPulse}>
+        <button type="button" className="video-center video-rest" aria-label={ended ? "Replay" : "Play"} onClick={togglePlayWithPulse} onDoubleClick={toggleFullscreen}>
           {ended ? <ReplayIcon /> : <PlayIcon className="translate-x-[7%]" />}
         </button>
       )}
