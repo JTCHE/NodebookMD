@@ -282,10 +282,10 @@ export function rehypeHom({ name }: { name: string | null }) {
           body.splice(1, 1);
         }
         const methodName = methodNames.get(panel as Element) ?? "";
-        // A row with no text and nothing cut from its signature has nothing
+        // A row with no body and nothing cut from its signature has nothing
         // to open: it is a plain row, with no chevron.
-        if (summary.length === 2 && body.length === 1 && !shortened.has(panel as Element)) {
-          grouped.push({ type: "element", tagName: "div", properties: { className: ["hom-method", "hom-method-row"], dataName: methodName }, children: [summary[1]] });
+        if (body.length === 1 && !shortened.has(panel as Element)) {
+          grouped.push({ type: "element", tagName: "div", properties: { className: ["hom-method", "hom-method-row"], dataName: methodName }, children: summary.slice(1) });
           continue;
         }
         // The row already shows the whole signature unless it cut it, so the
