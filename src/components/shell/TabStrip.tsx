@@ -381,24 +381,26 @@ function TabChip({
           )}
         </span>
         <span className="min-w-0 flex-1 translate-y-light truncate text-meta leading-none tracking-[-0.01em] @max-[72px]:hidden">{title}</span>
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-label={`Close ${title}`}
-          // The press would also reach the tab, which activates and drags.
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={onClose}
-          className={cn(
-            "grid size-[20px] shrink-0 place-items-center rounded-sm text-neutral-500",
-            "transition-[opacity,background-color,color] duration-(--duration-fast) motion-reduce:transition-none",
-            "pointer-hover:bg-neutral-200 pointer-hover:text-neutral-950",
-            // The active tab always shows its close; another only under the
-            // pointer, and a narrow one never, so its icon keeps the room.
-            active ? "opacity-100 @max-[72px]:hidden @max-[72px]:group-hover/tab:grid" : "opacity-0 group-hover/tab:opacity-100 @max-[72px]:hidden",
-          )}
-        >
-          <Icons.dismiss className="size-ms" />
-        </button>
+        <Hint label="Close tab" keys={CLOSE_TAB_KEYS}>
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label={`Close ${title}`}
+            // The press would also reach the tab, which activates and drags.
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={onClose}
+            className={cn(
+              "grid size-[20px] shrink-0 place-items-center rounded-sm text-neutral-500",
+              "transition-[opacity,background-color,color] duration-(--duration-fast) motion-reduce:transition-none",
+              "pointer-hover:bg-neutral-200 pointer-hover:text-neutral-950",
+              // The active tab always shows its close; another only under the
+              // pointer, and a narrow one never, so its icon keeps the room.
+              active ? "opacity-100 @max-[72px]:hidden @max-[72px]:group-hover/tab:grid" : "opacity-0 group-hover/tab:opacity-100 @max-[72px]:hidden",
+            )}
+          >
+            <Icons.dismiss className="size-ms" />
+          </button>
+        </Hint>
       </span>
     </div>
   );
