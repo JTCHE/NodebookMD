@@ -5,7 +5,7 @@
  * another program. This one uses the box every link in the page uses, and
  * opens on the same hover rule (lib/ui/hover-tip). The keys are drawn as keys.
  */
-import { useRef, type ReactNode } from "react";
+import { useRef, type ReactNode, useEffect } from "react";
 import { useHoverTip } from "@/lib/ui/hover-tip";
 import { TooltipBox } from "@/components/docs/Tooltip";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,11 @@ import { Keys } from "@/components/ui/Keycap";
 export function Hint({ label, keys, side, off, className, children }: { label?: string; keys?: string; side?: "above" | "below"; off?: boolean; className?: string; children: ReactNode }) {
   const anchor = useRef<HTMLSpanElement>(null);
   const { shown, open, hide } = useHoverTip();
+  // The hint the menu pushed away does not come back when the menu closes:
+  // the pointer is often gone by then, and the question is answered.
+  useEffect(() => {
+    if (off) hide();
+  }, [off, hide]);
 
   // With keycaps the box closes on them, so that side takes the key inset; keys alone take it on both sides.
   return (

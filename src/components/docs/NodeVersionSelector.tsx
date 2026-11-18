@@ -57,7 +57,7 @@ export function NodeVersionSelector({ versions, path }: { versions: NodeVersion[
         className={cn(
           // A ghost picker like Copy; only an older version is marked. The
           // open menu holds the hover look, so the chip reads as its owner.
-          "inline-flex h-6 cursor-interactive items-center gap-1 rounded-md px-2 text-xs transition-[background-color,color,scale] duration-(--duration-fast) [corner-shape:squircle] focus-ring active:scale-[0.97] motion-reduce:transition-none",
+          "inline-flex h-6 cursor-interactive items-center gap-1 rounded-md px-2 text-xs transition-colors duration-(--duration-fast) [corner-shape:squircle] focus-ring motion-reduce:transition-none",
           onLatest
             ? "text-neutral-600 pointer-hover:bg-muted pointer-hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground"
             : "bg-brand/10 text-brand-700 dark:text-brand-bright pointer-hover:bg-brand/15 aria-expanded:bg-brand/15",
