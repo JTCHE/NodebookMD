@@ -346,28 +346,32 @@ svg[stroke="currentColor"] * {
   vector-effect: non-scaling-stroke;
 }
 
-/* Text selection. See lib/ui/selection.ts. */
-::selection {
-  background: transparent;
-}
-/* A tint, not a block: the letters take the accent colour over a faint wash of it. */
-input::selection,
-textarea::selection,
-::highlight(selection) {
-  background: color-mix(in oklch, var(--brand) 22%, transparent);
-  color: color-mix(in oklch, var(--brand-700) 55%, var(--foreground));
-}
-[data-theme="dark"] ::highlight(selection) {
-  color: color-mix(in oklch, var(--brand) 70%, var(--foreground));
-}
+/* Text selection and find matches. Only where color-mix with a variable parses: Houdini's Chromium 108
+   cannot, and its fallback is a solid accent block over the text, so it keeps its native selection. */
+@supports (color: color-mix(in srgb, red, red)) {
+  /* Text selection. See lib/ui/selection.ts. */
+  ::selection {
+    background: transparent;
+  }
+  /* A tint, not a block: the letters take the accent colour over a faint wash of it. */
+  input::selection,
+  textarea::selection,
+  ::highlight(selection) {
+    background: color-mix(in oklch, var(--brand) 22%, transparent);
+    color: color-mix(in oklch, var(--brand-700) 55%, var(--foreground));
+  }
+  [data-theme="dark"] ::highlight(selection) {
+    color: color-mix(in oklch, var(--brand) 70%, var(--foreground));
+  }
 
-/* The find bar's matches. See lib/ui/find.ts. */
-::highlight(find) {
-  background: color-mix(in oklch, var(--brand) 30%, transparent);
-}
-::highlight(find-current) {
-  background: var(--brand-700);
-  color: var(--brand-foreground);
+  /* The find bar's matches. See lib/ui/find.ts. */
+  ::highlight(find) {
+    background: color-mix(in oklch, var(--brand) 30%, transparent);
+  }
+  ::highlight(find-current) {
+    background: var(--brand-700);
+    color: var(--brand-foreground);
+  }
 }
 
 /* The ground under the page bar and the key strip: solid, then an eased fade. */
@@ -873,20 +877,22 @@ pre code.hljs {
   margin-top: 0.5em;
 }
 
-/* One callout for blockquote.callout and the in-cell span.callout. A type class sets the color, icon and surface.
-   Surfaces are literals of color-mix(color 4%, card): a var-based color-mix gets an unguarded build fallback. */
+/* One callout for blockquote.callout and the in-cell span.callout. A type class sets the color and the icon.
+   The tint is the callout colour at a low opacity over the page, set here and nowhere else, so it follows every
+   theme and accent. Not color-mix with a variable: Houdini's Chromium 108 cannot parse it (agents/houdini-pane.md). */
 .callout {
   --callout-color: oklch(0.62 0.13 250);
   --callout-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E");
-  --callout-surface: rgb(247, 250, 253);
-  --callout-code: rgb(232, 241, 250);
+  --callout-surface: 0.04;
+  --callout-code: 0.1;
+  position: relative;
+  isolation: isolate;
   display: block;
   margin: 1.25rem calc(var(--md) * -1);
   padding: 0.85rem var(--md);
   border: none;
   border-radius: var(--radius-xl);
-  /* The surface fades down, as the open method row does. */
-  background: linear-gradient(var(--callout-surface), color-mix(in oklab, var(--callout-surface) 50%, transparent));
+  background: none;
   font-size: 0.9rem;
   color: var(--foreground);
   box-shadow:
@@ -896,9 +902,28 @@ pre code.hljs {
     0 1px 2px 0 color-mix(in oklab, black 4%, transparent);
 }
 
+/* The surface fades down, as the open method row does. */
+.callout::before,
+.callout :not(pre) > code::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--callout-color);
+  opacity: var(--callout-surface);
+  pointer-events: none;
+}
+.callout::before {
+  -webkit-mask-image: linear-gradient(black, rgb(0 0 0 / 50%));
+  mask-image: linear-gradient(black, rgb(0 0 0 / 50%));
+}
+.callout :not(pre) > code::after {
+  opacity: var(--callout-code);
+}
 :root[data-theme="dark"] .callout {
-  --callout-surface: rgb(25, 27, 29);
-  --callout-code: rgb(17, 23, 29);
+  --callout-surface: 0.06;
+  --callout-code: 0.12;
 }
 
 .callout .callout-title {
@@ -939,8 +964,10 @@ pre code.hljs {
 .callout a {
   color: var(--callout-color);
 }
-.callout code {
-  background: var(--callout-code);
+.callout :not(pre) > code {
+  position: relative;
+  isolation: isolate;
+  background: none;
 }
 
 .callout-tip {
@@ -950,8 +977,6 @@ pre code.hljs {
   --tip-ink: var(--brand-700);
   --callout-color: var(--tip-ink);
   --callout-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5'/%3E%3Cpath d='M9 18h6'/%3E%3Cpath d='M10 22h4'/%3E%3C/svg%3E");
-  --callout-surface: color-mix(in srgb, var(--tip) 4%, white);
-  --callout-code: color-mix(in srgb, var(--tip) 10%, white);
 }
 :root {
   /* The logo takes the accent; Original keeps the trademark orange. */
@@ -985,45 +1010,23 @@ pre code.hljs {
 }
 :root[data-theme="dark"] .callout-tip {
   --callout-color: var(--tip);
-  --callout-surface: color-mix(in srgb, var(--tip) 6%, oklch(0.16 var(--tint) var(--accent-hue, 52)));
-  --callout-code: color-mix(in srgb, var(--tip) 8%, oklch(0.12 var(--tint) var(--accent-hue, 52)));
 }
 /* Monochrome: every callout in the text colour on a grey ground. The repeated
    class outranks each kind's own light and dark rules. */
 :root[data-accent="monochrome"] .callout.callout.callout {
   --callout-color: var(--foreground);
-  --callout-surface: var(--neutral-50);
-  --callout-code: var(--neutral-100);
 }
 .callout-warning {
   --callout-color: oklch(0.7 0.15 75);
   --callout-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
-  --callout-surface: rgb(254, 251, 247);
-  --callout-code: rgb(250, 242, 230);
-}
-:root[data-theme="dark"] .callout-warning {
-  --callout-surface: rgb(29, 27, 25);
-  --callout-code: rgb(30, 24, 15);
 }
 .callout-important {
   --callout-color: oklch(0.6 0.18 300);
   --callout-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7.9 20A9 9 0 1 0 4 16.1L2 22Z'/%3E%3Cpath d='M12 8v4'/%3E%3Cpath d='M12 16h.01'/%3E%3C/svg%3E");
-  --callout-surface: rgb(250, 249, 254);
-  --callout-code: rgb(241, 236, 252);
-}
-:root[data-theme="dark"] .callout-important {
-  --callout-surface: rgb(27, 26, 30);
-  --callout-code: rgb(23, 20, 30);
 }
 .callout-caution {
   --callout-color: oklch(0.62 0.2 25);
   --callout-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.3 2a2 2 0 0 1 1.4.6l4.7 4.7a2 2 0 0 1 .6 1.4v6.6a2 2 0 0 1-.6 1.4l-4.7 4.7a2 2 0 0 1-1.4.6H8.7a2 2 0 0 1-1.4-.6l-4.7-4.7a2 2 0 0 1-.6-1.4V8.7a2 2 0 0 1 .6-1.4l4.7-4.7A2 2 0 0 1 8.7 2z'/%3E%3Cpath d='M12 8v4'/%3E%3Cpath d='M12 16h.01'/%3E%3C/svg%3E");
-  --callout-surface: rgb(255, 248, 247);
-  --callout-code: rgb(255, 235, 232);
-}
-:root[data-theme="dark"] .callout-caution {
-  --callout-surface: rgb(31, 26, 25);
-  --callout-code: rgb(32, 18, 17);
 }
 
 /* In a table cell: the same callout, tighter. */
