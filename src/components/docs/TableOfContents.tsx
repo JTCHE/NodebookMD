@@ -143,9 +143,10 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
           starts high on a long list so the fold costs less of the screen.
           It carries no bottom margin: the first heading under it already has
           the space every heading has, and a margin here would add a second
-          gap on top of it. */}
+          gap on top of it. The header above has none either, so the gap
+          above is the list's own. */}
       {/* On paper it is the only list, and it is printed whole. */}
-      <nav ref={inline} aria-label="On this page" className="not-prose @min-toc:hidden print:block! -mt-2 print:mt-0 print:mb-6">
+      <nav ref={inline} aria-label="On this page" className="not-prose @min-toc:hidden print:block! mt-lg print:mt-0 print:mb-6">
         {title}
         <div className={collapsed ? "relative max-h-32 overflow-hidden print:max-h-none" : undefined}>
           <TocList headings={headings} top={top} active={active} />
