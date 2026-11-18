@@ -14,7 +14,9 @@ export const MENU_SURFACE =
 export const MENU_PANEL = "absolute top-[calc(100%+4px)] right-0 z-50 origin-top-right " + MENU_SURFACE;
 
 export const MENU_ITEM =
-  "flex w-full items-center gap-2.5 rounded-md [corner-shape:squircle] px-sm py-[7px] text-left text-row text-neutral-800 " + ROW_INTERACTION;
+  "flex w-full items-center gap-2.5 rounded-md [corner-shape:squircle] px-sm py-[7px] text-left text-row text-neutral-800 " + ROW_INTERACTION +
+  // In dark the panel is already a lifted shade, so a hovered row goes one step lighter, not darker.
+  " dark:pointer-hover:bg-neutral-300 dark:focus-visible:bg-neutral-300";
 
 export const MENU_ICON = "size-3.5 shrink-0 text-neutral-500";
 
