@@ -346,7 +346,13 @@ svg[stroke="currentColor"] * {
   vector-effect: non-scaling-stroke;
 }
 
+/* Text selection. See lib/ui/selection.ts. */
 ::selection {
+  background: transparent;
+}
+input::selection,
+textarea::selection,
+::highlight(selection) {
   background: var(--brand-700);
   color: var(--brand-foreground);
 }
@@ -1198,6 +1204,11 @@ pre code.hljs {
   opacity: 1;
   translate: 0 0;
   --clip-fade: 0px;
+}
+/* A row with nothing to open shows its whole caption: there is no open state to hold the rest. */
+.hom-method.hom-method-row .hom-method-caption {
+  height: auto;
+  mask-image: none;
 }
 @property --edge-fade {
   syntax: "<length>";
