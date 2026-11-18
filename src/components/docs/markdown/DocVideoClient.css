@@ -27,6 +27,12 @@
   initial-value: 1;
 }
 
+/* A backdrop filter escapes its parent's rounded overflow, so the frame
+   clips itself. The clip sits here and not on the blur: a clip makes a
+   backdrop root, and on the blur it would leave nothing under it to blur. */
+.markdown-video {
+  clip-path: inset(0 round var(--radius));
+}
 .video-blur {
   position: absolute;
   inset-inline: 0;
@@ -34,9 +40,6 @@
   z-index: 1;
   /* Only under the button row: the frame above the seek bar stays sharp. */
   height: 3rem;
-  /* A backdrop filter escapes its parent's rounded overflow, so the blur
-     cuts its own round corners: the frame radius less its 1px border. */
-  clip-path: inset(0 round 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px));
   --progressive-blur-opacity: 1;
   transition:
     --progressive-blur-opacity 120ms var(--ease-out-quint),
