@@ -34,10 +34,9 @@
   z-index: 1;
   /* Only under the button row: the frame above the seek bar stays sharp. */
   height: 3rem;
-  /* Its layers stop at the clip's round corners, not at a square box. */
-  overflow: clip;
-  border-bottom-left-radius: inherit;
-  border-bottom-right-radius: inherit;
+  /* A backdrop filter escapes its parent's rounded overflow, so the blur
+     cuts its own round corners: the frame radius less its 1px border. */
+  clip-path: inset(0 round 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px));
   --progressive-blur-opacity: 1;
   transition:
     --progressive-blur-opacity 120ms var(--ease-out-quint),
@@ -148,10 +147,13 @@
 /* On hover the controls take over, and the whole clip is the play target:
    the centre button steps aside. */
 .video-rest {
-  transition: opacity 140ms var(--ease-out-quint);
+  transition:
+    opacity 140ms var(--ease-out-quint),
+    scale 140ms var(--ease-out-quint);
 }
 .markdown-video:hover .video-rest {
   opacity: 0;
+  scale: 0.85;
 }
 .video-rest:focus-visible {
   outline: 2px solid var(--video-control);
