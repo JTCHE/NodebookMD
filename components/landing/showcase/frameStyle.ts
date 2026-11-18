@@ -12,8 +12,9 @@ import { useEffect } from "react";
  *   title bar and no hint row.
  * - On a phone (`data-phone`) the page time takes the gap in the title bar
  *   of the tab strip, where the build number would crowd it. The tour opens
- *   one tab, a phone has no window to minimize or maximize, and those parts
- *   of the bar would leave the time no room.
+ *   one tab, a phone has no window to minimize or maximize, and the logo says
+ *   the name: those parts of the bar would leave the time no room. The Mac
+ *   bar (an iPad, a narrow Mac window) has the least room of all.
  * - No list of contents: inline on a narrow page, it would push the page's
  *   note into the fade; in the gutter of a wide one, it takes the room the
  *   page width slider needs to show.
@@ -28,6 +29,7 @@ const FRAME_STYLE = `
   html[data-phone] header.h-titlebar > span.text-caption { visibility: hidden; }
   html[data-phone] header.h-titlebar :is([aria-label="Minimize"], [aria-label="Maximize"]) { display: none; }
   html[data-phone] header.h-titlebar [aria-label="Tabs"] > * { visibility: hidden; }
+  html[data-phone] header.h-titlebar a[href="/"] > span { display: none; }
   nav[aria-label="On this page"] { display: none; }
   [class*="@min-toc:pr-"] { padding-right: 0 !important; }
   .group[data-hover] > .code-copy { opacity: 1; }
