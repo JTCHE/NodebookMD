@@ -96,12 +96,29 @@ A release note covers one version only.
 
 Write only what changed in that version. Do not describe the project, the product, or previous versions.
 
+Start the note with one or two lines, before any heading, that name the
+biggest change in the version. A reader who stops there must know what the
+release is about. Example: "The entire user interface has been overhauled: …",
+followed by the components that changed.
+
 Organize changes under these headings:
 
-* `## Features` — new or changed functionality available in this version.
-* `## Fixes` — behavior that now works as intended. Performance and memory improvements belong here.
+* `## Features` — new or changed functionality: a new control, a new option,
+  a redesign. A new slider, a new setting or a new colour system is a feature,
+  never a fix.
+* `## Fixes` — behavior that was wrong in the last release and is now correct.
+  Performance and memory improvements belong here.
 
-Omit headings with no items.
+Inside each heading, group the lines under `###` categories, for example
+`Colour and theme`, `Home`, `Search`, `Sidebar`, `Settings`, `Doc pages`,
+`Performance`, `System`, `Privacy`. Name the categories after the area of the
+app a reader knows. Omit headings and categories with no items. Do not put
+empty lines between the bullets of one list.
+
+Give a large change the weight it has. A change that touches the whole app
+(a colour system, a redesign) gets its own category and several lines, not
+one line among small ones. Rewrite and regroup the note when the lines added
+commit by commit no longer read as one changelog.
 
 ### Style
 
@@ -115,7 +132,13 @@ Write every change as a short, objective statement.
 * Include implementation details when they describe a meaningful change or behavior.
 * Do not describe the old behavior unless it is needed to make the new behavior clear.
 * Avoid narrative, justification, marketing language, and filler.
-* Prefer `now` for behavior that changed.
+* Write from the point of view of the last release. Each line says what is
+  different from that release: "is now", "now shows", "has been renamed",
+  "has been unified into", "no longer". Do not write a bare present tense
+  ("is", "shows") that reads as a description of the app.
+* Say what the change does for the reader, not a label for it. "The search
+  field and its results are one surface" is unclear; "The search field and
+  its results have been unified into a single surface" is clear.
 * Keep each bullet focused on one change; combine details when they describe the same change.
 
 ### Examples
