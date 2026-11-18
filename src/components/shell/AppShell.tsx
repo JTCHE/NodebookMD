@@ -9,6 +9,7 @@
  * column does, which is what keeps the bar at the top and the keys at the
  * bottom no matter how long a page is.
  */
+import { holdScrollPosition } from "@/lib/ui/hold-scroll";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLocation } from "react-router";
 import { cn } from "@/lib/utils";
@@ -119,7 +120,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       .then(() => setReady(true));
     // The first path only: this is the way in, not every page.
   }, []);
-  const toggleSidebar = () => (tight ? setFloating((open) => !open) : setSidebarOpen((open) => !open));
+  const toggleSidebar = () => {
+    if (tight) return setFloating((open) => !open);
+    holdScrollPosition();
+    setSidebarOpen((open) => !open);
+  };
 
   useEffect(() => {
     const show = () => (tight ? setFloating(true) : setSidebarOpen(true));
