@@ -13,7 +13,8 @@ import { Keys } from "@/components/ui/Keycap";
 
 /** `className` places the wrapper: a button that sits `absolute` gives its
     place to the wrapper, so the name is drawn at the button. */
-export function Hint({ label, keys, side, className, children }: { label?: string; keys?: string; side?: "above" | "below"; className?: string; children: ReactNode }) {
+/** `off`: the control is showing its own answer (an open menu), so the name stays away. */
+export function Hint({ label, keys, side, off, className, children }: { label?: string; keys?: string; side?: "above" | "below"; off?: boolean; className?: string; children: ReactNode }) {
   const anchor = useRef<HTMLSpanElement>(null);
   const { shown, open, hide } = useHoverTip();
 
@@ -28,7 +29,7 @@ export function Hint({ label, keys, side, className, children }: { label?: strin
       onPointerDown={hide}
     >
       {children}
-      {shown && (
+      {shown && !off && (
         <TooltipBox anchorRef={anchor} side={side} className={cn("z-[80] w-max max-w-[24rem] rounded-[11px] py-xs [corner-shape:squircle]", !label ? "px-xs" : keys ? "pr-xs pl-sm" : "px-sm")}>
           <span className="flex items-center gap-2 font-medium text-foreground">
             {label}
