@@ -11,6 +11,7 @@ import type { PageView } from "@/lib/pages";
 import { PagePreview, PreviewFrame } from "@/components/root/PagePreview";
 import { WINDOW } from "@/components/root/LibraryCard";
 import "./Tooltip.css";
+import { TOOLTIP_SURFACE } from "@/lib/ui/tooltip";
 
 interface MetaEntry {
   title: string;
@@ -279,7 +280,8 @@ export function TooltipBox({ anchorRef, hoverPosRef, side = "above", className, 
             }
       }
       className={cn(
-        "tip-in [@media(hover:none)]:hidden rounded-lg fixed z-50 bg-background border border-border shadow-lg p-2 text-xs pointer-events-none whitespace-normal [overflow-wrap:anywhere]",
+        TOOLTIP_SURFACE,
+        "tip-in [@media(hover:none)]:hidden rounded-lg fixed z-50 p-2 pointer-events-none whitespace-normal [overflow-wrap:anywhere]",
         className,
       )}
     >

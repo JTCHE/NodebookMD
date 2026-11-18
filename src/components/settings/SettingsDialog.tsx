@@ -263,7 +263,7 @@ function HelpSection() {
   }, []);
 
   async function flip(release: string, on: boolean) {
-    await setHelpServer(release, on).then(showToast, (reason) => showToast(String(reason), "error"));
+    await setHelpServer(release, on).then(showToast, (reason) => showToast(String(reason)));
   }
 
   const series =
@@ -349,7 +349,7 @@ function McpSection() {
       showToast(`Houdini MCP is connected to ${agent.label}. Restart Houdini and ${agent.label}.`);
       void scan();
     } catch (reason) {
-      showToast(`Houdini MCP did not install: ${String(reason)}`, "error");
+      showToast(`Houdini MCP did not install: ${String(reason)}`);
     } finally {
       setBusy("");
     }
@@ -483,7 +483,7 @@ function GeneralSection() {
   async function flipLogin(next: boolean) {
     await invoke("set_autostart", { on: next }).then(
       () => setLogin(next),
-      (reason) => showToast(String(reason), "error"),
+      (reason) => showToast(String(reason)),
     );
   }
   async function flipTray(next: boolean) {
@@ -654,7 +654,7 @@ function PrivacySection() {
           <button
             type="button"
             className={BUTTON}
-            onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason), "error"))}
+            onClick={() => void invoke("show_telemetry_log").catch((reason) => showToast(String(reason)))}
           >
             Show
           </button>
@@ -699,7 +699,7 @@ function AboutSection() {
       if (found) await invoke("install_update");
       else setFound(await invoke<string | null>("check_update"));
     } catch (reason) {
-      showToast(String(reason), "error");
+      showToast(String(reason));
     } finally {
       setBusy(false);
     }

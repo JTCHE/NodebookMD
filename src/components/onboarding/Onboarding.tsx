@@ -90,7 +90,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     if (leaving === 3 && mcpOn && agent) {
       void invoke("install_houdini_mcp", { agent }).then(
         () => showToast("Houdini MCP is installed. Restart Houdini and your agent."),
-        (reason) => showToast(`Houdini MCP did not install: ${String(reason)}`, "error"),
+        (reason) => showToast(`Houdini MCP did not install: ${String(reason)}`),
       );
     }
     if (leaving === 4) await invoke("set_setting", { key: TELEMETRY, value: String(telemetryOn) });

@@ -83,7 +83,7 @@ export function ObsidianDialog({ path, title, markdown, onClose }: { path: strin
       showToast("Sent to Obsidian");
       onClose();
     } catch (reason) {
-      showToast(String(reason), "error");
+      showToast(String(reason));
       setBusy(false);
     }
   }

@@ -210,7 +210,7 @@ export default function DocLink({
           }
           const target = findAnchor(decodeURIComponent(anchor));
           if (target) jumpTo(target);
-          else showToast(`This page has no section named "${anchor}"`, "error");
+          else showToast(`This page has no section named "${anchor}"`);
         }}
         // Start reading the page the pointer is travelling towards. Every
         // other link in the app does this — the sidebar rows, the library, the

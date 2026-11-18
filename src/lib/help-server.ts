@@ -61,9 +61,9 @@ export async function setHelpServer(release: string, on: boolean): Promise<strin
   } finally {
     await readReleases();
   }
-  if (on) return `F1 in Houdini ${release} now opens ${APP_NAME}. Restart Houdini.`;
+  if (on) return `${APP_NAME} has been set as the default help server for Houdini ${release}`;
   if (!changed.length) throw `F1 in Houdini ${release} did not open ${APP_NAME}.`;
-  return `F1 in Houdini ${release} no longer opens ${APP_NAME}. Restart Houdini.`;
+  return `${APP_NAME} is no longer the help server for Houdini ${release}`;
 }
 
 /** `22.0.368` is `22.0`: the hook is per preferences folder, which is per

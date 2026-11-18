@@ -52,7 +52,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
       await navigator.clipboard.writeText(markdown);
       return true;
     } catch {
-      showToast("Couldn't copy markdown", "error");
+      showToast("Couldn't copy markdown");
       return false;
     }
   }, [markdown]);
@@ -114,7 +114,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
     event.preventDefault();
     if (!inTauri) return;
     used("save-as");
-    void save().catch((reason) => showToast(String(reason), "error"));
+    void save().catch((reason) => showToast(String(reason)));
   });
 
   // Both shortcuts copy the page's link in the form Settings names.
@@ -128,7 +128,7 @@ export function MarkdownActions({ markdown, path, title }: { markdown: string; p
     if ((!linkKey && !alternateKey) || event.shiftKey) return;
     if (isTyping(event.target)) return;
     event.preventDefault();
-    void copyLink().catch(() => showToast("Couldn't copy", "error"));
+    void copyLink().catch(() => showToast("Couldn't copy"));
   });
 
   // Every action on the page, once: the drop-down below and the right-click

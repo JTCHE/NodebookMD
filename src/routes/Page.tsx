@@ -165,7 +165,7 @@ export default function Page() {
         })
         .catch((reason: PageError) => {
           if (reason.missing) {
-            showToast("This page does not exist in the selected Houdini build", "error");
+            showToast("This page does not exist in the selected Houdini build");
             return;
           }
           setPage(null);
@@ -272,7 +272,7 @@ export default function Page() {
       // a spare parameter names one no page has. Saying so beats a click that
       // looks like it did nothing.
       if (!aimAtIt()) {
-        showToast(`This page has no section named "${id}"`, "error");
+        showToast(`This page has no section named "${id}"`);
         stop();
         return;
       }

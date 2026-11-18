@@ -1,30 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
+import { cn } from "@/lib/utils";
+import { TOOLTIP_SURFACE } from "@/lib/ui/tooltip";
 
-export type ToastType = "error" | "info";
-
-interface ToastProps {
-  message: string;
-  type: ToastType;
-}
-
-// Pure visual component — safe to render anywhere at root level.
-//
-// It sits below the sticky header — level with the breadcrumbs, not on top of
-// the search field — and fades in with a slight scale and blur, back out the
-// same way when it goes.
-export function ToastNotification({ message, type, visible }: { message: string; type: ToastType; visible: boolean }) {
+/** One toast, in the tooltip style. It sits under the title bar, level with
+    the breadcrumbs, and fades in and out. */
+function ToastNotification({ message, visible }: { message: string; visible: boolean }) {
   return (
-    // px only — inline style: the comma inside an arbitrary value stops the
-    // class from ever being generated.
-    <div
-      style={{ top: "calc(var(--spacing-titlebar) + 0.5rem)" }}
-      className="fixed inset-x-0 z-100 flex justify-center pointer-events-none"
-    >
+    <div style={{ top: "calc(var(--spacing-titlebar) + 0.5rem)" }} className="fixed inset-x-0 z-100 flex justify-center pointer-events-none">
       <div
-        className={`text-sm px-4 py-2 shadow-lg pointer-events-auto rounded transition-[opacity,transform,filter] duration-200 ease-out motion-reduce:transition-none ${
-          visible ? "opacity-100 scale-100 blur-0" : "opacity-0 scale-95 blur-sm"
-        } ${type === "info" ? "bg-muted text-foreground border border-border" : "bg-foreground text-background"}`}
+        className={cn(
+          TOOLTIP_SURFACE,
+          "max-w-[min(36rem,calc(100vw-2rem))] rounded-[11px] px-sm py-xs font-medium text-foreground [corner-shape:squircle] pointer-events-auto transition-opacity duration-200 ease-out motion-reduce:transition-none",
+          visible ? "opacity-100" : "opacity-0",
+        )}
       >
         {message}
       </div>
@@ -32,20 +21,18 @@ export function ToastNotification({ message, type, visible }: { message: string;
   );
 }
 
-// Fire from anywhere — no React tree constraints.
-export function showToast(message: string, type: ToastType = "info") {
-  window.dispatchEvent(new CustomEvent("nodebookmd:toast", { detail: { message, type } }));
+/** Fire from anywhere: no React tree constraints. */
+export function showToast(message: string) {
+  window.dispatchEvent(new CustomEvent("nodebookmd:toast", { detail: message }));
 }
 
-// Mount once at root — listens for showToast() calls and renders the toast.
-// The listener keeps the last message mounted for the exit transition, then
-// unmounts it for real.
+/** Mount once at root. Keeps the last message mounted for the exit fade, then
+    unmounts it. */
 export function ToastListener() {
-  const [toast, setToast] = useState<ToastProps | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  // A toast belongs to the page it fired on. Navigating away dismisses it at
-  // once.
+  // A toast belongs to the page it fired on. Navigating away dismisses it at once.
   const { pathname } = useLocation();
   const lastPath = useRef(pathname);
 
@@ -55,19 +42,18 @@ export function ToastListener() {
     for (const timer of timers.current) clearTimeout(timer);
     timers.current = [];
     setVisible(false);
-    setToast(null);
+    setMessage(null);
   }, [pathname]);
 
   useEffect(() => {
-    function onToast(e: Event) {
-      const { message, type } = (e as CustomEvent<ToastProps>).detail;
+    function onToast(event: Event) {
       for (const timer of timers.current) clearTimeout(timer);
       timers.current = [];
-      setToast({ message, type });
+      setMessage((event as CustomEvent<string>).detail);
       setVisible(true);
-      // Out after 4s; unmount one frame past the exit transition (200ms).
+      // Out after 4s; unmount one frame past the exit fade (200ms).
       timers.current.push(setTimeout(() => setVisible(false), 4000));
-      timers.current.push(setTimeout(() => setToast(null), 4220));
+      timers.current.push(setTimeout(() => setMessage(null), 4220));
     }
     window.addEventListener("nodebookmd:toast", onToast);
     return () => {
@@ -76,6 +62,6 @@ export function ToastListener() {
     };
   }, []);
 
-  if (!toast) return null;
-  return <ToastNotification message={toast.message} type={toast.type} visible={visible} />;
+  if (!message) return null;
+  return <ToastNotification message={message} visible={visible} />;
 }

@@ -65,7 +65,7 @@ function heading(Tag: Tag): NonNullable<Components[Tag]> {
       const path = location.pathname.replace(/^\/+/, "");
       void pageLink(path, props.id).then((link) => navigator.clipboard.writeText(link)).then(
         () => showToast("Copied the link to this section"),
-        () => showToast("Could not copy the link", "error"),
+        () => showToast("Could not copy the link"),
       );
     };
     return (

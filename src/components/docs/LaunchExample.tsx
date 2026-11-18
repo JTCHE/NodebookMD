@@ -73,7 +73,7 @@ export function LaunchExample({ path }: { path: string }) {
         setStarting(true);
         invoke("launch_example", { path })
           .then(() => showToast("Houdini is starting with the example"))
-          .catch((reason) => showToast(String(reason), "error"))
+          .catch((reason) => showToast(String(reason)))
           // Houdini takes its time to show a window. The button waits a moment
           // so a second press does not start a second Houdini.
           .finally(() => setTimeout(() => setStarting(false), 4000));

@@ -28,7 +28,7 @@ export function copyPicture(img: HTMLImageElement): Promise<void> {
   );
   return navigator.clipboard
     .write([new ClipboardItem({ "image/png": png })])
-    .then(() => showToast("Image copied"), () => showToast("Couldn't copy", "error"));
+    .then(() => showToast("Image copied"), () => showToast("Couldn't copy"));
 }
 
 /** Starts a drag of the picture's file out of the window (`drag_picture`). */

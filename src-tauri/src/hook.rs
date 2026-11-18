@@ -118,7 +118,7 @@ pub fn apply(data: &Path, port: u16, wanted: &[String]) -> Result<Vec<String>, S
     for release in found {
         if running(&release.release) {
             return Err(format!(
-                "Houdini {} is open. It writes houdini.pref when it exits, which would undo this. Close it first.",
+                "Close Houdini {} first",
                 release.release
             ));
         }

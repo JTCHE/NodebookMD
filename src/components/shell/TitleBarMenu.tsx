@@ -37,7 +37,7 @@ export function TitleBarMenu({ at, port, onClose }: { at: { x: number; y: number
       progress, and every count falls to nothing and climbs back with it. */
   function resetIndex() {
     showToast("Index cleared. Reading the install again…");
-    invoke("reset_index").catch((reason) => showToast(String(reason), "error"));
+    invoke("reset_index").catch((reason) => showToast(String(reason)));
   }
 
   /** Bookmarks, recents and settings are the reader's own work and nothing
@@ -79,7 +79,7 @@ export function TitleBarMenu({ at, port, onClose }: { at: { x: number; y: number
                     navigator.clipboard
                       .writeText(`http://${address}`)
                       .then(() => showToast("Copied the server address"))
-                      .catch(() => showToast("Could not copy the server address", "error")),
+                      .catch(() => showToast("Could not copy the server address")),
                 },
               ]
             : []),

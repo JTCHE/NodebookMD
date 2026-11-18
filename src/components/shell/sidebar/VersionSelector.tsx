@@ -227,7 +227,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
   }, [open]);
 
   async function toggleF1(release: string, hooked: boolean) {
-    await setHelpServer(release, !hooked).then(showToast, (reason) => showToast(String(reason), "error"));
+    await setHelpServer(release, !hooked).then(showToast, (reason) => showToast(String(reason)));
   }
 
   // Open, the picker is the one thing the reader is doing. Anything else —
@@ -290,7 +290,7 @@ function Picker({ version, pageCount, className }: VersionSelectorProps) {
     try {
       if (await pickInstall()) setOpen(false);
     } catch (reason) {
-      showToast(String(reason), "error");
+      showToast(String(reason));
     } finally {
       setSwitching(null);
     }

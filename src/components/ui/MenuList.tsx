@@ -45,7 +45,7 @@ export const MenuList = forwardRef<
     onRun?.();
     void Promise.resolve()
       .then(item.run)
-      .catch((reason) => showToast(String(reason), "error"));
+      .catch((reason) => showToast(String(reason)));
   }
 
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {

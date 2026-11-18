@@ -37,7 +37,7 @@ async function copyText(text: string, said: string) {
     await navigator.clipboard.writeText(text);
     showToast(said);
   } catch {
-    showToast("Couldn't copy", "error");
+    showToast("Couldn't copy");
   }
 }
 
@@ -50,7 +50,7 @@ export function iconFileEntries(source: string, keyed: boolean): MenuEntry[] {
       label: "Copy as PNG",
       icon: ImageDown,
       keys: keyed ? `${COMMAND_KEY}+C` : undefined,
-      run: () => copyIconPng(source).then(() => showToast("PNG copied"), () => showToast("Couldn't copy", "error")),
+      run: () => copyIconPng(source).then(() => showToast("PNG copied"), () => showToast("Couldn't copy")),
     },
   ];
   // The help pane has no dialog to ask where.
@@ -59,7 +59,7 @@ export function iconFileEntries(source: string, keyed: boolean): MenuEntry[] {
       label: "Save as…",
       icon: Download,
       keys: keyed ? `${COMMAND_KEY}+S` : undefined,
-      run: () => saveIcon(source).then((saved) => saved && showToast("Icon saved"), (reason) => showToast(String(reason), "error")),
+      run: () => saveIcon(source).then((saved) => saved && showToast("Icon saved"), (reason) => showToast(String(reason))),
     });
   }
   return entries;
