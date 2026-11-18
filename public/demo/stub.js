@@ -178,9 +178,22 @@
     ["seen_version", VERSION],
     ["obsidian-vault", VAULTS[0].path],
   ]);
-  const recents = [];
   const bookmarks = [];
   const now = Date.now();
+  /** A reader's trail, newest first, so the home screen opens on a list of
+      cards. Scatter is on top: the tour opens it from there. */
+  const recents = [
+    ["nodes/sop/scatter", "Scatter"],
+    ["nodes/sop/copytopoints", "Copy to Points"],
+    ["vex/functions/curlnoise", "curlnoise"],
+    ["nodes/sop/attribwrangle", "Attribute Wrangle"],
+    ["nodes/sop/scatteralign", "Scatter and Align"],
+    ["vex/functions/noise", "noise"],
+    ["nodes/sop/copytocurves", "Copy to Curves"],
+    ["nodes/sop/heightfield_scatter", "HeightField Scatter"],
+    ["vex/functions/wnoise", "wnoise"],
+    ["nodes/sop/box", "Box"],
+  ].map(([path, title], step) => ({ id: now - step, path, title, icon: null, at: now - step * 47 * 60_000 }));
 
   /** A page this site did not write: the app's own page shape, and a line
       that says where the real one comes from. */
@@ -291,10 +304,11 @@
       .filter(Boolean);
   }
 
+  let visits = 0;
   function remember(list, { path, title }) {
     const at = list.findIndex((entry) => entry.path === path);
     if (at >= 0) list.splice(at, 1);
-    const id = now + list.length;
+    const id = now + ++visits;
     list.unshift({ id, path, title, icon: null, at: Date.now() });
     return id;
   }

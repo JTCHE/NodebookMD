@@ -7,10 +7,6 @@ import type { Driver } from "@/components/landing/showcase/driver";
 /** The search over a page, which Ctrl K opens. */
 const OVERLAY = 'input[type="search"]';
 
-/** The page the app opens on, where the first scene starts: the reader never
-    sees the home screen come and go. */
-export const START = { path: "nodes/sop/scatter", title: "Scatter" };
-
 /** A page, drawn at once: a scene starts in the app, not on its home screen. */
 async function onPage(d: Driver, path: string, title: string) {
   d.hide();
@@ -18,12 +14,18 @@ async function onPage(d: Driver, path: string, title: string) {
   await d.waitFor(() => d.pageTitle() === title);
 }
 
-/** A page, its picture full screen, a link with its preview, the page kept,
-    and the next page through the sidebar: every page opens and is timed. */
+/** The home screen and its recent pages, one opened, its picture full
+    screen, a link with its preview, the page kept, and the next page through
+    the sidebar: every page opens and is timed. */
 export async function navigationScene(d: Driver) {
-  await onPage(d, START.path, START.title);
-  // The reader has just come to the page, and reads its top first.
-  await d.sleep(1800);
+  d.hide();
+  if (d.win.location.pathname !== "/") d.go("/");
+  const card = await d.waitFor(() => d.$('main a[aria-label="Scatter"]'));
+  // The reader looks over the list before taking a page from it.
+  await d.sleep(1400);
+  await d.point(card, { dwell: 300 });
+  await d.open(card, "Scatter");
+  await d.sleep(1600);
 
   const article = () => d.$("article")!;
   const picture = await d.waitFor(() => article().querySelector("img.markdown-media"));
@@ -113,8 +115,10 @@ export async function customizationScene(d: Driver) {
   await d.press(await swatch("Custom"));
   const hue = await d.waitFor(() => d.$('input[aria-label="Hue"]') as HTMLInputElement | null);
   await d.sleep(400);
-  await d.slide(hue, 175, 1100);
-  await d.slide(hue, 345, 1000);
+  await d.slide(hue, [
+    { to: 175, ms: 1100 },
+    { to: 345, ms: 1000 },
+  ]);
   await d.sleep(500);
 
   // A phone's page is narrower than the narrowest width: the slider would
@@ -123,8 +127,10 @@ export async function customizationScene(d: Driver) {
     await d.press(await d.waitFor(() => d.byText("Reading", "button", dialog)));
     const width = await d.waitFor(() => d.$('input[aria-label="Page width"]') as HTMLInputElement | null);
     await d.sleep(500);
-    await d.slide(width, 118, 1200);
-    await d.slide(width, 92, 900);
+    await d.slide(width, [
+      { to: 118, ms: 1200 },
+      { to: 92, ms: 900 },
+    ]);
     await d.sleep(400);
   }
 

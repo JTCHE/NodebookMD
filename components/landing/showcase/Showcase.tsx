@@ -7,7 +7,6 @@ import { Cursor, type Place } from "@/components/landing/showcase/Cursor";
 import { pane } from "@/components/landing/showcase/F1Demo";
 import { useFrameStyle } from "@/components/landing/showcase/frameStyle";
 import { MIN_AREA, RADIUS, useFit } from "@/components/landing/showcase/layout";
-import { START } from "@/components/landing/showcase/scenes";
 import { TABS } from "@/components/landing/showcase/tabs";
 import { useTour } from "@/components/landing/showcase/useTour";
 import { cn } from "@/lib/utils";
@@ -155,11 +154,10 @@ export function Showcase() {
                           check();
                           new win.ResizeObserver(check).observe(doc.documentElement);
                           win.addEventListener("resize", check);
-                          tour.go(`/${START.path}`);
-                          // Shown once the page is drawn, not its home screen; after
+                          // Shown once the home screen holds its recent pages; after
                           // 2s, whatever the app shows.
                           const drawn = (tries: number) =>
-                            doc.querySelector("article h1") || !tries ? setReady(true) : setTimeout(drawn, 50, tries - 1);
+                            doc.querySelector("main a[aria-label]") || !tries ? setReady(true) : setTimeout(drawn, 50, tries - 1);
                           drawn(40);
                         };
                         look();

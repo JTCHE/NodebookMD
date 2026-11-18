@@ -263,9 +263,11 @@ export class Driver {
     if (!el.closest(CONTROLS)) this.fire(el, "click", { detail: 1 });
   }
 
-  /** Takes a slider's knob and drags it through each value to `to`, eased,
-      in `ms`. The app sees the press, every value, and the release. */
-  async slide(input: HTMLInputElement, to: number, ms = 1000) {
+  /** Takes a slider's knob and drags it to each stop in turn, eased, in its
+      `ms`, with no release between stops: the app steps Settings aside while
+      the knob is held, and a release would bring it back for a moment. The
+      app sees the press, every value, and the release. */
+  async slide(input: HTMLInputElement, stops: Array<{ to: number; ms: number }>) {
     const min = Number(input.min);
     const max = Number(input.max);
     // The knob's middle: the track is the input less one knob width (16px in
@@ -274,8 +276,7 @@ export class Driver {
       const box = input.getBoundingClientRect();
       return { x: box.left + 8 + ((value - min) / (max - min)) * (box.width - 16), y: box.top + box.height / 2 };
     };
-    const from = Number(input.value);
-    await this.travel(knob(from));
+    await this.travel(knob(Number(input.value)));
     this.pointer.look(this.win.getComputedStyle(input).cursor);
     await this.sleep(150);
     this.pointer.press(true);
@@ -283,19 +284,22 @@ export class Driver {
     input.focus();
     try {
       const STEP = 40;
-      for (let elapsed = STEP; elapsed <= ms; elapsed += STEP) {
-        const t = elapsed / ms;
-        const eased = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-        const value = Math.round(from + (to - from) * eased);
-        if (String(value) !== input.value) {
-          this.setValue(input, String(value));
-          input.dispatchEvent(new this.win.Event("input", { bubbles: true }));
+      for (const { to, ms } of stops) {
+        const from = Number(input.value);
+        for (let elapsed = STEP; elapsed <= ms; elapsed += STEP) {
+          const progress = elapsed / ms;
+          const eased = progress < 0.5 ? 2 * progress * progress : 1 - (-2 * progress + 2) ** 2 / 2;
+          const value = Math.round(from + (to - from) * eased);
+          if (String(value) !== input.value) {
+            this.setValue(input, String(value));
+            input.dispatchEvent(new this.win.Event("input", { bubbles: true }));
+          }
+          this.at = knob(value);
+          this.pointer.move(this.at.x, this.at.y, STEP);
+          await this.sleep(STEP);
         }
-        this.at = knob(value);
-        this.pointer.move(this.at.x, this.at.y, STEP);
-        await this.sleep(STEP);
+        await this.sleep(250);
       }
-      await this.sleep(250);
     } finally {
       // A tab change mid-drag still lets go: the app takes Settings back.
       this.pointer.press(false);

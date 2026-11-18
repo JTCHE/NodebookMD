@@ -22,7 +22,7 @@ export interface Tab {
 }
 
 export const TABS: Tab[] = [
-  { id: "navigation", label: "Navigation", ms: 15500, scene: navigationScene, app: full },
+  { id: "navigation", label: "Navigation", ms: 18500, scene: navigationScene, app: full },
   { id: "search", label: "Search", ms: 10000, scene: searchScene, app: full },
   { id: "customization", label: "Customization", short: "Customize", ms: 16000, scene: customizationScene, app: full },
   { id: "f1", label: "Houdini Integration", short: "Integration", ms: 10000, demo: F1Demo, app: pane },

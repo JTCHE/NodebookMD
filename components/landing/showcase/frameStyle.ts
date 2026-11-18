@@ -17,6 +17,8 @@ import { useEffect } from "react";
  *   page width slider needs to show.
  * - The driver's pointer sets no :hover, so its `data-hover` mark shows what a
  *   hover shows: a code block's copy button.
+ * - The app's sliders are drawn for its engines (WebView2, WebKit) only;
+ *   Firefox gets the same track and knob (`.slider` in the app's globals.css).
  */
 const FRAME_STYLE = `
   .docs-shell { scrollbar-color: transparent transparent; mask-image: linear-gradient(#000 calc(100% - 110px), transparent calc(100% - 16px)); }
@@ -25,6 +27,11 @@ const FRAME_STYLE = `
   nav[aria-label="On this page"] { display: none; }
   [class*="@min-toc:pr-"] { padding-right: 0 !important; }
   .group[data-hover] > .code-copy { opacity: 1; }
+  .slider::-moz-range-track { height: 4px; border-radius: 999px; background: var(--neutral-300); }
+  .slider::-moz-range-thumb { box-sizing: border-box; width: 16px; height: 16px; border: 0; border-radius: 999px; background: var(--raised); box-shadow: var(--elevation-chip), 0 0 0 1px var(--hairline); }
+  [data-theme="dark"] .slider::-moz-range-thumb { background: oklch(0.92 0 0); }
+  .slider-hue::-moz-range-track { background: var(--hue-wheel); }
+  .slider-hue::-moz-range-thumb, [data-theme="dark"] .slider-hue::-moz-range-thumb { background: white; box-shadow: inset 0 0 0 4px var(--brand), 0 1px 2px oklch(0 0 0 / 30%); }
 `;
 
 /** Puts `FRAME_STYLE` in the app's document, and the flags it reads on its root. */
