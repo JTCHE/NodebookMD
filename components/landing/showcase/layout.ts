@@ -26,6 +26,9 @@ export const enter = (order: number) => ({ "--enter": order }) as React.CSSPrope
 /** The frame's corner, on the page. */
 export const RADIUS = 10;
 
+/** How long the app takes to move between two tabs that both show it. */
+export const MOVE_MS = 500;
+
 /** Panes that fill the frame, as Houdini's do: the gap around and between
     them, and the corner where two meet. */
 export const GAP = 4;

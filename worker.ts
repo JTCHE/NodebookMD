@@ -47,76 +47,94 @@ const STATIC_ARCHIVE_MIME: Record<string, string> = {
   svg: "image/svg+xml",
 };
 
+type Context = { waitUntil(promise: Promise<unknown>): void; passThroughOnException(): void };
+
+/** One year. The zone sends neither the redirect to HTTPS nor this header, so
+    without them Chrome keeps a typed `http://` address and marks the page
+    "Not secure". */
+const STRICT_TRANSPORT = "max-age=31536000";
+
 const worker = {
-  async fetch(request: Request, env: Env, ctx: { waitUntil(promise: Promise<unknown>): void; passThroughOnException(): void }) {
+  async fetch(request: Request, env: Env, ctx: Context) {
     const url = new URL(request.url);
     if (url.hostname === OLD_HOST) return Response.redirect(`${env.URL}${url.pathname}${url.search}`, 301);
-
-    const beacon = recordViewBeacon(request, url, env, ctx);
-    if (beacon) return beacon;
-
-    const gone = takedownAnswer(request, url);
-    if (gone) {
-      recordPageView(request, url, gone, env, ctx);
-      return request.method === "HEAD" ? new Response(null, gone) : gone;
+    if (!env.URL.startsWith("https:")) return respond(request, url, env, ctx);
+    if (url.protocol === "http:") {
+      url.protocol = "https:";
+      return Response.redirect(url.href, 301);
     }
-
-    if (url.pathname.startsWith("/_next/static/") && request.method === "GET") {
-      const archived = await env.NEXT_INC_CACHE_R2_BUCKET.get(`static-archive${url.pathname}`).catch(() => null);
-      if (archived) {
-        const ext = url.pathname.split(".").pop() ?? "";
-        return new Response(archived.body, {
-          headers: {
-            "content-type": STATIC_ARCHIVE_MIME[ext] ?? "application/octet-stream",
-            "cache-control": "public, max-age=31536000, immutable",
-          },
-        });
-      }
-    }
-
-    // The notice template holds placeholders, not a page. See lib/notice.ts.
-    if (isProbe(url.pathname) || url.pathname === NOTICE_PATH) return new Response("Not found", { status: 404 });
-
-    // The edge cache sits here, in front of the Next server, because the cost
-    // it saves is Next's own bootstrap. See lib/edge-cache.ts. It holds the
-    // answer as Next gave it; the takedown status goes on at the way out.
-    const key = cacheKey(request, url);
-    if (key) {
-      const hit = await fromCache(key);
-      if (hit) {
-        const answer = goneStatus(url, hit);
-        recordPageView(request, url, answer, env, ctx);
-        return answer;
-      }
-    }
-
-    // A prerendered page, its prefetches and its RSC payload are a lookup in
-    // an object Next would read anyway, so they are answered here and Next is
-    // never started. See lib/stored-answer.ts.
-    const stored = await storedAnswer(request, url, env.NEXT_INC_CACHE_R2_BUCKET);
-    if (stored) {
-      if (key) keep(key, stored, ctx);
-      const answer = goneStatus(url, stored);
-      recordPageView(request, url, answer, env, ctx);
-      // A HEAD is answered like the GET beside it and loses its body here, so
-      // every branch above can be written once.
-      return request.method === "HEAD" ? new Response(null, answer) : answer;
-    }
-
-    let response = await (await nextHandler()).fetch(request, env, ctx);
-    const contentType = response.headers.get("content-type") ?? "";
-    if (
-      (contentType.includes("text/html") || contentType.includes("text/x-component")) &&
-      response.headers.get("cache-control")?.includes("stale-while-revalidate")
-    ) {
-      response = new Response(response.body, response);
-      response.headers.set("cache-control", "public, max-age=0, must-revalidate");
-    }
-    if (key) keep(key, response, ctx);
-    const answer = goneStatus(url, response);
-    recordPageView(request, url, answer, env, ctx);
-    return answer;
+    const response = await respond(request, url, env, ctx);
+    const secured = new Response(response.body, response);
+    secured.headers.set("strict-transport-security", STRICT_TRANSPORT);
+    return secured;
   },
 };
+
+async function respond(request: Request, url: URL, env: Env, ctx: Context): Promise<Response> {
+  const beacon = recordViewBeacon(request, url, env, ctx);
+  if (beacon) return beacon;
+
+  const gone = takedownAnswer(request, url);
+  if (gone) {
+    recordPageView(request, url, gone, env, ctx);
+    return request.method === "HEAD" ? new Response(null, gone) : gone;
+  }
+
+  if (url.pathname.startsWith("/_next/static/") && request.method === "GET") {
+    const archived = await env.NEXT_INC_CACHE_R2_BUCKET.get(`static-archive${url.pathname}`).catch(() => null);
+    if (archived) {
+      const ext = url.pathname.split(".").pop() ?? "";
+      return new Response(archived.body, {
+        headers: {
+          "content-type": STATIC_ARCHIVE_MIME[ext] ?? "application/octet-stream",
+          "cache-control": "public, max-age=31536000, immutable",
+        },
+      });
+    }
+  }
+
+  // The notice template holds placeholders, not a page. See lib/notice.ts.
+  if (isProbe(url.pathname) || url.pathname === NOTICE_PATH) return new Response("Not found", { status: 404 });
+
+  // The edge cache sits here, in front of the Next server, because the cost
+  // it saves is Next's own bootstrap. See lib/edge-cache.ts. It holds the
+  // answer as Next gave it; the takedown status goes on at the way out.
+  const key = cacheKey(request, url);
+  if (key) {
+    const hit = await fromCache(key);
+    if (hit) {
+      const answer = goneStatus(url, hit);
+      recordPageView(request, url, answer, env, ctx);
+      return answer;
+    }
+  }
+
+  // A prerendered page, its prefetches and its RSC payload are a lookup in
+  // an object Next would read anyway, so they are answered here and Next is
+  // never started. See lib/stored-answer.ts.
+  const stored = await storedAnswer(request, url, env.NEXT_INC_CACHE_R2_BUCKET);
+  if (stored) {
+    if (key) keep(key, stored, ctx);
+    const answer = goneStatus(url, stored);
+    recordPageView(request, url, answer, env, ctx);
+    // A HEAD is answered like the GET beside it and loses its body here, so
+    // every branch above can be written once.
+    return request.method === "HEAD" ? new Response(null, answer) : answer;
+  }
+
+  let response = await (await nextHandler()).fetch(request, env, ctx);
+  const contentType = response.headers.get("content-type") ?? "";
+  if (
+    (contentType.includes("text/html") || contentType.includes("text/x-component")) &&
+    response.headers.get("cache-control")?.includes("stale-while-revalidate")
+  ) {
+    response = new Response(response.body, response);
+    response.headers.set("cache-control", "public, max-age=0, must-revalidate");
+  }
+  if (key) keep(key, response, ctx);
+  const answer = goneStatus(url, response);
+  recordPageView(request, url, answer, env, ctx);
+  return answer;
+}
 
 export default worker;

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, ChevronRight, House, Plus } from "lucide-react";
-import { GAP, INNER, outerCorner, usePlayed, type AppBox, type Base, type DemoProps } from "@/components/landing/showcase/layout";
+import { GAP, INNER, MOVE_MS, outerCorner, usePlayed, type AppBox, type Base, type DemoProps } from "@/components/landing/showcase/layout";
 import { Keycap, SMALL_KEY } from "@/components/ui/Keycap";
 import { SITE_NAME } from "@/lib/brand";
 import { cn } from "@/lib/utils";
@@ -190,8 +190,11 @@ export function F1Demo({ go, base, clock }: DemoProps) {
     [go],
   );
 
+  // The page opens once the app has moved into the pane: a page that draws
+  // during the move takes the move's first frames.
   useEffect(() => {
-    go(NODES[WRANGLE].path, NODES[WRANGLE].type);
+    const timer = setTimeout(() => go(NODES[WRANGLE].path, NODES[WRANGLE].type), MOVE_MS);
+    return () => clearTimeout(timer);
     // Once, when the tab opens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -120,13 +120,15 @@ export class Driver {
     this.check();
   }
 
+  /** Only the time the scene runs counts toward `timeout`: a pause does not
+      end the wait. */
   async waitFor<T>(find: () => T | null | undefined | false, timeout = 5000): Promise<T> {
-    const end = performance.now() + timeout;
-    for (;;) {
+    for (let waited = 0; ; waited += 30) {
       this.check();
+      await this.gate();
       const found = find();
       if (found) return found;
-      if (performance.now() > end) throw new Stopped();
+      if (waited > timeout) throw new Stopped();
       await new Promise((done) => setTimeout(done, 30));
     }
   }

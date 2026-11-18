@@ -27,8 +27,10 @@ const quiet = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
  * - The reader's own input in the app holds the scene where it is, as the
  *   button does. When their pointer leaves the frame, or they press play, the
  *   app goes back to the page the scene was on, and the tour plays on.
- * - Every resume goes back a second: a demo on the clock plays that second
- *   again, and a scene waits it out while its gauge catches up.
+ * - A scene the reader took over plays again from its start: what it held,
+ *   a card or a field, may be gone. Any other resume goes back a second: a
+ *   demo on the clock plays that second again, and a scene waits it out
+ *   while its gauge catches up.
  * - A tab the reader picks plays from its start.
  */
 export function useTour({
@@ -46,6 +48,8 @@ export function useTour({
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
   pausedRef.current = paused;
+  const activeRef = useRef(0);
+  activeRef.current = active;
   /** Bumped to run the tab's scene again from its start. */
   const [run, setRun] = useState(0);
   /** The reader took the app over: the page to go back to, and whether their
@@ -115,8 +119,13 @@ export function useTour({
   const resume = useCallback(() => {
     const path = reader.current?.path;
     reader.current = null;
-    // ponytail: only the page comes back, not a search or a picture the reader
-    // opened on it; a scene step that then finds nothing ends the tab.
+    if (path && TABS[activeRef.current].scene) {
+      lead.current = 0;
+      pausedRef.current = false;
+      setPaused(false);
+      setRun((n) => n + 1);
+      return free();
+    }
     if (path) go(path);
     played.current.ms = Math.max(0, played.current.ms - 1000);
     lead.current = performance.now() + 1000;
@@ -219,8 +228,11 @@ export function useTour({
     // a page card open: every tab closes it first.
     driver?.leave();
     const closed = driver?.key("Escape") ?? Promise.resolve();
-    // And puts back the look a scene or a reader changed in Settings.
-    (frame.current?.contentWindow as { __demo?: { plainLook(): void } } | null)?.__demo?.plainLook();
+    // And puts back the look a scene or a reader changed in Settings. Not in
+    // a demo that moves the app into its own window: the reset restyles the
+    // whole page, and during the move that costs the move its first frames.
+    // The next tab, with no app on show, puts it back unseen.
+    if (!(tab.demo && tab.app)) (frame.current?.contentWindow as { __demo?: { plainLook(): void } } | null)?.__demo?.plainLook();
     if (play && driver && !quiet()) {
       closed
         .then(() => play(driver))

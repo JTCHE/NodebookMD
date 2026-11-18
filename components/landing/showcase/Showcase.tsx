@@ -1,12 +1,12 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Controls } from "@/components/landing/showcase/Controls";
 import { KeyCue, Opened } from "@/components/landing/showcase/Cues";
 import { Cursor, type Place } from "@/components/landing/showcase/Cursor";
 import { pane } from "@/components/landing/showcase/F1Demo";
 import { useFrameStyle } from "@/components/landing/showcase/frameStyle";
-import { MIN_AREA, RADIUS, useFit } from "@/components/landing/showcase/layout";
+import { MIN_AREA, MOVE_MS, RADIUS, useFit } from "@/components/landing/showcase/layout";
 import { TABS } from "@/components/landing/showcase/tabs";
 import { useTour } from "@/components/landing/showcase/useTour";
 import { cn } from "@/lib/utils";
@@ -51,6 +51,40 @@ export function Showcase() {
     setMoves(!!tab.app && !!TABS[shown].app);
   }
 
+  // The frame shows once the app has drawn, looked for from the start and not
+  // at the frame's load event: that waits for every picture and font in the
+  // app, and one stalled request (seen in Firefox over HTTP/3) held a drawn
+  // app hidden for 19 seconds.
+  const mounted = !!fit;
+  useEffect(() => {
+    if (!mounted) return;
+    let timer = 0;
+    let drawnAt = 0;
+    const look = () => {
+      const doc = frame.current?.contentDocument;
+      const win = doc?.defaultView;
+      // The app has drawn once its shell holds something; a narrow window has
+      // no sidebar, so nothing more particular.
+      if (win && doc.querySelector("#root main, #root input")) {
+        drawnAt ||= performance.now();
+        // Shown once the home screen holds its recent pages; after 2s,
+        // whatever the app shows.
+        if (doc.querySelector("main a[aria-label]") || performance.now() - drawnAt > 2000) {
+          // Looked for at every resize, not once: a phone can take the zoom
+          // in after the app has drawn.
+          const check = () => doc.documentElement.clientWidth < win.innerWidth - 1 && setTwice(true);
+          check();
+          new win.ResizeObserver(check).observe(doc.documentElement);
+          win.addEventListener("resize", check);
+          return setReady(true);
+        }
+      }
+      timer = window.setTimeout(look, 50);
+    };
+    look();
+    return () => clearTimeout(timer);
+  }, [mounted]);
+
   useFrameStyle(frame, ready, { pane: tab.app === pane, phone: !!fit?.base.phone });
 
   const Demo = tab.demo;
@@ -62,7 +96,8 @@ export function Showcase() {
   useLayoutEffect(() => {
     if (app) place.current = { x: app.x * scale, y: app.y * scale, k: (scale * app.w) / app.window };
   });
-  const motion = moves ? "duration-500 ease-[cubic-bezier(0.3,0.7,0.2,1)]" : "duration-0";
+  const motion = moves ? "ease-[cubic-bezier(0.3,0.7,0.2,1)]" : "duration-0";
+  const motionStyle = moves ? { transitionDuration: `${MOVE_MS}ms` } : {};
 
   return (
     <div className="flex w-full flex-1 flex-col items-center gap-lg">
@@ -121,15 +156,17 @@ export function Showcase() {
                     motion,
                     !app && "pointer-events-none invisible",
                   )}
-                  style={
-                    app
+                  style={{
+                    ...motionStyle,
+                    ...(app
                       ? { left: app.x, top: app.y, width: app.w, height: app.h, borderRadius: whole ? 0 : app.corners }
-                      : { left: 0, top: 0, width: base.w, height: base.h }
-                  }
+                      : { left: 0, top: 0, width: base.w, height: base.h }),
+                  }}
                 >
                   <div
                     className={cn("absolute top-0 left-0 origin-top-left transition-[scale,width,height]", motion)}
                     style={{
+                      ...motionStyle,
                       width: app?.window ?? base.w,
                       // A slide that shrinks the app to nothing has no ratio to keep.
                       height: app?.w ? (app.h * app.window) / app.w : base.h,
@@ -141,27 +178,6 @@ export function Showcase() {
                       src="/demo/app/index.html"
                       title="The app, running on sample pages written for this site"
                       className={cn("size-full border-0 bg-background transition-opacity duration-300", !ready && "opacity-0")}
-                      onLoad={() => {
-                        const doc = frame.current?.contentDocument;
-                        // The app has drawn once its shell holds something; a narrow
-                        // window has no sidebar, so nothing more particular.
-                        const look = () => {
-                          const win = doc?.defaultView;
-                          if (!win || !doc.querySelector("#root main, #root input")) return setTimeout(look, 50);
-                          // Looked for at every resize, not once: a phone can
-                          // take the zoom in after the app has drawn.
-                          const check = () => doc.documentElement.clientWidth < win.innerWidth - 1 && setTwice(true);
-                          check();
-                          new win.ResizeObserver(check).observe(doc.documentElement);
-                          win.addEventListener("resize", check);
-                          // Shown once the home screen holds its recent pages; after
-                          // 2s, whatever the app shows.
-                          const drawn = (tries: number) =>
-                            doc.querySelector("main a[aria-label]") || !tries ? setReady(true) : setTimeout(drawn, 50, tries - 1);
-                          drawn(40);
-                        };
-                        look();
-                      }}
                     />
                   </div>
                 </div>
