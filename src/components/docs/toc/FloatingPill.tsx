@@ -89,7 +89,7 @@ export function FloatingPill({
             onClick={(() => setOpen((v) => !v))}
             aria-expanded={expanded}
             aria-label="Table of contents"
-            className={`relative inline-flex max-w-[min(20rem,calc(100vw-3rem))] items-center gap-2 h-10 ${pillAlign} text-sm font-medium text-foreground bg-background border border-border rounded-full shadow-lg shadow-black/10 transition-colors hover:bg-accent active:scale-[0.98] outline-none focus-visible:ring-2 focus-visible:ring-ring/40 cursor-interactive`}
+            className={`relative inline-flex max-w-[min(20rem,calc(100vw-3rem))] items-center gap-2 h-10 ${pillAlign} text-sm font-medium text-foreground bg-background border border-border rounded-full shadow-lg shadow-black/10 transition-colors hover:bg-accent outline-none focus-visible:ring-2 focus-visible:ring-ring/40 cursor-interactive`}
           >
             <List className="size-4 shrink-0 text-muted-foreground" />
             {/* Keyed on the section, so each new title animates in on its own. */}

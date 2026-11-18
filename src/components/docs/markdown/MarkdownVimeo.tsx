@@ -65,7 +65,7 @@ export function Vimeo({ id, title }: { id: string; title?: string }) {
               {/* `m-0!`: the article's margin for pictures, later in the sheet, pushed it down. */}
               <img src={still} alt="" className="absolute inset-0 m-0! size-full object-cover" />
               {/* The mark sits on a dark disc: a still can be any colour. */}
-              <span className="relative flex size-14 items-center justify-center rounded-full bg-black/60 text-white transition-transform duration-(--duration-fast) group-hover:scale-105 motion-reduce:transition-none">
+              <span className="relative flex size-14 items-center justify-center rounded-full bg-black/60 text-white">
                 <Icons.play className="ml-0.5 size-6" />
               </span>
             </>

@@ -63,8 +63,7 @@ export function AccentPicker({ value, hue }: { value: Accent; hue: number }) {
           title={ACCENT_LABEL[accent]}
           onClick={() => choose(accent)}
           className={cn(
-            "size-5 shrink-0 cursor-interactive rounded-full ring-1 ring-foreground/10 ring-inset",
-            "transition-transform duration-(--duration-fast) motion-reduce:transition-none pointer-hover:scale-110 active:scale-95",
+            "size-5 shrink-0 cursor-interactive rounded-full ring-1 ring-foreground/10 ring-inset pointer-hover:ring-foreground/30",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
             // The chosen swatch keeps its full size, with a ring outside it.
             // A shadow, so the focus outline can still draw over it.
