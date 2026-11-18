@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { titleOf, warmTitleIndex } from "@/lib/search";
 import { warm } from "@/lib/pages";
 import { toTitleCase } from "@/lib/markdown/page-title";
+import { useRowTip } from "@/components/docs/Tooltip";
 
 /**
  * The path of a page is its place in the docs, so the trail is read from it.
@@ -59,15 +60,7 @@ export function Breadcrumbs({ path, version, title }: { path: string; version?: 
         return (
           <span key={`${crumb.label}-${index}`} className="inline-flex items-center">
             {crumb.href ? (
-              <Link
-                to={crumb.href}
-                className="rounded-sm underline-offset-2 transition-colors hover:text-neutral-700 hover:underline focus-ring"
-                // A crumb is an index page, often a long one: it is read and
-                // parsed while the pointer is on its way to the press.
-                onPointerEnter={() => crumb.href !== "/" && warm(crumb.href.slice(1))}
-              >
-                {crumb.label}
-              </Link>
+              <Crumb href={crumb.href} label={crumb.label} />
             ) : (
               <span data-current-crumb="" className="text-foreground cursor-default">{crumb.label}</span>
             )}
@@ -76,5 +69,32 @@ export function Breadcrumbs({ path, version, title }: { path: string; version?: 
         );
       })}
     </nav>
+  );
+}
+
+/** An ancestor crumb. It opens the same page card as a link in a page; the
+    Houdini crumb is the home page, which has no card. */
+function Crumb({ href, label }: { href: string; label: string }) {
+  const { anchorRef, pointer, tip } = useRowTip<HTMLAnchorElement>(href.slice(1), "below");
+  const home = href === "/";
+  return (
+    <>
+      <Link
+        ref={anchorRef}
+        to={href}
+        className="rounded-sm underline-offset-2 transition-colors hover:text-neutral-700 hover:underline focus-ring"
+        {...(home ? {} : pointer)}
+        // A crumb is an index page, often a long one: it is read and
+        // parsed while the pointer is on its way to the press.
+        onPointerEnter={() => {
+          if (home) return;
+          warm(href.slice(1));
+          pointer.onPointerEnter();
+        }}
+      >
+        {label}
+      </Link>
+      {!home && tip}
+    </>
   );
 }
