@@ -17,18 +17,19 @@ import { Keys } from "@/components/ui/Keycap";
 export function Hint({ label, keys, side, off, className, children }: { label?: string; keys?: string; side?: "above" | "below"; off?: boolean; className?: string; children: ReactNode }) {
   const anchor = useRef<HTMLSpanElement>(null);
   const { shown, open, hide } = useHoverTip();
-  // The hint the menu pushed away does not come back when the menu closes:
-  // the pointer is often gone by then, and the question is answered.
+  // While off, the hint does not arm: a pointer that crosses from the chip
+  // into its menu enters this box again, and the armed hint would show the
+  // moment the menu closes, with the pointer long gone.
   useEffect(() => {
-    if (off) hide();
-  }, [off, hide]);
+    if (off && shown) hide();
+  }, [off, shown, hide]);
 
   // With keycaps the box closes on them, so that side takes the key inset; keys alone take it on both sides.
   return (
     <span
       ref={anchor}
       className={cn("inline-flex shrink-0", className)}
-      onPointerEnter={open}
+      onPointerEnter={off ? undefined : open}
       onPointerLeave={hide}
       // A press is the answer to the question the name was for.
       onPointerDown={hide}
