@@ -180,7 +180,9 @@ function Section({ title, action, children }: { title: string; action?: ReactNod
     runs only as wide as the content, never to the dialog's edges. A fact
     lifts the label by half its own line, so a first row with one starts
     that much lower: the label stands as far under the title on every tab. */
-function Row({ label, fact, onReset, children }: { label: string; fact?: ReactNode; onReset?: () => void; children?: ReactNode }) {
+/** `onReset` is null for a setting at its default: the reset button keeps its
+    place, so the row does not wrap differently when the setting changes. */
+function Row({ label, fact, onReset, children }: { label: string; fact?: ReactNode; onReset?: (() => void) | null; children?: ReactNode }) {
   return (
     <div
       className={cn(
@@ -194,7 +196,7 @@ function Row({ label, fact, onReset, children }: { label: string; fact?: ReactNo
         <span className="truncate text-title text-neutral-950">{label}</span>
         {fact && <span className="truncate text-meta text-neutral-500">{fact}</span>}
       </span>
-      {onReset && <ResetButton label={label} onReset={onReset} />}
+      {onReset ? <ResetButton label={label} onReset={onReset} /> : onReset === null && <span aria-hidden="true" className="size-7 shrink-0" />}
       {children}
     </div>
   );
@@ -506,7 +508,7 @@ function GeneralSection() {
       title="General"
     >
       <Group title="Appearance">
-      <Row label="Theme" onReset={theme !== "system" ? () => setTheme("system") : undefined}>
+      <Row label="Theme" onReset={theme !== "system" ? () => setTheme("system") : null}>
         <Segmented
           label="Theme"
           value={theme}
@@ -517,10 +519,10 @@ function GeneralSection() {
           onChange={setTheme}
         />
       </Row>
-      <Row label="Accent" onReset={accent !== ACCENT_DEFAULT || hue !== HUE_DEFAULT ? resetAccent : undefined}>
+      <Row label="Accent" onReset={accent !== ACCENT_DEFAULT || hue !== HUE_DEFAULT ? resetAccent : null}>
         <AccentPicker value={accent} hue={hue} />
       </Row>
-      <Row label="Reduce motion" onReset={motion !== "system" ? () => setMotion("system") : undefined}>
+      <Row label="Reduce motion" onReset={motion !== "system" ? () => setMotion("system") : null}>
         <Segmented
           label="Reduce motion"
           value={motion}
@@ -566,7 +568,7 @@ function ReadingSection() {
     <Section
       title="Reading"
     >
-      <Row label="Page text size" onReset={size !== "default" ? () => setTextSize("default") : undefined}>
+      <Row label="Page text size" onReset={size !== "default" ? () => setTextSize("default") : null}>
         <Segmented
           label="Page text size"
           value={size}
@@ -584,7 +586,7 @@ function ReadingSection() {
           label="Page width"
           // The width holds; the text size sets how many characters fit in it.
           fact={`About ${charactersAt(measure, size)} characters a line${measure === MEASURE_DEFAULT ? ", the default width" : ""}`}
-          onReset={measure !== MEASURE_DEFAULT ? () => setMeasure(MEASURE_DEFAULT) : undefined}
+          onReset={measure !== MEASURE_DEFAULT ? () => setMeasure(MEASURE_DEFAULT) : null}
         >
           <input
             type="range"
