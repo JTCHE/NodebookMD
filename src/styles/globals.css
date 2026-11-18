@@ -350,11 +350,15 @@ svg[stroke="currentColor"] * {
 ::selection {
   background: transparent;
 }
+/* A tint, not a block: the letters take the accent colour over a faint wash of it. */
 input::selection,
 textarea::selection,
 ::highlight(selection) {
-  background: var(--brand-700);
-  color: var(--brand-foreground);
+  background: color-mix(in oklch, var(--brand) 22%, transparent);
+  color: color-mix(in oklch, var(--brand-700) 55%, var(--foreground));
+}
+[data-theme="dark"] ::highlight(selection) {
+  color: color-mix(in oklch, var(--brand) 70%, var(--foreground));
 }
 
 /* The find bar's matches. See lib/ui/find.ts. */
