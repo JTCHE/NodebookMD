@@ -71,7 +71,9 @@ const CONTROLS = 'a[href], button, [role="button"]';
 
 export class Driver {
   private at: { x: number; y: number };
-  private hovered: Element | null = null;
+  /** What the pointer is over, kept across drivers: the next tab's driver
+      lets go of what the last one left hovered, and its card closes. */
+  private static hovered: Element | null = null;
   private pressedAt = 0;
 
   constructor(
@@ -213,11 +215,8 @@ export class Driver {
     return !!hit && el.contains(hit);
   }
 
-  /** Moves the pointer onto `el`, and the app sees it arrive. */
-  async point(el: Element, { dwell = 0 }: { dwell?: number } = {}) {
-    this.check();
-    await this.reveal(el);
-    const to = this.spot(el);
+  /** Moves the drawn pointer to a point, at a hand's pace. */
+  private async travel(to: { x: number; y: number }) {
     const distance = Math.hypot(to.x - this.at.x, to.y - this.at.y);
     this.pointer.show(true);
     // Already there, as for a press after a hover: no move, and no wait.
@@ -228,15 +227,22 @@ export class Driver {
       await this.sleep(ms);
     }
     this.at = to;
-    if (this.hovered && this.hovered !== el) {
-      this.fire(this.hovered, "pointerout", { relatedTarget: el });
-      this.fire(this.hovered, "mouseout", { relatedTarget: el });
+  }
+
+  /** Moves the pointer onto `el`, and the app sees it arrive. */
+  async point(el: Element, { dwell = 0 }: { dwell?: number } = {}) {
+    this.check();
+    await this.reveal(el);
+    await this.travel(this.spot(el));
+    if (Driver.hovered && Driver.hovered !== el) {
+      this.fire(Driver.hovered, "pointerout", { relatedTarget: el });
+      this.fire(Driver.hovered, "mouseout", { relatedTarget: el });
     }
     // An event from script sets no :hover, so what the app shows on hover
     // (a code block's copy button) keys on this mark in the frame's style.
-    for (let at = this.hovered; at; at = at.parentElement) at.removeAttribute("data-hover");
+    for (let at = Driver.hovered; at; at = at.parentElement) at.removeAttribute("data-hover");
     for (let at: Element | null = el; at; at = at.parentElement) at.setAttribute("data-hover", "");
-    this.hovered = el;
+    Driver.hovered = el;
     for (const type of ["pointerover", "mouseover", "pointermove", "mousemove"]) this.fire(el, type);
     this.pointer.look(this.win.getComputedStyle(el).cursor);
     if (dwell) await this.sleep(dwell);
@@ -255,6 +261,46 @@ export class Driver {
     this.fire(el, "pointerup");
     this.fire(el, "mouseup");
     if (!el.closest(CONTROLS)) this.fire(el, "click", { detail: 1 });
+  }
+
+  /** Takes a slider's knob and drags it through each value to `to`, eased,
+      in `ms`. The app sees the press, every value, and the release. */
+  async slide(input: HTMLInputElement, to: number, ms = 1000) {
+    const min = Number(input.min);
+    const max = Number(input.max);
+    // The knob's middle: the track is the input less one knob width (16px in
+    // the app's `.slider`).
+    const knob = (value: number) => {
+      const box = input.getBoundingClientRect();
+      return { x: box.left + 8 + ((value - min) / (max - min)) * (box.width - 16), y: box.top + box.height / 2 };
+    };
+    const from = Number(input.value);
+    await this.travel(knob(from));
+    this.pointer.look(this.win.getComputedStyle(input).cursor);
+    await this.sleep(150);
+    this.pointer.press(true);
+    this.fire(input, "pointerdown", { buttons: 1 });
+    input.focus();
+    try {
+      const STEP = 40;
+      for (let elapsed = STEP; elapsed <= ms; elapsed += STEP) {
+        const t = elapsed / ms;
+        const eased = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+        const value = Math.round(from + (to - from) * eased);
+        if (String(value) !== input.value) {
+          this.setValue(input, String(value));
+          input.dispatchEvent(new this.win.Event("input", { bubbles: true }));
+        }
+        this.at = knob(value);
+        this.pointer.move(this.at.x, this.at.y, STEP);
+        await this.sleep(STEP);
+      }
+      await this.sleep(250);
+    } finally {
+      // A tab change mid-drag still lets go: the app takes Settings back.
+      this.pointer.press(false);
+      this.fire(input, "pointerup");
+    }
   }
 
   async type(input: HTMLInputElement, text: string) {
@@ -319,6 +365,18 @@ export class Driver {
     );
     this.check();
     if (ms) this.cues.opened(title, ms);
+  }
+
+  /** The pointer leaves what it was over, as it would leave the frame. */
+  leave() {
+    const el = Driver.hovered;
+    if (!el?.isConnected) return void (Driver.hovered = null);
+    this.fire(el, "pointerout");
+    this.fire(el, "mouseout");
+    this.fire(el, "pointerleave");
+    this.fire(el, "mouseleave");
+    for (let at: Element | null = el; at; at = at.parentElement) at.removeAttribute("data-hover");
+    Driver.hovered = null;
   }
 
   hide() {

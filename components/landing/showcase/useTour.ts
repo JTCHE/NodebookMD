@@ -215,9 +215,12 @@ export function useTour({
     let timer = 0;
     const play = tab.scene;
     const driver = frame.current && ready ? new Driver(frame.current, hand, cues, controller.signal, gate) : null;
-    // A reader, or a scene cut short, may have left a picture or the search
-    // open: every tab closes it first.
+    // A reader, or a scene cut short, may have left a picture, the search or
+    // a page card open: every tab closes it first.
+    driver?.leave();
     const closed = driver?.key("Escape") ?? Promise.resolve();
+    // And puts back the look a scene or a reader changed in Settings.
+    (frame.current?.contentWindow as { __demo?: { plainLook(): void } } | null)?.__demo?.plainLook();
     if (play && driver && !quiet()) {
       closed
         .then(() => play(driver))

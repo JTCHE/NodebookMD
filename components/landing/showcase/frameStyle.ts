@@ -12,7 +12,9 @@ import { useEffect } from "react";
  *   title bar and no hint row.
  * - On a phone (`data-phone`) the page time takes the middle of the title
  *   bar, where the build number would crowd it.
- * - The narrow page's inline contents would push the page's note into the fade.
+ * - No list of contents: inline on a narrow page, it would push the page's
+ *   note into the fade; in the gutter of a wide one, it takes the room the
+ *   page width slider needs to show.
  * - The driver's pointer sets no :hover, so its `data-hover` mark shows what a
  *   hover shows: a code block's copy button.
  */
@@ -20,7 +22,8 @@ const FRAME_STYLE = `
   .docs-shell { scrollbar-color: transparent transparent; mask-image: linear-gradient(#000 calc(100% - 110px), transparent calc(100% - 16px)); }
   html[data-pane] :is(header.h-titlebar, footer.status-scrim) { display: none; }
   html[data-phone] header.h-titlebar > span.text-caption { visibility: hidden; }
-  nav.not-prose[aria-label="On this page"] { display: none; }
+  nav[aria-label="On this page"] { display: none; }
+  [class*="@min-toc:pr-"] { padding-right: 0 !important; }
   .group[data-hover] > .code-copy { opacity: 1; }
 `;
 

@@ -10,6 +10,27 @@
 // window.
 (() => {
   const BASE = "/demo/";
+  /** The app release built into `/demo/app/`. */
+  const VERSION = "0.4.0";
+
+  /* The look the tour changes: the accent and the page as Settings sets
+     them, kept by the app in local storage. Every visit and every tab of the
+     tour starts on the app's defaults. The theme is the site's, and stays. */
+  const LOOK = ["nodebookmd.accent", "nodebookmd.accent-hue", "nodebookmd.text-size", "nodebookmd.measure"];
+  const plainLook = () => {
+    for (const key of LOOK) {
+      try {
+        if (localStorage.getItem(key) === null) continue;
+        localStorage.removeItem(key);
+      } catch {
+        return;
+      }
+      // The app repaints on a storage event, which another window sends.
+      dispatchEvent(new StorageEvent("storage", { key }));
+    }
+  };
+  plainLook();
+  window.__demo = { plainLook };
 
   /* The app is a single page with real paths. Its moves must not reach the
      page around it, or the browser's Back button would walk the demo instead
@@ -153,6 +174,8 @@
 
   const settings = new Map([
     ["onboarded", "done"],
+    // The release is not news here: no "Updated to" pill on the home page.
+    ["seen_version", VERSION],
     ["obsidian-vault", VAULTS[0].path],
   ]);
   const recents = [];
@@ -290,7 +313,11 @@
     },
     titles: () => allTitles(),
     search,
-    page,
+    // No sample page inherits from a HOM class, and its Markdown is already plain.
+    page: async (args) => {
+      const view = await page(args);
+      return { inheritance: [], portable: view.markdown, ...view };
+    },
     meta,
     link_preview: () => null,
     has_example: () => false,
@@ -321,7 +348,7 @@
     report_use: () => {},
     report_search: () => {},
     report_error: () => {},
-    "plugin:app|version": () => "0.2.1",
+    "plugin:app|version": () => VERSION,
     "plugin:app|name": () => "NodebookMD",
     "plugin:event|listen": () => 0,
     "plugin:event|unlisten": () => {},

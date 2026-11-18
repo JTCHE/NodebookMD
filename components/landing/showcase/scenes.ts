@@ -90,3 +90,44 @@ export async function searchScene(d: Driver) {
   await d.open(() => d.key("Enter", { label: "Enter" }), "noise");
   await d.sleep(1500);
 }
+
+/** Settings over a page: a few accents, then a hue of the reader's own on its
+    slider, then the page width. While a knob is held, Settings steps aside
+    and the page behind it takes the change. */
+export async function customizationScene(d: Driver) {
+  await onPage(d, "nodes/sop/copytopoints", "Copy to Points");
+  await d.sleep(500);
+  // The gear in the sidebar's foot; a phone has no sidebar, and takes the keys.
+  const gear = d.$('aside button[aria-label="Settings"]');
+  const phone = !gear?.offsetWidth;
+  if (phone) await d.key(",", { label: "Ctrl ," });
+  else await d.press(gear);
+  const dialog = await d.waitFor(() => d.$('[role="dialog"]'));
+  await d.sleep(600);
+
+  const swatch = (name: string) => d.waitFor(() => dialog.querySelector<HTMLElement>(`button[role="radio"][aria-label="${name}"]`));
+  for (const name of ["Blue", "Green"]) {
+    await d.press(await swatch(name));
+    await d.sleep(650);
+  }
+  await d.press(await swatch("Custom"));
+  const hue = await d.waitFor(() => d.$('input[aria-label="Hue"]') as HTMLInputElement | null);
+  await d.sleep(400);
+  await d.slide(hue, 175, 1100);
+  await d.slide(hue, 345, 1000);
+  await d.sleep(500);
+
+  // A phone's page is narrower than the narrowest width: the slider would
+  // change nothing there.
+  if (!phone) {
+    await d.press(await d.waitFor(() => d.byText("Reading", "button", dialog)));
+    const width = await d.waitFor(() => d.$('input[aria-label="Page width"]') as HTMLInputElement | null);
+    await d.sleep(500);
+    await d.slide(width, 118, 1200);
+    await d.slide(width, 92, 900);
+    await d.sleep(400);
+  }
+
+  await d.key("Escape", { label: "Esc" });
+  await d.sleep(1600);
+}

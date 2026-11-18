@@ -6,7 +6,7 @@
  *
  * Inline in the head, so the page never paints the other theme first.
  */
-export const THEME_KEY = "houdinimd.theme";
+export const THEME_KEY = "nodebookmd.theme";
 
 export const THEME_HEAD_SCRIPT =
   `(function(){var k=${JSON.stringify(THEME_KEY)},m=matchMedia("(prefers-color-scheme: dark)");` +
