@@ -14,6 +14,7 @@ import { startReading } from "./lib/ui/reading";
 import { startAccent } from "./lib/ui/accent";
 import { startIconTone } from "./lib/ui/iconTone";
 import { startSummaryClicks } from "./lib/ui/toggleClick";
+import { startSelectionHighlight } from "./lib/ui/selection";
 import { startPress } from "./lib/ui/press";
 import { startBlurCheck } from "./lib/ui/blur";
 import { startIconStroke } from "./lib/ui/icon-stroke";
@@ -39,6 +40,7 @@ startReading();
 startAccent();
 startIconTone();
 startSummaryClicks();
+startSelectionHighlight();
 startBlurCheck();
 startIconStroke();
 
